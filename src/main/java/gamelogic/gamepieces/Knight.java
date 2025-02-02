@@ -2,6 +2,6 @@ package main.java.gamelogic.gamepieces;
 
 import main.java.gamelogic.Piece;
 
-public class Pawn extends Piece {
+public class Knight extends Piece {
     
 }
