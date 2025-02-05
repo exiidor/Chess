@@ -1,19 +1,51 @@
 package main.java.gamelogic.gamepieces;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import main.java.gamelogic.Board;
 import main.java.gamelogic.Piece;
+import main.java.gamelogic.Position;
 
 public class Bishop extends Piece {
-
-    private String name = "B";
-    private boolean isWhite;
-
-    public Bishop(boolean isWhite) {
-        super(isWhite);
-        this.isWhite = isWhite;
+    public Bishop(boolean isWhite, Board board) {
+        super(isWhite, board);
     }
 
     @Override
-    public String getName() {
-        return name;
+    public char getSymbol() {
+        return 'B';
+    }
+
+    @Override
+    public Set<Position> getValidMoves() {
+        Set<Position> validMoves = new LinkedHashSet<>();
+
+        for (int yDirection = -1; yDirection <= 1; yDirection += 2) {
+            for (int xDirection = -1; xDirection <= 1; xDirection += 2) {
+                for (int i = 1; i < 8; i++) {
+                    Position position = new Position(getX() + i * xDirection, getY() + i * yDirection);
+
+                    if (board.isOutOfBounds(position)) {
+                        break;
+                    }
+
+                    Piece other = board.getPieceAt(position);
+
+                    if (other == null) {
+                        validMoves.add(position);
+                    } else if (other != null) {
+                        if (other.isEnemyOf(this)) {
+                            validMoves.add(position);
+                        }
+                        
+                        break;
+                    }
+                }
+            }
+        }
+
+
+        return validMoves;
     }
 }
