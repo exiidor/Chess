@@ -6,5 +6,5 @@ public class Main {
         board.initializeStartingPosition();
         board.printBoard();
     }
-    
+
 }
