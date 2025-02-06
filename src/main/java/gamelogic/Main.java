@@ -11,5 +11,6 @@ public class Main {
 
         board.printBoard();
         System.out.println(piece.getValidMoves());
+        System.out.println(piece.getValidMoves().size());
     }
 }

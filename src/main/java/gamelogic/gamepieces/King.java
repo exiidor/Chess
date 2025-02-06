@@ -45,7 +45,12 @@ public class King extends Piece {
                 validMoves.add(possibleMove);
             }
 
-            /// TODO: Castling
+            /*  
+                TODO: Castling & Checks
+                Castling : boolean KinghasMoved, boolean left/rightRookHasMoved, boolean isChecked, boolean isCheckedInPath, differnt on queen side or king side, check for colissions
+                Check    : getEnemyPieces, list all possible moves and check for same moves as King would be able to do'
+                boolean isChecked : King has to move or block with another Piece, next move -> no King capture possible -> IllegalMoveException
+            */
         }
     
         return validMoves;

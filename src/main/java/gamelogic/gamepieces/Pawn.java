@@ -57,7 +57,11 @@ public class Pawn extends Piece {
             moves.add(forwardRight);
         }
 
-        // TODO: En passant & Promotion
+        /*
+            TODO: En passant & Promotion
+            En-passant : Check for recently two Square push of enemy pawns, check for position of own pawn and the enemy pawn, boolean hasMovedTwo
+            Promotion : Change the class for pawns in last row -> Queen, Bishop, Kinght or Rook
+        */ 
 
         return moves;
     }

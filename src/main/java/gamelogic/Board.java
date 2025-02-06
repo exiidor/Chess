@@ -2,8 +2,10 @@ package main.java.gamelogic;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import main.java.gamelogic.gamepieces.Bishop;
 import main.java.gamelogic.gamepieces.King;
@@ -88,6 +90,16 @@ public class Board {
 
     public Piece getPieceAt(Position position) {
         return getPieceAt(position.getX(), position.getY());
+    }
+    
+    public Set<Piece> getEnemyPieces(boolean isWhite){
+        Set<Piece> enemyPieces = new HashSet<>();
+        for (Piece piece : pieces) {
+            if (piece.isWhite() != isWhite) {
+                enemyPieces.add(piece);
+            }
+        }
+        return enemyPieces;
     }
 
     public boolean isOutOfBounds(int x, int y) {
