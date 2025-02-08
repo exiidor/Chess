@@ -5,7 +5,7 @@ import softwareschreiber.chessengine.gamepieces.Queen;
 public class Main {
 	public static void main(String[] args) {
 		Board board = new Board();
-		board.initializeStartingPosition();
+		board.initializeStartingPositions();
 
 		Piece piece = board.addPiece(5, 5, new Queen(true, board));
 

@@ -12,15 +12,15 @@ import softwareschreiber.chessengine.Piece;
 import softwareschreiber.chessengine.Position;
 
 public class King extends Piece {
-	private boolean isChecked;
+	//private boolean isChecked;
 
 	public King(boolean isWhite, Board board) {
 		super(isWhite, board);
 	}
 
 	@Override
-	public char getSymbol() {
-		return 'K';
+	public String getName() {
+		return "King";
 	}
 
 	@Override

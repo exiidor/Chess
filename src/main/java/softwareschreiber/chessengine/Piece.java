@@ -12,7 +12,11 @@ public abstract class Piece {
 		this.board = board;
 	}
 
-	public abstract char getSymbol();
+	public abstract String getName();
+
+	public char getSymbol() {
+		return getName().charAt(0);
+	}
 
 	public boolean isWhite() {
 		return isWhite;
@@ -58,5 +62,10 @@ public abstract class Piece {
 
 	protected boolean isAtBoardRight() {
 		return getX() == board.getMaxX();
+	}
+
+	@Override
+	public String toString() {
+		return (isWhite ? "White" : "Black") + " " + getName() + " at " + getPosition();
 	}
 }

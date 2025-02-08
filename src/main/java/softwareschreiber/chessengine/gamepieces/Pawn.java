@@ -14,8 +14,8 @@ public class Pawn extends Piece {
 	}
 
 	@Override
-	public char getSymbol() {
-		return 'P';
+	public String getName() {
+		return "Pawn";
 	}
 
 	private int getDirection() {

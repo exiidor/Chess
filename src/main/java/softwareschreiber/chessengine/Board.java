@@ -25,7 +25,7 @@ public class Board {
 		positions = new HashMap<>();
 	}
 
-	void initializeStartingPosition() {
+	void initializeStartingPositions() {
 		for (int i = 0; i <= 1; i++) {
 			boolean isWhite = i == 0;
 			int y = isWhite ? 0 : 7;

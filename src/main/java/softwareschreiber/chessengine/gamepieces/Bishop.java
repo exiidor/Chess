@@ -14,8 +14,8 @@ public class Bishop extends Piece {
 	}
 
 	@Override
-	public char getSymbol() {
-		return 'B';
+	public String getName() {
+		return "Bishop";
 	}
 
 	@Override
