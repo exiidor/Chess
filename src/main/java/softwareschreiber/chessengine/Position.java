@@ -1,4 +1,4 @@
-package main.java.gamelogic;
+package softwareschreiber.chessengine;
 
 public class Position {
 	private int x;
