@@ -6,15 +6,14 @@ import java.util.List;
 import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
+import softwareschreiber.chessengine.CastlingMove;
+import softwareschreiber.chessengine.Move;
 import softwareschreiber.chessengine.Piece;
 import softwareschreiber.chessengine.Position;
 
 public class King extends Piece {
 	private boolean isChecked; ///Maybe public
 	/// private boolean isCheckedInPath; Vlt unnötig
-	private boolean hasMoved;
-	private boolean leftRookHasMoved;
-	private boolean rightRookHasMoved;
 
 	public King(boolean isWhite, Board board) {
 		super(isWhite, board);
@@ -26,8 +25,10 @@ public class King extends Piece {
 	}
 
 	@Override
-	public Set<Position> getValidMoves() {
-		Set<Position> validMoves = new LinkedHashSet<>();
+	public Set<? extends Move> getValidMoves() {
+		Set<Move> validMoves = new LinkedHashSet<>();
+
+		// Normal moves for King
 
 		Position forward = new Position(getX(), getY() + 1);
 		Position forwardRight = new Position(getX() + 1, getY() + 1);
@@ -38,32 +39,71 @@ public class King extends Piece {
 		Position left = new Position(getX() - 1, getY());
 		Position forwardLeft = new Position(getX() - 1, getY() + 1);
 
-		List<Position> possibleMoves = Arrays.asList(forward, forwardRight, right, backRight, back, backLeft, left,
-				forwardLeft);
+		List<Position> targetPositions = Arrays.asList(forward, forwardRight, right, backRight, back, backLeft, left,	forwardLeft);
 
-		for (Position possibleMove : possibleMoves) {
-			Piece other = board.getPieceAt(possibleMove);
+		for (Position targetPos : targetPositions) {
+			Piece other = board.getPieceAt(targetPos);
+			Move move = new Move(getPosition(), targetPos);
 
 			if (other != null && other.isEnemyOf(this)) {
-				validMoves.add(possibleMove);
+				validMoves.add(move);
 			}
 
-			if (other == null && !board.isOutOfBounds(possibleMove)) {
-				validMoves.add(possibleMove);
+			if (other == null && !board.isOutOfBounds(targetPos)) {
+				validMoves.add(move);
+			}
+		}
+
+		// Checking for checks in the way
+
+		Set<? extends Move> enemyMoves = board.getAllEnemyMoves(this);
+
+		for (Move move : validMoves) {
+			if (enemyMoves.contains(move)) {
+				validMoves.remove(move);
+			}
+		}
+
+		// Castling
+
+		if (!hasMoved()) {
+			Piece leftPiece = board.getPieceAt(0, getY());
+			Piece rightPiece = board.getPieceAt(7, getY());
+
+			if (leftPiece != null && leftPiece instanceof Rook leftRook) {
+				if (!leftRook.hasMoved()
+						&& board.getPieceAt(1, getY()) == null
+						&& board.getPieceAt(2, getY()) == null
+						&& board.getPieceAt(3, getY()) == null) {
+					validMoves.add(new CastlingMove(
+							getPosition(),
+							new Position(2, getY()),
+							leftRook,
+							new Position(3, getY())));
+				}
 			}
 
-			/*
-			 * TODO: Castling & Checks
-			 * Castling : boolean KinghasMoved, boolean left/rightRookHasMoved, boolean
-			 * isChecked, boolean isCheckedInPath, differnt on queen side or king side,
-			 * check for colissions
-			 * Check : getEnemyPieces, list all possible moves and check for same moves as
-			 * King would be able to do'
-			 * boolean isChecked : King has to move or block with another Piece, next move
-			 * -> no King capture possible -> IllegalMoveException
-			 */
+			if (rightPiece != null && rightPiece instanceof Rook rightRook) {
+				if (!rightRook.hasMoved()
+						&& board.getPieceAt(5, getY()) == null
+						&& board.getPieceAt(6, getY()) == null) {
+					validMoves.add(new CastlingMove(
+							getPosition(),
+							new Position(6, getY()),
+							rightRook,
+							new Position(5, getY())));
+				}
+			}
 		}
 
 		return validMoves;
 	}
 }
+
+/*
+* TODO: Castling
+* isChecked, boolean isCheckedInPath, differnt on queen side or king side,
+* check for colissions
+* boolean isChecked : King has to move or block with another Piece, next move
+ -> no King capture possible -> IllegalMoveException
+ */

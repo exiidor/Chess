@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
+import softwareschreiber.chessengine.Move;
 import softwareschreiber.chessengine.Piece;
 import softwareschreiber.chessengine.Position;
 
@@ -18,8 +19,8 @@ public class Bishop extends Piece {
 	}
 
 	@Override
-	public Set<Position> getValidMoves() {
-		Set<Position> validMoves = new LinkedHashSet<>();
+	public Set<? extends Move> getValidMoves() {
+		Set<Move> validMoves = new LinkedHashSet<>();
 
 		for (int yDirection = -1; yDirection <= 1; yDirection += 2) {
 			for (int xDirection = -1; xDirection <= 1; xDirection += 2) {
@@ -31,12 +32,13 @@ public class Bishop extends Piece {
 					}
 
 					Piece other = board.getPieceAt(position);
+					Move move = new Move(getPosition(), position);
 
 					if (other == null) {
-						validMoves.add(position);
+						validMoves.add(move);
 					} else if (other != null) {
 						if (other.isEnemyOf(this)) {
-							validMoves.add(position);
+							validMoves.add(move);
 						}
 
 						break;

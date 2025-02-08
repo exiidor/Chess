@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
+import softwareschreiber.chessengine.Move;
 import softwareschreiber.chessengine.Piece;
 import softwareschreiber.chessengine.Position;
 
@@ -18,24 +19,25 @@ public class Rook extends Piece {
 	}
 
 	@Override
-	public Set<Position> getValidMoves() {
-		Set<Position> validMoves = new LinkedHashSet<>();
+	public Set<? extends Move> getValidMoves() {
+		Set<Move> validMoves = new LinkedHashSet<>();
 
 		for (int yDirection = -1; yDirection <= 1; yDirection += 2) {
 			for (int i = 1; i < 8; i++) {
-				Position position = new Position(getX(), getY() + i * yDirection);
+				Position targetPos = new Position(getX(), getY() + i * yDirection);
 
-				if (board.isOutOfBounds(position)) {
+				if (board.isOutOfBounds(targetPos)) {
 					break;
 				}
 
-				Piece other = board.getPieceAt(position);
+				Piece other = board.getPieceAt(targetPos);
+				Move move = new Move(getPosition(), targetPos);
 
 				if (other == null) {
-					validMoves.add(position);
+					validMoves.add(move);
 				} else if (other != null) {
 					if (other.isEnemyOf(this)) {
-						validMoves.add(position);
+						validMoves.add(move);
 					}
 
 					break;
@@ -45,19 +47,20 @@ public class Rook extends Piece {
 
 		for (int xDirection = -1; xDirection <= 1; xDirection += 2) {
 			for (int i = 1; i < 8; i++) {
-				Position position = new Position(getX() + i * xDirection, getY());
+				Position targetPos = new Position(getX() + i * xDirection, getY());
 
-				if (board.isOutOfBounds(position)) {
+				if (board.isOutOfBounds(targetPos)) {
 					break;
 				}
 
-				Piece other = board.getPieceAt(position);
+				Piece other = board.getPieceAt(targetPos);
+				Move move = new Move(getPosition(), targetPos);
 
 				if (other == null) {
-					validMoves.add(position);
+					validMoves.add(move);
 				} else if (other != null) {
 					if (other.isEnemyOf(this)) {
-						validMoves.add(position);
+						validMoves.add(move);
 					}
 
 					break;

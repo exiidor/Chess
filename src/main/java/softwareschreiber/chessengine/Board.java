@@ -58,6 +58,7 @@ public class Board {
 		board[currentPosition.getX()][currentPosition.getY()] = null;
 		board[targetPosition.getX()][targetPosition.getY()] = piece;
 		positions.put(piece, targetPosition);
+		piece.onMoved(currentPosition, targetPosition);
 	}
 
 	public int getMinX() {
@@ -92,23 +93,23 @@ public class Board {
 		return getPieceAt(position.getX(), position.getY());
 	}
 
-	public Set<Piece> getEnemyPieces(boolean isWhite) {
+	public Set<Piece> getEnemyPieces(Piece piece) {
 		Set<Piece> enemyPieces = new HashSet<>();
 
-		for (Piece piece : pieces) {
-			if (piece.isWhite() != isWhite) {
-				enemyPieces.add(piece);
+		for (Piece enemyPiece : pieces) {
+			if (enemyPiece.isEnemyOf(piece)) {
+				enemyPieces.add(enemyPiece);
 			}
 		}
 
 		return enemyPieces;
 	}
 
-	public Set<Position> getAllEnemyMoves(boolean isWhite) {
-		Set<Position> enemyMoves = new HashSet<>();
+	public Set<? extends Move> getAllEnemyMoves(Piece piece) {
+		Set<Move> enemyMoves = new HashSet<>();
 
-		for (Piece piece : getEnemyPieces(isWhite)) {
-			enemyMoves.addAll(piece.getValidMoves());
+		for (Piece enemyPiece : getEnemyPieces(piece)) {
+			enemyMoves.addAll(enemyPiece.getValidMoves());
 		}
 
 		return enemyMoves;

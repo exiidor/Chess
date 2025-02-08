@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
+import softwareschreiber.chessengine.Move;
 import softwareschreiber.chessengine.Piece;
 import softwareschreiber.chessengine.Position;
 
@@ -18,12 +19,13 @@ public class Queen extends Piece {
 	}
 
 	@Override
-	public Set<Position> getValidMoves() {
-		Set<Position> validMoves = new LinkedHashSet<>();
+	public Set<? extends Move> getValidMoves() {
+		Set<Move> validMoves = new LinkedHashSet<>();
 
 		for (int yDirection = -1; yDirection <= 1; yDirection += 2) {
 			for (int i = 1; i < 8; i++) {
 				Position position = new Position(getX(), getY() + i * yDirection);
+				Move move = new Move(getPosition(), position);
 
 				if (board.isOutOfBounds(position)) {
 					break;
@@ -32,10 +34,10 @@ public class Queen extends Piece {
 				Piece other = board.getPieceAt(position);
 
 				if (other == null) {
-					validMoves.add(position);
+					validMoves.add(move);
 				} else if (other != null) {
 					if (other.isEnemyOf(this)) {
-						validMoves.add(position);
+						validMoves.add(move);
 					}
 
 					break;
@@ -52,12 +54,13 @@ public class Queen extends Piece {
 				}
 
 				Piece other = board.getPieceAt(position);
+				Move move = new Move(getPosition(), position);
 
 				if (other == null) {
-					validMoves.add(position);
+					validMoves.add(move);
 				} else if (other != null) {
 					if (other.isEnemyOf(this)) {
-						validMoves.add(position);
+						validMoves.add(move);
 					}
 
 					break;
@@ -75,12 +78,13 @@ public class Queen extends Piece {
 					}
 
 					Piece other = board.getPieceAt(position);
+					Move move = new Move(getPosition(), position);
 
 					if (other == null) {
-						validMoves.add(position);
+						validMoves.add(move);
 					} else if (other != null) {
 						if (other.isEnemyOf(this)) {
-							validMoves.add(position);
+							validMoves.add(move);
 						}
 
 						break;

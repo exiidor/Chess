@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
+import softwareschreiber.chessengine.Move;
 import softwareschreiber.chessengine.Piece;
 import softwareschreiber.chessengine.Position;
 
@@ -20,8 +21,8 @@ public class Knight extends Piece {
 	}
 
 	@Override
-	public Set<Position> getValidMoves() {
-		Set<Position> validMoves = new LinkedHashSet<>();
+	public Set<? extends Move> getValidMoves() {
+		Set<Move> validMoves = new LinkedHashSet<>();
 
 		Position forwardLeft = new Position(getX() - 1, getY() - 2);
 		Position forwardRight = new Position(getX() + 1, getY() - 2);
@@ -32,18 +33,19 @@ public class Knight extends Piece {
 		Position backwardLeft = new Position(getX() - 1, getY() + 2);
 		Position backwardRight = new Position(getX() + 1, getY() + 2);
 
-		List<Position> possibleMoves = Arrays.asList(forwardLeft, forwardRight, leftForward, leftBackward, rightForward,
+		List<Position> targetPositions = Arrays.asList(forwardLeft, forwardRight, leftForward, leftBackward, rightForward,
 				rightBackward, backwardLeft, backwardRight);
 
-		for (Position possibleMove : possibleMoves) {
+		for (Position possibleMove : targetPositions) {
 			Piece other = board.getPieceAt(possibleMove);
+			Move move = new Move(getPosition(), possibleMove);
 
 			if (other != null && other.isEnemyOf(this)) {
-				validMoves.add(possibleMove);
+				validMoves.add(move);
 			}
 
 			if (other == null && !board.isOutOfBounds(possibleMove)) {
-				validMoves.add(possibleMove);
+				validMoves.add(move);
 			}
 		}
 

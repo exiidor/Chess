@@ -3,8 +3,9 @@ package softwareschreiber.chessengine;
 import java.util.Set;
 
 public abstract class Piece {
-	private final boolean isWhite;
+	protected final boolean isWhite;
 	protected final Board board;
+	private boolean hasMoved;
 
 	public Piece(boolean isWhite, Board board) {
 		this.isWhite = isWhite;
@@ -21,6 +22,10 @@ public abstract class Piece {
 		return isWhite != piece.isWhite();
 	}
 
+	public Position getPosition() {
+		return board.getPosition(this);
+	}
+
 	public int getX() {
 		return board.getPosition(this).getX();
 	}
@@ -29,7 +34,15 @@ public abstract class Piece {
 		return board.getPosition(this).getY();
 	}
 
-	public abstract Set<Position> getValidMoves();
+	public abstract Set<? extends Move> getValidMoves();
+
+	public void onMoved(Position oldPosition, Position newPosition) {
+		hasMoved = true;
+	}
+
+	public boolean hasMoved() {
+		return hasMoved;
+	}
 
 	protected boolean isAtBoardTop() {
 		return getY() == board.getMaxY();
