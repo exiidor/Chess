@@ -38,7 +38,6 @@ public class Pawn extends Piece {
 		Move forwardMove = new Move(getPosition(), forwardPos);
 		Move forwardByTwoMove = new Move(getPosition(), forwardByTwoPos);
 
-
 		if (board.getPieceAt(forwardPos) == null) {
 			moves.add(forwardMove);
 
@@ -54,7 +53,6 @@ public class Pawn extends Piece {
 		Piece forwardLeftPiece = board.getPieceAt(forwardLeftPos);
 		Piece forwardRightPiece = board.getPieceAt(forwardRightPos);
 
-
 		if (forwardLeftPiece != null && forwardLeftPiece.isEnemyOf(this)) {
 			moves.add(forwardLeftMove);
 		}
@@ -68,9 +66,9 @@ public class Pawn extends Piece {
 }
 
 /*
-* TODO: En passant & Promotion
-* En-passant : Check for recently two Square push of enemy pawns, check for
-* position of own pawn and the enemy pawn, boolean hasMovedTwo
-* Promotion : Change the class for pawns in last row -> Queen, Bishop, Kinght
-* or Rook
-*/
+ * TODO: En passant & Promotion
+ * En-passant : Check for recently two Square push of enemy pawns, check for
+ * position of own pawn and the enemy pawn, boolean hasMovedTwo
+ * Promotion : Change the class for pawns in last row -> Queen, Bishop, Kinght
+ * or Rook
+ */

@@ -46,15 +46,21 @@ public class Board {
 		}
 	}
 
-	Piece addPiece(int x, int y, Piece piece) {
+	<T extends Piece> T addPiece(int x, int y, T piece) {
 		pieces.add(piece);
 		positions.put(piece, new Position(x, y));
 		board[y][x] = piece;
 		return piece;
 	}
 
-	public void move(Piece piece, Position targetPosition) {
+	public void move(Piece piece, Move move) {
 		Position currentPosition = positions.get(piece);
+		Position targetPosition = move.getTargetPos();
+
+		if (move instanceof CastlingMove castlingMove) {
+			move(castlingMove.getOther(), castlingMove.getOtherMove());
+		}
+
 		board[currentPosition.getX()][currentPosition.getY()] = null;
 		board[targetPosition.getX()][targetPosition.getY()] = piece;
 		positions.put(piece, targetPosition);

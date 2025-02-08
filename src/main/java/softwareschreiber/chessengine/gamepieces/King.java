@@ -12,8 +12,7 @@ import softwareschreiber.chessengine.Piece;
 import softwareschreiber.chessengine.Position;
 
 public class King extends Piece {
-	private boolean isChecked; ///Maybe public
-	/// private boolean isCheckedInPath; Vlt unnötig
+	private boolean isChecked;
 
 	public King(boolean isWhite, Board board) {
 		super(isWhite, board);
@@ -39,7 +38,8 @@ public class King extends Piece {
 		Position left = new Position(getX() - 1, getY());
 		Position forwardLeft = new Position(getX() - 1, getY() + 1);
 
-		List<Position> targetPositions = Arrays.asList(forward, forwardRight, right, backRight, back, backLeft, left,	forwardLeft);
+		List<Position> targetPositions = Arrays.asList(forward, forwardRight, right, backRight, back, backLeft, left,
+				forwardLeft);
 
 		for (Position targetPos : targetPositions) {
 			Piece other = board.getPieceAt(targetPos);
@@ -71,10 +71,16 @@ public class King extends Piece {
 			Piece rightPiece = board.getPieceAt(7, getY());
 
 			if (leftPiece != null && leftPiece instanceof Rook leftRook) {
-				if (!leftRook.hasMoved()
+				boolean canCastle = !leftRook.hasMoved()
 						&& board.getPieceAt(1, getY()) == null
 						&& board.getPieceAt(2, getY()) == null
-						&& board.getPieceAt(3, getY()) == null) {
+						&& board.getPieceAt(3, getY()) == null
+						&& !board.getAllEnemyMoves(this).stream()
+								.map(Move::getTargetPos)
+								.anyMatch(pos -> pos.equals(new Position(2, getY()))
+										|| pos.equals(new Position(3, getY())));
+
+				if (canCastle) {
 					validMoves.add(new CastlingMove(
 							getPosition(),
 							new Position(2, getY()),
@@ -84,9 +90,15 @@ public class King extends Piece {
 			}
 
 			if (rightPiece != null && rightPiece instanceof Rook rightRook) {
-				if (!rightRook.hasMoved()
+				boolean canCastle = !rightRook.hasMoved()
 						&& board.getPieceAt(5, getY()) == null
-						&& board.getPieceAt(6, getY()) == null) {
+						&& board.getPieceAt(6, getY()) == null
+						&& !board.getAllEnemyMoves(this).stream()
+								.map(Move::getTargetPos)
+								.anyMatch(pos -> pos.equals(new Position(5, getY()))
+										|| pos.equals(new Position(6, getY())));
+
+				if (canCastle) {
 					validMoves.add(new CastlingMove(
 							getPosition(),
 							new Position(6, getY()),
@@ -99,11 +111,3 @@ public class King extends Piece {
 		return validMoves;
 	}
 }
-
-/*
-* TODO: Castling
-* isChecked, boolean isCheckedInPath, differnt on queen side or king side,
-* check for colissions
-* boolean isChecked : King has to move or block with another Piece, next move
- -> no King capture possible -> IllegalMoveException
- */

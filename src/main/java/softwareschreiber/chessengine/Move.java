@@ -20,4 +20,9 @@ public class Move {
 	public Position getTargetPos() {
 		return target;
 	}
+
+	@Override
+	public String toString() {
+		return source + " -> " + target;
+	}
 }
