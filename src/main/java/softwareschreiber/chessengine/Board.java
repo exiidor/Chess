@@ -13,16 +13,20 @@ import softwareschreiber.chessengine.gamepieces.Knight;
 import softwareschreiber.chessengine.gamepieces.Pawn;
 import softwareschreiber.chessengine.gamepieces.Queen;
 import softwareschreiber.chessengine.gamepieces.Rook;
+import softwareschreiber.chessengine.util.History;
+import softwareschreiber.chessengine.util.Pair;
 
 public class Board {
 	private Piece[][] board;
 	private List<Piece> pieces;
 	private Map<Piece, Position> positions;
+	private History<Pair<Piece, Move>> history;
 
 	Board() {
 		board = new Piece[8][8];
 		pieces = new ArrayList<>();
 		positions = new HashMap<>();
+		history = new History<>(Pair.of(null, null));
 	}
 
 	void initializeStartingPositions() {
@@ -59,12 +63,42 @@ public class Board {
 
 		if (move instanceof CastlingMove castlingMove) {
 			move(castlingMove.getOther(), castlingMove.getOtherMove());
+		} else if (move instanceof EnPassantMove enPassantMove) {
+			capture(enPassantMove.getCaptured());
 		}
 
-		board[currentPosition.getX()][currentPosition.getY()] = null;
-		board[targetPosition.getX()][targetPosition.getY()] = piece;
-		positions.put(piece, targetPosition);
-		piece.onMoved(currentPosition, targetPosition);
+		Piece captured = getPieceAt(targetPosition);
+
+		if (captured != null) {
+			capture(captured);
+		}
+
+		board[currentPosition.getY()][currentPosition.getX()] = null;
+
+		if (piece instanceof Pawn pawn && ((pawn.isWhite() && targetPosition.getY() == getMaxY()) || (!pawn.isWhite() && targetPosition.getY() == getMinY()))) {
+			piece = promote(pawn);
+			pieces.remove(pawn);
+			positions.remove(pawn);
+			addPiece(targetPosition.getX(), targetPosition.getY(), piece);
+		} else {
+			board[targetPosition.getY()][targetPosition.getX()] = piece;
+			positions.put(piece, targetPosition);
+			piece.onMoved(currentPosition, targetPosition);
+		}
+
+		history.push(Pair.of(piece, move));
+	}
+
+	private void capture(Piece piece) {
+		Position position = positions.get(piece);
+		pieces.remove(piece);
+		positions.remove(piece);
+		board[position.getY()][position.getX()] = null;
+	}
+
+	private Piece promote(Pawn pawn) {
+		// TODO: User input
+		return new Queen(pawn.isWhite(), this);
 	}
 
 	public int getMinX() {
@@ -130,6 +164,10 @@ public class Board {
 
 	public boolean isOutOfBounds(Position position) {
 		return isOutOfBounds(position.getX(), position.getY());
+	}
+
+	public History<Pair<Piece, Move>> getHistory() {
+		return history;
 	}
 
 	void printBoard() {

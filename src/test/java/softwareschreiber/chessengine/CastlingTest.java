@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import softwareschreiber.chessengine.gamepieces.King;
 import softwareschreiber.chessengine.gamepieces.Rook;
 
-class ChessTest {
+class CastlingTest {
 	@Test
 	void test() {
 		noObstruction(new Board(), true, true);

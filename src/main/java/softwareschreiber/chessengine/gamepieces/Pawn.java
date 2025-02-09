@@ -4,9 +4,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
+import softwareschreiber.chessengine.EnPassantMove;
 import softwareschreiber.chessengine.Move;
 import softwareschreiber.chessengine.Piece;
 import softwareschreiber.chessengine.Position;
+import softwareschreiber.chessengine.util.Pair;
 
 public class Pawn extends Piece {
 	public Pawn(boolean isWhite, Board board) {
@@ -18,7 +20,7 @@ public class Pawn extends Piece {
 		return "Pawn";
 	}
 
-	private int getDirection() {
+	public int getDirection() {
 		return isWhite ? 1 : -1;
 	}
 
@@ -61,14 +63,31 @@ public class Pawn extends Piece {
 			moves.add(forwardRightMove);
 		}
 
+		// En Passant
+
+		Pair<Piece, Move> historyItem = board.getHistory().getCurrent();
+		Piece enemyPiece = historyItem.getLeft();
+		Move enemyMove = historyItem.getRight();
+
+		if (enemyPiece instanceof Pawn && Math.abs(enemyMove.getSourcePos().getY() - enemyMove.getTargetPos().getY()) == 2) {
+			Position left = new Position(getX() - 1, getY());
+			Position right = new Position(getX() + 1, getY());
+			Piece leftPiece = board.getPieceAt(left);
+			Piece rightPiece = board.getPieceAt(right);
+
+			if (leftPiece instanceof Pawn leftPawn && leftPawn.equals(enemyPiece)) {
+				if (leftPawn != null && leftPiece.isEnemyOf(this)) {
+					moves.add(new EnPassantMove(getPosition(), forwardLeftPos, leftPawn));
+				}
+			}
+
+			if (rightPiece instanceof Pawn rightPawn && rightPawn.equals(enemyPiece)) {
+				if (rightPawn != null && rightPiece.isEnemyOf(this)) {
+					moves.add(new EnPassantMove(getPosition(), forwardRightPos, rightPawn));
+				}
+			}
+		}
+
 		return moves;
 	}
 }
-
-/*
- * TODO: En passant & Promotion
- * En-passant : Check for recently two Square push of enemy pawns, check for
- * position of own pawn and the enemy pawn, boolean hasMovedTwo
- * Promotion : Change the class for pawns in last row -> Queen, Bishop, Kinght
- * or Rook
- */

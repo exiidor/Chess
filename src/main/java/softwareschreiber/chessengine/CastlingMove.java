@@ -1,8 +1,8 @@
 package softwareschreiber.chessengine;
 
 public class CastlingMove extends Move {
-	private Piece other;
-	private Move otherMove;
+	private final Piece other;
+	private final Move otherMove;
 
 	public CastlingMove(Position position, Position targetPosition, Piece other, Position otherTargetPosition) {
 		super(position, targetPosition);
