@@ -10,7 +10,7 @@ import softwareschreiber.chessengine.move.Move;
 public abstract class Piece {
 	protected final boolean isWhite;
 	protected final Board board;
-	private boolean hasMoved;
+	private int moveCount;
 
 	public Piece(boolean isWhite, Board board) {
 		this.isWhite = isWhite;
@@ -74,11 +74,15 @@ public abstract class Piece {
 	}
 
 	public void onMoved(Position oldPosition, Position newPosition) {
-		hasMoved = true;
+		moveCount++;
+	}
+
+	public void onMoveUndone(Position oldPosition, Position newPosition) {
+		moveCount--;
 	}
 
 	public boolean hasMoved() {
-		return hasMoved;
+		return moveCount > 0;
 	}
 
 	protected boolean isAtBoardTop() {

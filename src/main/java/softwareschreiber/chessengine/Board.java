@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import softwareschreiber.chessengine.gamepieces.Bishop;
 import softwareschreiber.chessengine.gamepieces.King;
@@ -23,16 +25,34 @@ import softwareschreiber.chessengine.util.History;
 import softwareschreiber.chessengine.util.Pair;
 
 public class Board {
-	private Piece[][] board;
-	private List<Piece> pieces;
-	private Map<Piece, Position> positions;
-	private History<Pair<Piece, Move>> history;
+	private final Piece[][] board;
+	private final List<Piece> pieces;
+	private final Map<Piece, Position> positions;
+	private final History<Pair<Piece, Move>> history;
+	private final List<Consumer<Piece>> pieceAddedListeners;
+	private final List<BiConsumer<Piece, Move>> pieceMovedListeners;
+	private final List<BiConsumer<Piece, Move>> moveUndoneListeners;
 
 	public Board() {
 		board = new Piece[8][8];
 		pieces = new ArrayList<>();
 		positions = new HashMap<>();
 		history = new History<>(Pair.of(null, null));
+		pieceAddedListeners = new ArrayList<>();
+		pieceMovedListeners = new ArrayList<>();
+		moveUndoneListeners = new ArrayList<>();
+	}
+
+	public void addPieceAddedListener(Consumer<Piece> listener) {
+		pieceAddedListeners.add(listener);
+	}
+
+	public void addPieceMovedListener(BiConsumer<Piece, Move> listener) {
+		pieceMovedListeners.add(listener);
+	}
+
+	public void addMoveUndoneListener(BiConsumer<Piece, Move> listener) {
+		moveUndoneListeners.add(listener);
 	}
 
 	public void initializeStartingPositions() {
@@ -64,10 +84,13 @@ public class Board {
 		pieces.add(piece);
 		positions.put(piece, new Position(x, y));
 		board[y][x] = piece;
+
+		pieceAddedListeners.forEach(listener -> listener.accept(piece));
 		return piece;
 	}
 
 	public void move(Piece piece, Move move) {
+		Piece origPiece = piece;
 		Position currentPosition = positions.get(piece);
 		Position targetPosition = move.getTargetPos();
 
@@ -99,6 +122,8 @@ public class Board {
 
 		// History
 		history.push(Pair.of(piece, move));
+
+		pieceMovedListeners.forEach(listener -> listener.accept(origPiece, move));
 	}
 
 	private void capture(Piece piece) {
@@ -167,6 +192,9 @@ public class Board {
 			addPiece(capturedPos, captureMove.getCaptured());
 			undoMove(captureMove.getCaptured(), new Move(capturedPos, capturedPos));
 		}
+
+		moveUndoneListeners.forEach(listener -> listener.accept(piece, move));
+		piece.onMoveUndone(currentPosition, targetPosition);
 	}
 
 	public int getMinX() {
