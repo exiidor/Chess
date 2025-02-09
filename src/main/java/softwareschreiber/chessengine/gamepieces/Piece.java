@@ -45,29 +45,30 @@ public abstract class Piece {
 
 	public abstract Set<? extends Move> getValidMovesInternal();
 
-	public final Set<? extends Move> getValidMoves() {
+	public final Set<? extends Move> getValidMoves(boolean checkCheck) {
 		Set<? extends Move> validMoves = getValidMovesInternal();
 
-		// TODO: Fix infinite loop
-		// King king = board.getAllyPieces(this).stream()
-		// 		.filter(p -> p instanceof King)
-		// 		.map(King.class::cast)
-		// 		.findFirst()
-		// 		.orElseThrow();
+		if (checkCheck) {
+			King king = board.getAllyPieces(this).stream()
+					.filter(p -> p instanceof King)
+					.map(King.class::cast)
+					.findFirst()
+					.orElseThrow();
 
-		// Set<Move> movesToRemove = new HashSet<>();
+			Set<Move> movesToRemove = new HashSet<>();
 
-		// for (Move move : validMoves) {
-		// 	board.move(this, move);
+			for (Move move : validMoves) {
+				board.move(this, move);
 
-		// 	if (king.isChecked()) {
-		// 		movesToRemove.add(move);
-		// 	}
+				if (king.isChecked()) {
+					movesToRemove.add(move);
+				}
 
-		// 	board.undo();
-		// }
+				board.undo();
+			}
 
-		// validMoves.removeAll(movesToRemove);
+			validMoves.removeAll(movesToRemove);
+		}
 
 		return validMoves;
 	}

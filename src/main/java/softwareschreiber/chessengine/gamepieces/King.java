@@ -57,16 +57,6 @@ public class King extends Piece {
 			}
 		}
 
-		// Checking for checks in the way
-
-		Set<? extends Move> enemyMoves = board.getAllEnemyMoves(this);
-
-		for (Move move : validMoves) {
-			if (enemyMoves.contains(move)) {
-				validMoves.remove(move);
-			}
-		}
-
 		// Castling
 
 		if (!hasMoved()) {

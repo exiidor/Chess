@@ -194,7 +194,7 @@ public class Board {
 		Set<Move> enemyMoves = new HashSet<>();
 
 		for (Piece enemyPiece : getEnemyPieces(piece)) {
-			enemyMoves.addAll(enemyPiece.getValidMoves());
+			enemyMoves.addAll(enemyPiece.getValidMoves(false));
 		}
 
 		return enemyMoves;
@@ -216,7 +216,7 @@ public class Board {
 		Set<Move> allyMoves = new HashSet<>();
 
 		for (Piece allyPiece : getAllyPieces(piece)) {
-			allyMoves.addAll(allyPiece.getValidMoves());
+			allyMoves.addAll(allyPiece.getValidMoves(true));
 		}
 
 		return allyMoves;

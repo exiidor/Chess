@@ -124,7 +124,7 @@ public class Gui {
 	}
 
 	private void showPossibleMoves(Piece piece) {
-		for (Move move : piece.getValidMoves()) {
+		for (Move move : piece.getValidMoves(true)) {
 			Position position = move.getTargetPos();
 			ChessPanel square = squares[position.getY()][position.getX()];
 			square.setColor(Color.GREEN);
