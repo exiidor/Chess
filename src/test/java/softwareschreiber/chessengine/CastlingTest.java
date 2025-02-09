@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 
 import softwareschreiber.chessengine.gamepieces.King;
 import softwareschreiber.chessengine.gamepieces.Rook;
+import softwareschreiber.chessengine.move.CastlingMove;
+import softwareschreiber.chessengine.move.Move;
 
 class CastlingTest {
 	@Test

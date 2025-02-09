@@ -1,5 +1,6 @@
-package softwareschreiber.chessengine;
+package softwareschreiber.chessengine.move;
 
+import softwareschreiber.chessengine.Position;
 import softwareschreiber.chessengine.gamepieces.Piece;
 
 public class CastlingMove extends Move {

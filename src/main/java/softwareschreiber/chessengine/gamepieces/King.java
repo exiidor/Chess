@@ -6,9 +6,10 @@ import java.util.List;
 import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
-import softwareschreiber.chessengine.CastlingMove;
-import softwareschreiber.chessengine.Move;
 import softwareschreiber.chessengine.Position;
+import softwareschreiber.chessengine.move.CaptureMove;
+import softwareschreiber.chessengine.move.CastlingMove;
+import softwareschreiber.chessengine.move.Move;
 
 public class King extends Piece {
 	public King(boolean isWhite, Board board) {
@@ -46,14 +47,13 @@ public class King extends Piece {
 
 		for (Position targetPos : targetPositions) {
 			Piece other = board.getPieceAt(targetPos);
-			Move move = new Move(getPosition(), targetPos);
 
 			if (other != null && other.isEnemyOf(this)) {
-				validMoves.add(move);
+				validMoves.add(new CaptureMove(getPosition(), targetPos, other));
 			}
 
 			if (other == null && !board.isOutOfBounds(targetPos)) {
-				validMoves.add(move);
+				validMoves.add(new Move(getPosition(), targetPos));
 			}
 		}
 

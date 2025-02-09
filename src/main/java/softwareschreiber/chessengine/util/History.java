@@ -45,4 +45,13 @@ public class History<T> {
 		current = next.removeFirst();
 		return current;
 	}
+
+	@Override
+	public String toString() {
+		return "History{"
+				+ "previous=" + previous
+				+ ", next=" + next
+				+ ", current=" + current
+				+ '}';
+	}
 }

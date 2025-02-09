@@ -13,7 +13,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import softwareschreiber.chessengine.Board;
-import softwareschreiber.chessengine.Move;
 import softwareschreiber.chessengine.Position;
 import softwareschreiber.chessengine.gamepieces.Bishop;
 import softwareschreiber.chessengine.gamepieces.Knight;
@@ -21,6 +20,7 @@ import softwareschreiber.chessengine.gamepieces.Pawn;
 import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.Queen;
 import softwareschreiber.chessengine.gamepieces.Rook;
+import softwareschreiber.chessengine.move.Move;
 import softwareschreiber.chessengine.util.Util;
 
 public class Gui {
@@ -35,7 +35,7 @@ public class Gui {
 
 		board = new Board() {
 			@Override
-			protected Piece promote(Pawn piece) {
+			protected Piece getPromotionTarget(Pawn piece) {
 				String[] options = {"Queen", "Rook", "Bishop", "Knight"};
 				int choice = JOptionPane.showOptionDialog(
 						null,
@@ -60,11 +60,12 @@ public class Gui {
 			}
 		};
 		board.initializeStartingPositions();
+		board.addPiece(5, 3, new Rook(true, board));
 
 		JPanel panel = new JPanel(new GridLayout(8, 8));
 		boolean white = true;
 
-		for (int y = board.getMinY(); y <= board.getMaxY(); y++) {
+		for (int y = board.getMaxY(); y >= board.getMinY(); y--) {
 			for (int x = board.getMinX(); x <= board.getMaxX(); x++) {
 				ChessPanel square = new ChessPanel(new JPanel(), white ? Color.WHITE : new Color(36, 36, 36));
 				squares[y][x] = square;

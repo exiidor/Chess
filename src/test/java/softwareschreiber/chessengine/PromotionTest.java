@@ -1,31 +1,50 @@
 package softwareschreiber.chessengine;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
 import softwareschreiber.chessengine.gamepieces.Pawn;
 import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.Queen;
+import softwareschreiber.chessengine.move.PromotionMove;
 
 class PromotionTest {
 	@Test
 	void test() {
 		onlyOnePiece(createBoard(), true);
 		onlyOnePiece(createBoard(), false);
+		capturePromoting(createBoard(), true);
+		capturePromoting(createBoard(), false);
 	}
 
 	private void onlyOnePiece(Board board, boolean isWhite) {
-		Pawn pawn = board.addPiece(1, isWhite ? 6 : 1, new Pawn(isWhite, board));
-		board.move(pawn, new Move(pawn.getX(), pawn.getY(), pawn.getX(), pawn.getY() + pawn.getDirection()));
+		Position srcPos = new Position(1, isWhite ? 6 : 1);
+		Position destPos = new Position(1, isWhite ? 7 : 0);
 
-		assertEquals(board.getPieceAt(1, isWhite ? 7 : 0) instanceof Queen, true);
+		Pawn pawn = board.addPiece(srcPos, new Pawn(isWhite, board));
+		board.move(pawn, new PromotionMove(srcPos, destPos, null));
+
+		assertEquals(board.getPieceAt(destPos) instanceof Queen, true);
+	}
+
+	private void capturePromoting(Board board, boolean isWhite) {
+		Position srcPos = new Position(1, isWhite ? 6 : 1);
+		Position destPos = new Position(1, isWhite ? 7 : 0);
+
+		Pawn pawn = board.addPiece(srcPos, new Pawn(isWhite, board));
+		Piece enemy = board.addPiece(destPos, new Pawn(!isWhite, board));
+		board.move(pawn, new PromotionMove(srcPos, destPos, enemy));
+
+		assertTrue(board.getEnemyPieces(pawn).isEmpty());
+		assertEquals(board.getPieceAt(destPos) instanceof Queen, true);
 	}
 
 	private Board createBoard() {
 		return new Board() {
 			@Override
-			protected Piece promote(Pawn pawn) {
+			protected Piece getPromotionTarget(Pawn pawn) {
 				return new Queen(pawn.isWhite(), this);
 			}
 		};

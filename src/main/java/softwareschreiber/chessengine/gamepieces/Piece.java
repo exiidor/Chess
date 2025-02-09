@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
-import softwareschreiber.chessengine.Move;
 import softwareschreiber.chessengine.Position;
+import softwareschreiber.chessengine.move.Move;
 
 public abstract class Piece {
 	protected final boolean isWhite;

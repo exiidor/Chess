@@ -4,8 +4,9 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
-import softwareschreiber.chessengine.Move;
 import softwareschreiber.chessengine.Position;
+import softwareschreiber.chessengine.move.CaptureMove;
+import softwareschreiber.chessengine.move.Move;
 
 public class Rook extends Piece {
 	public Rook(boolean isWhite, Board board) {
@@ -30,13 +31,12 @@ public class Rook extends Piece {
 				}
 
 				Piece other = board.getPieceAt(targetPos);
-				Move move = new Move(getPosition(), targetPos);
 
 				if (other == null) {
-					validMoves.add(move);
+					validMoves.add(new Move(getPosition(), targetPos));
 				} else if (other != null) {
 					if (other.isEnemyOf(this)) {
-						validMoves.add(move);
+						validMoves.add(new CaptureMove(getPosition(), targetPos, other));
 					}
 
 					break;
@@ -53,13 +53,12 @@ public class Rook extends Piece {
 				}
 
 				Piece other = board.getPieceAt(targetPos);
-				Move move = new Move(getPosition(), targetPos);
 
 				if (other == null) {
-					validMoves.add(move);
+					validMoves.add(new Move(getPosition(), targetPos));
 				} else if (other != null) {
 					if (other.isEnemyOf(this)) {
-						validMoves.add(move);
+						validMoves.add(new CaptureMove(getPosition(), targetPos, other));
 					}
 
 					break;

@@ -4,9 +4,10 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
-import softwareschreiber.chessengine.EnPassantMove;
-import softwareschreiber.chessengine.Move;
 import softwareschreiber.chessengine.Position;
+import softwareschreiber.chessengine.move.CaptureMove;
+import softwareschreiber.chessengine.move.EnPassantMove;
+import softwareschreiber.chessengine.move.Move;
 import softwareschreiber.chessengine.util.Pair;
 
 public class Pawn extends Piece {
@@ -36,30 +37,26 @@ public class Pawn extends Piece {
 
 		Position forwardPos = new Position(getX(), getY() + getDirection());
 		Position forwardByTwoPos = new Position(getX(), getY() + getDirection() * 2);
-		Move forwardMove = new Move(getPosition(), forwardPos);
-		Move forwardByTwoMove = new Move(getPosition(), forwardByTwoPos);
 
 		if (board.getPieceAt(forwardPos) == null) {
-			moves.add(forwardMove);
+			moves.add(new Move(getPosition(), forwardPos));
 
 			if (canMoveTwo && board.getPieceAt(forwardByTwoPos) == null) {
-				moves.add(forwardByTwoMove);
+				moves.add(new Move(getPosition(), forwardByTwoPos));
 			}
 		}
 
 		Position forwardLeftPos = new Position(getX() - 1, getY() + getDirection());
 		Position forwardRightPos = new Position(getX() + 1, getY() + getDirection());
-		Move forwardLeftMove = new Move(getPosition(), forwardLeftPos);
-		Move forwardRightMove = new Move(getPosition(), forwardRightPos);
 		Piece forwardLeftPiece = board.getPieceAt(forwardLeftPos);
 		Piece forwardRightPiece = board.getPieceAt(forwardRightPos);
 
 		if (forwardLeftPiece != null && forwardLeftPiece.isEnemyOf(this)) {
-			moves.add(forwardLeftMove);
+			moves.add(new CaptureMove(getPosition(), forwardLeftPos, forwardLeftPiece));
 		}
 
 		if (forwardRightPiece != null && forwardRightPiece.isEnemyOf(this)) {
-			moves.add(forwardRightMove);
+			moves.add(new CaptureMove(getPosition(), forwardRightPos, forwardRightPiece));
 		}
 
 		// En Passant

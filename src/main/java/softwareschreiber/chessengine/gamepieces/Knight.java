@@ -6,8 +6,9 @@ import java.util.List;
 import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
-import softwareschreiber.chessengine.Move;
 import softwareschreiber.chessengine.Position;
+import softwareschreiber.chessengine.move.CaptureMove;
+import softwareschreiber.chessengine.move.Move;
 
 public class Knight extends Piece {
 	public Knight(boolean isWhite, Board board) {
@@ -40,16 +41,15 @@ public class Knight extends Piece {
 		List<Position> targetPositions = Arrays.asList(forwardLeft, forwardRight, leftForward, leftBackward, rightForward,
 				rightBackward, backwardLeft, backwardRight);
 
-		for (Position possibleMove : targetPositions) {
-			Piece other = board.getPieceAt(possibleMove);
-			Move move = new Move(getPosition(), possibleMove);
+		for (Position targetPos : targetPositions) {
+			Piece other = board.getPieceAt(targetPos);
 
 			if (other != null && other.isEnemyOf(this)) {
-				validMoves.add(move);
+				validMoves.add(new CaptureMove(getPosition(), targetPos, other));
 			}
 
-			if (other == null && !board.isOutOfBounds(possibleMove)) {
-				validMoves.add(move);
+			if (other == null && !board.isOutOfBounds(targetPos)) {
+				validMoves.add(new Move(getPosition(), targetPos));
 			}
 		}
 

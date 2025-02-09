@@ -32,4 +32,9 @@ public class Pair<A, B> {
 	public boolean equals(Object o) {
 		return o instanceof Pair && Objects.equals(a, ((Pair<?, ?>) o).a) && Objects.equals(b, ((Pair<?, ?>) o).b);
 	}
+
+	@Override
+	public String toString() {
+		return "(" + a + ", " + b + ")";
+	}
 }

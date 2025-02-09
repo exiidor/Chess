@@ -1,4 +1,6 @@
-package softwareschreiber.chessengine;
+package softwareschreiber.chessengine.move;
+
+import softwareschreiber.chessengine.Position;
 
 public class Move {
 	private Position source;

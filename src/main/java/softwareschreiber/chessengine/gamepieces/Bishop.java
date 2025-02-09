@@ -4,8 +4,9 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
-import softwareschreiber.chessengine.Move;
 import softwareschreiber.chessengine.Position;
+import softwareschreiber.chessengine.move.CaptureMove;
+import softwareschreiber.chessengine.move.Move;
 
 public class Bishop extends Piece {
 	public Bishop(boolean isWhite, Board board) {
@@ -24,20 +25,19 @@ public class Bishop extends Piece {
 		for (int yDirection = -1; yDirection <= 1; yDirection += 2) {
 			for (int xDirection = -1; xDirection <= 1; xDirection += 2) {
 				for (int i = 1; i < 8; i++) {
-					Position position = new Position(getX() + i * xDirection, getY() + i * yDirection);
+					Position targetPos = new Position(getX() + i * xDirection, getY() + i * yDirection);
 
-					if (board.isOutOfBounds(position)) {
+					if (board.isOutOfBounds(targetPos)) {
 						break;
 					}
 
-					Piece other = board.getPieceAt(position);
-					Move move = new Move(getPosition(), position);
+					Piece other = board.getPieceAt(targetPos);
 
 					if (other == null) {
-						validMoves.add(move);
+						validMoves.add(new Move(getPosition(), targetPos));
 					} else if (other != null) {
 						if (other.isEnemyOf(this)) {
-							validMoves.add(move);
+							validMoves.add(new CaptureMove(getPosition(), targetPos, other));
 						}
 
 						break;

@@ -8,6 +8,8 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import softwareschreiber.chessengine.gamepieces.Pawn;
+import softwareschreiber.chessengine.move.EnPassantMove;
+import softwareschreiber.chessengine.move.Move;
 
 class EnPassantTest {
 	@Test

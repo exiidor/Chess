@@ -11,7 +11,7 @@ public class Main {
 		Piece piece = board.addPiece(5, 5, new Queen(true, board));
 
 		board.printBoard();
-		piece.getValidMoves(true).forEach(move -> System.out.println(move));
-		System.out.println("Es sind " + piece.getValidMoves(true).size() + " Züge möglich.");
+		piece.getValidMoves(false).forEach(move -> System.out.println(move));
+		System.out.println("Es sind " + piece.getValidMoves(false).size() + " Züge möglich.");
 	}
 }

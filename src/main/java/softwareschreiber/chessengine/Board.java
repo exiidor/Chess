@@ -15,6 +15,10 @@ import softwareschreiber.chessengine.gamepieces.Pawn;
 import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.Queen;
 import softwareschreiber.chessengine.gamepieces.Rook;
+import softwareschreiber.chessengine.move.CaptureMove;
+import softwareschreiber.chessengine.move.CastlingMove;
+import softwareschreiber.chessengine.move.Move;
+import softwareschreiber.chessengine.move.PromotionMove;
 import softwareschreiber.chessengine.util.History;
 import softwareschreiber.chessengine.util.Pair;
 
@@ -52,7 +56,11 @@ public class Board {
 		}
 	}
 
-	<T extends Piece> T addPiece(int x, int y, T piece) {
+	public <T extends Piece> T addPiece(Position position, T piece) {
+		return addPiece(position.getX(), position.getY(), piece);
+	}
+
+	public <T extends Piece> T addPiece(int x, int y, T piece) {
 		pieces.add(piece);
 		positions.put(piece, new Position(x, y));
 		board[y][x] = piece;
@@ -63,30 +71,33 @@ public class Board {
 		Position currentPosition = positions.get(piece);
 		Position targetPosition = move.getTargetPos();
 
+		// Special moves
 		if (move instanceof CastlingMove castlingMove) {
 			move(castlingMove.getOther(), castlingMove.getOtherMove());
-		} else if (move instanceof EnPassantMove enPassantMove) {
-			capture(enPassantMove.getCaptured());
-		}
+		} else if (move instanceof PromotionMove promotionMove) {
+			if (promotionMove.getCaptured() != null) {
+				capture(promotionMove.getCaptured());
+			}
 
-		Piece captured = getPieceAt(targetPosition);
-
-		if (captured != null) {
-			capture(captured);
-		}
-
-		board[currentPosition.getY()][currentPosition.getX()] = null;
-
-		if (piece instanceof Pawn pawn && ((pawn.isWhite() && targetPosition.getY() == getMaxY()) || (!pawn.isWhite() && targetPosition.getY() == getMinY()))) {
-			piece = promote(pawn);
+			Pawn pawn = (Pawn) piece;
+			piece = getPromotionTarget(pawn);
+			promotionMove.setReplacement(piece);
 			pieces.remove(pawn);
-			addPiece(targetPosition.getX(), targetPosition.getY(), piece);
-		} else {
-			board[targetPosition.getY()][targetPosition.getX()] = piece;
-			positions.put(piece, targetPosition);
-			piece.onMoved(currentPosition, targetPosition);
+			pieces.add(piece);
+		} else if (move instanceof CaptureMove captureMove) {
+			capture(captureMove.getCaptured());
 		}
 
+		// Throw error if target position is not empty
+		assert getPieceAt(targetPosition) == null;
+
+		// Update position
+		board[currentPosition.getY()][currentPosition.getX()] = null;
+		board[targetPosition.getY()][targetPosition.getX()] = piece;
+		positions.put(piece, targetPosition);
+		piece.onMoved(currentPosition, targetPosition);
+
+		// History
 		history.push(Pair.of(piece, move));
 	}
 
@@ -96,7 +107,7 @@ public class Board {
 		board[position.getY()][position.getX()] = null;
 	}
 
-	protected Piece promote(Pawn pawn) {
+	protected Piece getPromotionTarget(Pawn pawn) {
 		String choice = null;
 
 		try (Scanner scanner = new Scanner(System.in)) {
@@ -115,7 +126,7 @@ public class Board {
 				return new Knight(pawn.isWhite(), this);
 			default:
 				System.out.println("Invalid choice");
-				return promote(pawn);
+				return getPromotionTarget(pawn);
 		}
 	}
 
@@ -139,10 +150,22 @@ public class Board {
 
 		if (move instanceof CastlingMove castlingMove) {
 			undoMove(castlingMove.getOther(), castlingMove.getOtherMove());
-		} else if (move instanceof EnPassantMove enPassantMove) {
-			Position capturedPos = enPassantMove.getCaptured().getPosition();
-			addPiece(capturedPos.getX(), capturedPos.getY(), enPassantMove.getCaptured());
-			undoMove(enPassantMove.getCaptured(), new Move(capturedPos, capturedPos));
+		} else if (move instanceof PromotionMove promotionMove) {
+			Piece replacement = promotionMove.getReplacement();
+			Pawn originalPawn = (Pawn) piece;
+			pieces.remove(replacement);
+			positions.remove(replacement);
+			board[currentPosition.getY()][currentPosition.getX()] = null;
+			addPiece(targetPosition, originalPawn);
+
+			if (promotionMove.getCaptured() != null) {
+				undoMove(piece, new CaptureMove(promotionMove.getSourcePos(), promotionMove.getTargetPos(),
+						promotionMove.getCaptured()));
+			}
+		} else if (move instanceof CaptureMove captureMove) {
+			Position capturedPos = captureMove.getCaptured().getPosition();
+			addPiece(capturedPos, captureMove.getCaptured());
+			undoMove(captureMove.getCaptured(), new Move(capturedPos, capturedPos));
 		}
 	}
 
