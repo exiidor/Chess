@@ -6,7 +6,6 @@ import java.util.Set;
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.EnPassantMove;
 import softwareschreiber.chessengine.Move;
-import softwareschreiber.chessengine.Piece;
 import softwareschreiber.chessengine.Position;
 import softwareschreiber.chessengine.util.Pair;
 
@@ -25,7 +24,7 @@ public class Pawn extends Piece {
 	}
 
 	@Override
-	public Set<? extends Move> getValidMoves() {
+	public Set<? extends Move> getValidMovesInternal() {
 		Set<Move> moves = new LinkedHashSet<>();
 		boolean canMoveTwo;
 

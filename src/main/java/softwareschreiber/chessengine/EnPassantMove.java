@@ -1,5 +1,7 @@
 package softwareschreiber.chessengine;
 
+import softwareschreiber.chessengine.gamepieces.Piece;
+
 public class EnPassantMove extends Move {
 	private final Piece other;
 

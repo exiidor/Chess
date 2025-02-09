@@ -29,7 +29,7 @@ class CastlingTest {
 		King king = board.addPiece(4, y, new King(isWhite, board));
 		Rook rook = board.addPiece(left ? 0 : 7, y, new Rook(isWhite, board));
 
-		Set<? extends Move> kingMoves = king.getValidMoves();
+		Set<? extends Move> kingMoves = king.getValidMovesInternal();
 		int castleCount = 0;
 
 		for (Move move : kingMoves) {
@@ -50,10 +50,11 @@ class CastlingTest {
 		int y = isWhite ? 7 : 0;
 
 		King king = board.addPiece(4, y, new King(isWhite, board));
+		board.addPiece(3, 7 - y, new King(!isWhite, board));
 		board.addPiece(left ? 0 : 7, y, new Rook(isWhite, board));
 		board.addPiece(left ? 3 : 5, 4, new Rook(!isWhite, board));
 
-		Set<? extends Move> kingMoves = king.getValidMoves();
+		Set<? extends Move> kingMoves = king.getValidMovesInternal();
 		int castleCount = 0;
 
 		for (Move move : kingMoves) {

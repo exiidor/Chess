@@ -1,8 +1,8 @@
 package softwareschreiber.chessengine.util;
 
-import java.nio.file.Path;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 
 public class Util {
 	public static Path getResource(String slashPrefixedResourcePath) {

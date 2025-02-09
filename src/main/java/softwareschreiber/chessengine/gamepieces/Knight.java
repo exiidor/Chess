@@ -7,7 +7,6 @@ import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.Move;
-import softwareschreiber.chessengine.Piece;
 import softwareschreiber.chessengine.Position;
 
 public class Knight extends Piece {
@@ -26,7 +25,7 @@ public class Knight extends Piece {
 	}
 
 	@Override
-	public Set<? extends Move> getValidMoves() {
+	public Set<? extends Move> getValidMovesInternal() {
 		Set<Move> validMoves = new LinkedHashSet<>();
 
 		Position forwardLeft = new Position(getX() - 1, getY() - 2);

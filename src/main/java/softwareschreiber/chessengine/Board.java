@@ -5,12 +5,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 
 import softwareschreiber.chessengine.gamepieces.Bishop;
 import softwareschreiber.chessengine.gamepieces.King;
 import softwareschreiber.chessengine.gamepieces.Knight;
 import softwareschreiber.chessengine.gamepieces.Pawn;
+import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.Queen;
 import softwareschreiber.chessengine.gamepieces.Rook;
 import softwareschreiber.chessengine.util.History;
@@ -22,14 +24,14 @@ public class Board {
 	private Map<Piece, Position> positions;
 	private History<Pair<Piece, Move>> history;
 
-	Board() {
+	public Board() {
 		board = new Piece[8][8];
 		pieces = new ArrayList<>();
 		positions = new HashMap<>();
 		history = new History<>(Pair.of(null, null));
 	}
 
-	void initializeStartingPositions() {
+	public void initializeStartingPositions() {
 		for (int i = 0; i <= 1; i++) {
 			boolean isWhite = i == 0;
 			int y = isWhite ? 0 : 7;
@@ -78,7 +80,6 @@ public class Board {
 		if (piece instanceof Pawn pawn && ((pawn.isWhite() && targetPosition.getY() == getMaxY()) || (!pawn.isWhite() && targetPosition.getY() == getMinY()))) {
 			piece = promote(pawn);
 			pieces.remove(pawn);
-			positions.remove(pawn);
 			addPiece(targetPosition.getX(), targetPosition.getY(), piece);
 		} else {
 			board[targetPosition.getY()][targetPosition.getX()] = piece;
@@ -92,13 +93,57 @@ public class Board {
 	private void capture(Piece piece) {
 		Position position = positions.get(piece);
 		pieces.remove(piece);
-		positions.remove(piece);
 		board[position.getY()][position.getX()] = null;
 	}
 
-	private Piece promote(Pawn pawn) {
-		// TODO: User input
-		return new Queen(pawn.isWhite(), this);
+	protected Piece promote(Pawn pawn) {
+		String choice = null;
+
+		try (Scanner scanner = new Scanner(System.in)) {
+			System.out.println("Choose piece to promote to: (Queen, Rook, Bishop, Knight)");
+			choice = scanner.nextLine();
+		}
+
+		switch (choice) {
+			case "Queen":
+				return new Queen(pawn.isWhite(), this);
+			case "Rook":
+				return new Rook(pawn.isWhite(), this);
+			case "Bishop":
+				return new Bishop(pawn.isWhite(), this);
+			case "Knight":
+				return new Knight(pawn.isWhite(), this);
+			default:
+				System.out.println("Invalid choice");
+				return promote(pawn);
+		}
+	}
+
+	public void undo() {
+		Pair<Piece, Move> lastMove = history.goBack();
+
+		if (lastMove == null) {
+			return;
+		}
+
+		undoMove(lastMove.getLeft(), lastMove.getRight());
+	}
+
+	private void undoMove(Piece piece, Move move) {
+		Position currentPosition = move.getTargetPos();
+		Position targetPosition = move.getSourcePos();
+
+		board[currentPosition.getY()][currentPosition.getX()] = null;
+		board[targetPosition.getY()][targetPosition.getX()] = piece;
+		positions.put(piece, targetPosition);
+
+		if (move instanceof CastlingMove castlingMove) {
+			undoMove(castlingMove.getOther(), castlingMove.getOtherMove());
+		} else if (move instanceof EnPassantMove enPassantMove) {
+			Position capturedPos = enPassantMove.getCaptured().getPosition();
+			addPiece(capturedPos.getX(), capturedPos.getY(), enPassantMove.getCaptured());
+			undoMove(enPassantMove.getCaptured(), new Move(capturedPos, capturedPos));
+		}
 	}
 
 	public int getMinX() {
@@ -153,6 +198,28 @@ public class Board {
 		}
 
 		return enemyMoves;
+	}
+
+	public Set<Piece> getAllyPieces(Piece piece) {
+		Set<Piece> allyPieces = new HashSet<>();
+
+		for (Piece possibleAlly : pieces) {
+			if (!possibleAlly.isEnemyOf(piece)) {
+				allyPieces.add(possibleAlly);
+			}
+		}
+
+		return allyPieces;
+	}
+
+	public Set<? extends Move> getAllAllyMoves(Piece piece) {
+		Set<Move> allyMoves = new HashSet<>();
+
+		for (Piece allyPiece : getAllyPieces(piece)) {
+			allyMoves.addAll(allyPiece.getValidMoves());
+		}
+
+		return allyMoves;
 	}
 
 	public boolean isOutOfBounds(int x, int y) {

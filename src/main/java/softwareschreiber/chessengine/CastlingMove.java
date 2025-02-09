@@ -1,5 +1,7 @@
 package softwareschreiber.chessengine;
 
+import softwareschreiber.chessengine.gamepieces.Piece;
+
 public class CastlingMove extends Move {
 	private final Piece other;
 	private final Move otherMove;

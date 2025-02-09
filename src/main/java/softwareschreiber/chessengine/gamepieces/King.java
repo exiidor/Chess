@@ -8,14 +8,17 @@ import java.util.Set;
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.CastlingMove;
 import softwareschreiber.chessengine.Move;
-import softwareschreiber.chessengine.Piece;
 import softwareschreiber.chessengine.Position;
 
 public class King extends Piece {
-	//private boolean isChecked;
-
 	public King(boolean isWhite, Board board) {
 		super(isWhite, board);
+	}
+
+	public boolean isChecked() {
+		return board.getAllEnemyMoves(this).stream()
+				.map(Move::getTargetPos)
+				.anyMatch(pos -> pos.equals(getPosition()));
 	}
 
 	@Override
@@ -24,7 +27,7 @@ public class King extends Piece {
 	}
 
 	@Override
-	public Set<? extends Move> getValidMoves() {
+	public Set<? extends Move> getValidMovesInternal() {
 		Set<Move> validMoves = new LinkedHashSet<>();
 
 		// Normal moves for King

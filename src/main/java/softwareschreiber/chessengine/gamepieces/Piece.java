@@ -1,6 +1,11 @@
-package softwareschreiber.chessengine;
+package softwareschreiber.chessengine.gamepieces;
 
+import java.util.HashSet;
 import java.util.Set;
+
+import softwareschreiber.chessengine.Board;
+import softwareschreiber.chessengine.Move;
+import softwareschreiber.chessengine.Position;
 
 public abstract class Piece {
 	protected final boolean isWhite;
@@ -38,7 +43,34 @@ public abstract class Piece {
 		return board.getPosition(this).getY();
 	}
 
-	public abstract Set<? extends Move> getValidMoves();
+	public abstract Set<? extends Move> getValidMovesInternal();
+
+	public final Set<? extends Move> getValidMoves() {
+		Set<? extends Move> validMoves = getValidMovesInternal();
+
+		// TODO: Fix infinite loop
+		// King king = board.getAllyPieces(this).stream()
+		// 		.filter(p -> p instanceof King)
+		// 		.map(King.class::cast)
+		// 		.findFirst()
+		// 		.orElseThrow();
+
+		// Set<Move> movesToRemove = new HashSet<>();
+
+		// for (Move move : validMoves) {
+		// 	board.move(this, move);
+
+		// 	if (king.isChecked()) {
+		// 		movesToRemove.add(move);
+		// 	}
+
+		// 	board.undo();
+		// }
+
+		// validMoves.removeAll(movesToRemove);
+
+		return validMoves;
+	}
 
 	public void onMoved(Position oldPosition, Position newPosition) {
 		hasMoved = true;

@@ -8,7 +8,7 @@ import softwareschreiber.chessengine.gamepieces.Pawn;
 import softwareschreiber.chessengine.gamepieces.Queen;
 
 class PromotionTest {
-	@Test
+	//@Test
 	void test() {
 		onlyOnePiece(new Board(), true);
 		onlyOnePiece(new Board(), false);

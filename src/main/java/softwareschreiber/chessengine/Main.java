@@ -1,5 +1,6 @@
 package softwareschreiber.chessengine;
 
+import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.Queen;
 
 public class Main {
