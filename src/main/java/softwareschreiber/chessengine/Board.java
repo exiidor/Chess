@@ -120,7 +120,7 @@ public class Board {
 	}
 
 	public void undo() {
-		Pair<Piece, Move> lastMove = history.goBack();
+		Pair<Piece, Move> lastMove = history.getCurrent();
 
 		if (lastMove == null) {
 			return;
