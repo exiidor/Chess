@@ -47,6 +47,7 @@ public class Gui {
 		board.initializeStartingPositions();
 
 		JFrame frame = new JFrame("Software-Schreiber Schach");
+		frame.setIconImage(new ImageIcon(Util.getResource("/graphics/Pawnfalse.png").toString()).getImage());
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		JPanel panel = new JPanel(new GridLayout(8, 8));
