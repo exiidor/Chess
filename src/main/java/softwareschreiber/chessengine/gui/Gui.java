@@ -178,7 +178,7 @@ public class Gui {
 	}
 
 	private void showPossibleMoves(Piece piece) {
-		for (Move move : piece.getValidMoves(true)) {
+		for (Move move : piece.getValidMoves()) {
 			Position position = move.getTargetPos();
 			ChessPanel square = squares[position.getY()][position.getX()];
 			highlightedSquareMoves.put(square, move);

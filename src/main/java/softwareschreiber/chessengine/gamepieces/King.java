@@ -57,9 +57,9 @@ public class King extends Piece {
 			}
 		}
 
-		// Castling
+		// Casting
 
-		if (!hasMoved()) {
+		if (!hasMoved()) { //TODO: add check for checks
 			Piece leftPiece = board.getPieceAt(0, getY());
 			Piece rightPiece = board.getPieceAt(7, getY());
 

@@ -227,7 +227,7 @@ public class Board {
 		Set<Move> enemyMoves = new HashSet<>();
 
 		for (Piece enemyPiece : getEnemyPieces(piece)) {
-			enemyMoves.addAll(enemyPiece.getValidMoves(false));
+			enemyMoves.addAll(enemyPiece.getValidMovesInternal());
 		}
 
 		return enemyMoves;
@@ -249,7 +249,7 @@ public class Board {
 		Set<Move> allyMoves = new HashSet<>();
 
 		for (Piece allyPiece : getAllyPieces(piece)) {
-			allyMoves.addAll(allyPiece.getValidMoves(true));
+			allyMoves.addAll(allyPiece.getValidMoves());
 		}
 
 		return allyMoves;
@@ -272,7 +272,7 @@ public class Board {
 
 			for (Piece allyPiece : getAllyPieces(piece)) {
 				if (allyPiece instanceof King king && king.isChecked() && king.getValidMovesInternal().isEmpty()) {
-					if (!allyPiece.getValidMoves(true).isEmpty()) {
+					if (!allyPiece.getValidMoves().isEmpty()) {
 						checkMatePossible = false;
 					}
 				}
