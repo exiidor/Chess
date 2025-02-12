@@ -233,6 +233,18 @@ public class Board {
 		return enemyMoves;
 	}
 
+	public Set<? extends Move> getAllEnemyMovesExeptKingMoves(Piece piece) {
+		Set<Move> enemyMoves = new HashSet<>();
+
+		for (Piece enemyPiece : getEnemyPieces(piece)) {
+			if (!(enemyPiece instanceof King)) {
+				enemyMoves.addAll(enemyPiece.getValidMovesInternal());
+			}
+		}
+
+		return enemyMoves;
+	}
+
 	public Set<Piece> getAllyPieces(Piece piece) {
 		Set<Piece> allyPieces = new HashSet<>();
 

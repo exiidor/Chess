@@ -17,7 +17,7 @@ public class King extends Piece {
 	}
 
 	public boolean isChecked() {
-		return board.getAllEnemyMoves(this).stream()
+		return board.getAllEnemyMovesExeptKingMoves(this).stream()
 				.map(Move::getTargetPos)
 				.anyMatch(pos -> pos.equals(getPosition()));
 	}
@@ -59,7 +59,7 @@ public class King extends Piece {
 
 		// Casting
 
-		if (!hasMoved()) { //TODO: add check for checks
+		if (!hasMoved() && !isChecked()) {
 			Piece leftPiece = board.getPieceAt(0, getY());
 			Piece rightPiece = board.getPieceAt(7, getY());
 
