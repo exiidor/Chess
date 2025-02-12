@@ -14,15 +14,15 @@ import softwareschreiber.chessengine.move.Move;
 class CastlingTest {
 	@Test
 	void test() {
-		noObstruction(new Board(), true, true);
-		noObstruction(new Board(), true, false);
-		noObstruction(new Board(), false, true);
-		noObstruction(new Board(), false, false);
+		noObstruction(new Board(new CliGame()), true, true);
+		noObstruction(new Board(new CliGame()), true, false);
+		noObstruction(new Board(new CliGame()), false, true);
+		noObstruction(new Board(new CliGame()), false, false);
 
-		obstruction(new Board(), true, true);
-		obstruction(new Board(), true, false);
-		obstruction(new Board(), false, true);
-		obstruction(new Board(), false, false);
+		obstruction(new Board(new CliGame()), true, true);
+		obstruction(new Board(new CliGame()), true, false);
+		obstruction(new Board(new CliGame()), false, true);
+		obstruction(new Board(new CliGame()), false, false);
 	}
 
 	private void noObstruction(Board board, boolean isWhite, boolean left) {
@@ -38,7 +38,7 @@ class CastlingTest {
 			if (move instanceof CastlingMove castlingMove) {
 				assertTrue(castleCount == 0);
 
-				board.move(king, castlingMove);
+				board.move(king, castlingMove, false);
 
 				assertTrue(king.getPosition().equals(new Position(left ? 2 : 6, king.getY())));
 				assertTrue(rook.getPosition().equals(new Position(left ? 3 : 5, y)));

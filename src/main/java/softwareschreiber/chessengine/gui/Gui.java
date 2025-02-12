@@ -2,7 +2,8 @@ package softwareschreiber.chessengine.gui;
 
 import java.awt.Color;
 import java.awt.GridLayout;
-import java.awt.Image;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
@@ -12,30 +13,28 @@ import java.util.Map;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import softwareschreiber.chessengine.Board;
+import softwareschreiber.chessengine.Game;
 import softwareschreiber.chessengine.Position;
-import softwareschreiber.chessengine.gamepieces.Bishop;
-import softwareschreiber.chessengine.gamepieces.Knight;
-import softwareschreiber.chessengine.gamepieces.Pawn;
 import softwareschreiber.chessengine.gamepieces.Piece;
-import softwareschreiber.chessengine.gamepieces.Queen;
-import softwareschreiber.chessengine.gamepieces.Rook;
 import softwareschreiber.chessengine.move.CaptureMove;
 import softwareschreiber.chessengine.move.Move;
+import softwareschreiber.chessengine.move.PromotionMove;
 import softwareschreiber.chessengine.util.Util;
 
 public class Gui {
 	private static final Color BLUE = new Color(120, 200, 250);
 	private static final Color RED = new Color(240, 105, 110);
 	private static final Color GRAY = new Color(112, 112, 112);
+	private static final Color GOLD = new Color(252, 197, 45);
 	private static final Color BACKGROUND_BLACK = new Color(36, 36, 36);
-	private final Board board;
 	private final ChessPanel[][] squares;
 	private final List<ChessPanel> highlightedSquares;
 	private final Map<ChessPanel, Move> highlightedSquareMoves;
+	private Game game;
+	private Board board;
 	private Piece selectedPiece;
 
 	public Gui() {
@@ -43,36 +42,12 @@ public class Gui {
 		highlightedSquares = new ArrayList<>();
 		highlightedSquareMoves = new HashMap<>();
 
+		game = new GuiGame();
+		board = game.getBoard();
+		board.initializeStartingPositions();
+
 		JFrame frame = new JFrame("Software-Schreiber Schach");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-		board = new Board() {
-			@Override
-			protected Piece getPromotionTarget(Pawn piece) {
-				String[] options = { "Queen", "Rook", "Bishop", "Knight" };
-				int choice = JOptionPane.showOptionDialog(
-						null,
-						"Choose piece to promote to:",
-						"Pawn Promotion",
-						JOptionPane.DEFAULT_OPTION,
-						JOptionPane.INFORMATION_MESSAGE,
-						null, options, options[0]);
-
-				switch (choice) {
-					case 0:
-						return new Queen(piece.isWhite(), this);
-					case 1:
-						return new Rook(piece.isWhite(), this);
-					case 2:
-						return new Bishop(piece.isWhite(), this);
-					case 3:
-						return new Knight(piece.isWhite(), this);
-					default:
-						return getPromotionTarget(piece);
-				}
-			}
-		};
-		board.initializeStartingPositions();
 
 		JPanel panel = new JPanel(new GridLayout(8, 8));
 		boolean white = true;
@@ -93,7 +68,7 @@ public class Gui {
 						Piece piece = square.getPiece();
 
 						if (highlightedSquares.contains(square) && selectedPiece != piece) {
-							board.move(selectedPiece, highlightedSquareMoves.get(square));
+							board.move(selectedPiece, highlightedSquareMoves.get(square), false);
 							clearHighlightedSquares();
 							return;
 						}
@@ -135,29 +110,70 @@ public class Gui {
 			white = !white;
 		}
 
-		board.addPieceMovedListener((piece, move) -> {
-			Position sourcePos = move.getSourcePos();
-			Position targetPos = move.getTargetPos();
-			ChessPanel startSquare = squares[sourcePos.getY()][sourcePos.getX()];
-			ChessPanel targetSquare = squares[targetPos.getY()][targetPos.getX()];
+		board.addPieceMovedListener(this::onMoved);
+		board.addMoveUndoneListener(this::onMoveUndone);
 
-			startSquare.setPiece(null);
-			targetSquare.setPiece(piece);
-		});
-
-		board.addMoveUndoneListener((piece, move) -> {
-			Position sourcePos = move.getSourcePos();
-			Position targetPos = move.getTargetPos();
-			ChessPanel startSquare = squares[sourcePos.getY()][sourcePos.getX()];
-			ChessPanel targetSquare = squares[targetPos.getY()][targetPos.getX()];
-
-			startSquare.setPiece(piece);
-			targetSquare.setPiece(null);
+		frame.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_U) {
+					board.undo();
+				}
+			}
 		});
 
 		frame.add(panel);
 		frame.setSize(1024, 1024);
 		frame.setVisible(true);
+	}
+
+	private ChessPanel getSquareAt(Position position) {
+		return getSquareAt(position.getX(), position.getY());
+	}
+
+	private ChessPanel getSquareAt(int x, int y) {
+		return squares[y][x];
+	}
+
+	private void onMoved(Piece piece, Move move) {
+		Position sourcePos = move.getSourcePos();
+		Position targetPos = move.getTargetPos();
+		ChessPanel sourceSquare = getSquareAt(sourcePos);
+		ChessPanel targetSquare = getSquareAt(targetPos);
+
+		if (move instanceof CaptureMove captureMove && !(move instanceof PromotionMove)) {
+			getSquareAt(captureMove.getCaptured().getPosition()).setPiece(null);
+		}
+
+		sourceSquare.setPiece(null);
+
+		if (move instanceof PromotionMove promotionMove) {
+			if (promotionMove.getCaptured() != null) {
+				getSquareAt(promotionMove.getCaptured().getPosition()).setPiece(null);
+			}
+
+			targetSquare.setPiece(promotionMove.getReplacement());
+		} else {
+			targetSquare.setPiece(piece);
+		}
+	}
+
+	private void onMoveUndone(Piece piece, Move move) {
+		Position sourcePos = move.getSourcePos();
+		Position targetPos = move.getTargetPos();
+		ChessPanel sourceSquare = getSquareAt(sourcePos);
+		ChessPanel targetSquare = getSquareAt(targetPos);
+
+		sourceSquare.setPiece(piece);
+		targetSquare.setPiece(null);
+
+		if (move instanceof CaptureMove captureMove && !(move instanceof PromotionMove)) {
+			getSquareAt(captureMove.getCaptured().getPosition()).setPiece(captureMove.getCaptured());
+		} else if (move instanceof PromotionMove promotionMove) {
+			if (promotionMove.getCaptured() != null) {
+				getSquareAt(promotionMove.getCaptured().getPosition()).setPiece(promotionMove.getCaptured());
+			}
+		}
 	}
 
 	private void showPossibleMoves(Piece piece) {
@@ -166,10 +182,12 @@ public class Gui {
 			ChessPanel square = squares[position.getY()][position.getX()];
 			highlightedSquareMoves.put(square, move);
 
-			if (move instanceof CaptureMove) {
-				square.setColor(RED); // Red
+			if (move instanceof CaptureMove && !(move instanceof PromotionMove)) {
+				square.setColor(RED);
+			} else if (move instanceof PromotionMove) {
+				square.setColor(GOLD);
 			} else {
-				square.setColor(BLUE); // Blue
+				square.setColor(BLUE);
 			}
 
 			highlightedSquares.add(square);

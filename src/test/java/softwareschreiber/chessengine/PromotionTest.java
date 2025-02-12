@@ -24,7 +24,7 @@ class PromotionTest {
 		Position destPos = new Position(1, isWhite ? 7 : 0);
 
 		Pawn pawn = board.addPiece(srcPos, new Pawn(isWhite, board));
-		board.move(pawn, new PromotionMove(srcPos, destPos, null));
+		board.move(pawn, new PromotionMove(srcPos, destPos, null), false);
 
 		assertEquals(board.getPieceAt(destPos) instanceof Queen, true);
 	}
@@ -35,18 +35,18 @@ class PromotionTest {
 
 		Pawn pawn = board.addPiece(srcPos, new Pawn(isWhite, board));
 		Piece enemy = board.addPiece(destPos, new Pawn(!isWhite, board));
-		board.move(pawn, new PromotionMove(srcPos, destPos, enemy));
+		board.move(pawn, new PromotionMove(srcPos, destPos, enemy), false);
 
 		assertTrue(board.getEnemyPieces(pawn).isEmpty());
 		assertEquals(board.getPieceAt(destPos) instanceof Queen, true);
 	}
 
 	private Board createBoard() {
-		return new Board() {
+		return new Board(new CliGame() {
 			@Override
-			protected Piece getPromotionTarget(Pawn pawn) {
-				return new Queen(pawn.isWhite(), this);
+			protected Piece getPromotionTarget(Board board, Pawn pawn) {
+				return new Queen(pawn.isWhite(), board);
 			}
-		};
+		});
 	}
 }

@@ -14,13 +14,13 @@ import softwareschreiber.chessengine.move.Move;
 class EnPassantTest {
 	@Test
 	void test() {
-		onlyTwoPieces(new Board(), true);
+		onlyTwoPieces(new Board(new CliGame()), true);
 	}
 
 	private void onlyTwoPieces(Board board, boolean isWhite) {
 		Pawn pawn = board.addPiece(1, 1, new Pawn(isWhite, board));
 		Pawn enemyPawn = board.addPiece(2, 3, new Pawn(!isWhite, board));
-		board.move(pawn, new Move(pawn.getX(), pawn.getY(), pawn.getX(), pawn.getY() + pawn.getDirection() * 2));
+		board.move(pawn, new Move(pawn.getX(), pawn.getY(), pawn.getX(), pawn.getY() + pawn.getDirection() * 2), false);
 
 		assertEquals(pawn.getY(), enemyPawn.getY());
 		assertEquals(pawn.getX(), enemyPawn.getX() + (isWhite ? -1 : 1));

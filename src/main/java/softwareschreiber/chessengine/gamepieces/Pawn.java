@@ -8,6 +8,7 @@ import softwareschreiber.chessengine.Position;
 import softwareschreiber.chessengine.move.CaptureMove;
 import softwareschreiber.chessengine.move.EnPassantMove;
 import softwareschreiber.chessengine.move.Move;
+import softwareschreiber.chessengine.move.PromotionMove;
 import softwareschreiber.chessengine.util.Pair;
 
 public class Pawn extends Piece {
@@ -39,7 +40,10 @@ public class Pawn extends Piece {
 		Position forwardByTwoPos = new Position(getX(), getY() + getDirection() * 2);
 
 		if (board.getPieceAt(forwardPos) == null) {
-			moves.add(new Move(getPosition(), forwardPos));
+			Move move = forwardPos.getY() == (isWhite() ? board.getMaxY() : board.getMinY())
+					? new PromotionMove(getPosition(), forwardPos, null)
+					: new Move(getPosition(), forwardPos);
+			moves.add(move);
 
 			if (canMoveTwo && board.getPieceAt(forwardByTwoPos) == null) {
 				moves.add(new Move(getPosition(), forwardByTwoPos));
@@ -52,11 +56,17 @@ public class Pawn extends Piece {
 		Piece forwardRightPiece = board.getPieceAt(forwardRightPos);
 
 		if (forwardLeftPiece != null && forwardLeftPiece.isEnemyOf(this)) {
-			moves.add(new CaptureMove(getPosition(), forwardLeftPos, forwardLeftPiece));
+			Move move = forwardLeftPiece.getY() == (isWhite() ? board.getMaxY() : board.getMinY())
+					? new PromotionMove(getPosition(), forwardLeftPos, forwardLeftPiece)
+					: new CaptureMove(getPosition(), forwardLeftPos, forwardLeftPiece);
+			moves.add(move);
 		}
 
 		if (forwardRightPiece != null && forwardRightPiece.isEnemyOf(this)) {
-			moves.add(new CaptureMove(getPosition(), forwardRightPos, forwardRightPiece));
+			Move move = forwardRightPiece.getY() == (isWhite() ? board.getMaxY() : board.getMinY())
+					? new PromotionMove(getPosition(), forwardRightPos, forwardRightPiece)
+					: new CaptureMove(getPosition(), forwardRightPos, forwardRightPiece);
+			moves.add(move);
 		}
 
 		// En Passant

@@ -58,7 +58,7 @@ public abstract class Piece {
 			Set<Move> movesToRemove = new HashSet<>();
 
 			for (Move move : validMoves) {
-				board.move(this, move);
+				board.move(this, move, true);
 
 				if (king.isChecked()) {
 					movesToRemove.add(move);

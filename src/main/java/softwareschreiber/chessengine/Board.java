@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -25,6 +24,7 @@ import softwareschreiber.chessengine.util.History;
 import softwareschreiber.chessengine.util.Pair;
 
 public class Board {
+	private final Game game;
 	private final Piece[][] board;
 	private final List<Piece> pieces;
 	private final Map<Piece, Position> positions;
@@ -33,7 +33,8 @@ public class Board {
 	private final List<BiConsumer<Piece, Move>> pieceMovedListeners;
 	private final List<BiConsumer<Piece, Move>> moveUndoneListeners;
 
-	public Board() {
+	public Board(Game game) {
+		this.game = game;
 		board = new Piece[8][8];
 		pieces = new ArrayList<>();
 		positions = new HashMap<>();
@@ -89,21 +90,25 @@ public class Board {
 		return piece;
 	}
 
-	public void move(Piece piece, Move move) {
+	public void move(Piece piece, Move move, boolean virtual) {
 		Piece origPiece = piece;
 		Position currentPosition = positions.get(piece);
 		Position targetPosition = move.getTargetPos();
 
 		// Special moves
 		if (move instanceof CastlingMove castlingMove) {
-			move(castlingMove.getOther(), castlingMove.getOtherMove());
+			move(castlingMove.getOther(), castlingMove.getOtherMove(), false);
 		} else if (move instanceof PromotionMove promotionMove) {
 			if (promotionMove.getCaptured() != null) {
 				capture(promotionMove.getCaptured());
 			}
 
 			Pawn pawn = (Pawn) piece;
-			piece = getPromotionTarget(pawn);
+
+			if (!virtual) {
+				piece = game.getPromotionTarget(this, pawn);
+			}
+
 			promotionMove.setReplacement(piece);
 			pieces.remove(pawn);
 			pieces.add(piece);
@@ -121,7 +126,7 @@ public class Board {
 		piece.onMoved(currentPosition, targetPosition);
 
 		// History
-		history.push(Pair.of(piece, move));
+		history.push(Pair.of(origPiece, move));
 
 		pieceMovedListeners.forEach(listener -> listener.accept(origPiece, move));
 	}
@@ -130,29 +135,6 @@ public class Board {
 		Position position = positions.get(piece);
 		pieces.remove(piece);
 		board[position.getY()][position.getX()] = null;
-	}
-
-	protected Piece getPromotionTarget(Pawn pawn) {
-		String choice = null;
-
-		try (Scanner scanner = new Scanner(System.in)) {
-			System.out.println("Choose piece to promote to: (Queen, Rook, Bishop, Knight)");
-			choice = scanner.nextLine();
-		}
-
-		switch (choice) {
-			case "Queen":
-				return new Queen(pawn.isWhite(), this);
-			case "Rook":
-				return new Rook(pawn.isWhite(), this);
-			case "Bishop":
-				return new Bishop(pawn.isWhite(), this);
-			case "Knight":
-				return new Knight(pawn.isWhite(), this);
-			default:
-				System.out.println("Invalid choice");
-				return getPromotionTarget(pawn);
-		}
 	}
 
 	public void undo() {
@@ -184,7 +166,7 @@ public class Board {
 			addPiece(targetPosition, originalPawn);
 
 			if (promotionMove.getCaptured() != null) {
-				undoMove(piece, new CaptureMove(promotionMove.getSourcePos(), promotionMove.getTargetPos(),
+				undoMove(originalPawn, new CaptureMove(promotionMove.getSourcePos(), promotionMove.getTargetPos(),
 						promotionMove.getCaptured()));
 			}
 		} else if (move instanceof CaptureMove captureMove) {
@@ -271,6 +253,37 @@ public class Board {
 		}
 
 		return allyMoves;
+	}
+
+	public void checkForMates(Piece piece) {
+		Set<? extends Move> allyMoves = getAllAllyMoves(piece);
+		String color = !piece.isWhite() ? "Weiß" : "Schwarz";
+
+		if (allyMoves.isEmpty()) {
+			for (Piece allyPiece : getAllyPieces(piece)) {
+				if (allyPiece instanceof King king && king.isChecked()) {
+					game.checkMate(color);
+				} else {
+					game.staleMate();
+				}
+			}
+		} else {
+			boolean checkMatePossible = true;
+
+			for (Piece allyPiece : getAllyPieces(piece)) {
+				if (allyPiece instanceof King king && king.isChecked() && king.getValidMovesInternal().isEmpty()) {
+					if (!allyPiece.getValidMoves(true).isEmpty()) {
+						checkMatePossible = false;
+					}
+				}
+			}
+
+			if (checkMatePossible) {
+				game.checkMate(color);
+			} else {
+				return;
+			}
+		}
 	}
 
 	public boolean isOutOfBounds(int x, int y) {
