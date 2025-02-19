@@ -239,6 +239,8 @@ public class Board {
 		for (Piece enemyPiece : getEnemyPieces(piece)) {
 			if (!(enemyPiece instanceof King)) {
 				enemyMoves.addAll(enemyPiece.getValidMovesInternal());
+			}else if (enemyPiece instanceof King) {
+				enemyMoves.addAll(((King)enemyPiece).getNormalKingMoves());
 			}
 		}
 

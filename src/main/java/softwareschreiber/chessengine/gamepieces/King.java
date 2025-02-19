@@ -103,4 +103,36 @@ public class King extends Piece {
 
 		return validMoves;
 	}
+
+	public Set<? extends Move> getNormalKingMoves() {
+		Set<Move> validMoves = new LinkedHashSet<>();
+
+		// Normal moves for King
+
+		Position forward = new Position(getX(), getY() + 1);
+		Position forwardRight = new Position(getX() + 1, getY() + 1);
+		Position right = new Position(getX() + 1, getY());
+		Position backRight = new Position(getX() + 1, getY() - 1);
+		Position back = new Position(getX(), getY() - 1);
+		Position backLeft = new Position(getX() - 1, getY() - 1);
+		Position left = new Position(getX() - 1, getY());
+		Position forwardLeft = new Position(getX() - 1, getY() + 1);
+
+		List<Position> targetPositions = Arrays.asList(forward, forwardRight, right, backRight, back, backLeft, left,
+				forwardLeft);
+
+		for (Position targetPos : targetPositions) {
+			Piece other = board.getPieceAt(targetPos);
+
+			if (other != null && other.isEnemyOf(this)) {
+				validMoves.add(new CaptureMove(getPosition(), targetPos, other));
+			}
+
+			if (other == null && !board.isOutOfBounds(targetPos)) {
+				validMoves.add(new Move(getPosition(), targetPos));
+			}
+		}
+
+		return validMoves;
+	}
 }
