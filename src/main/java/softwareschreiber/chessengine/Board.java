@@ -145,6 +145,7 @@ public class Board {
 		}
 
 		undoMove(lastMove.getLeft(), lastMove.getRight());
+		history.goBack();
 	}
 
 	private void undoMove(Piece piece, Move move) {
@@ -239,8 +240,8 @@ public class Board {
 		for (Piece enemyPiece : getEnemyPieces(piece)) {
 			if (!(enemyPiece instanceof King)) {
 				enemyMoves.addAll(enemyPiece.getValidMovesInternal());
-			}else if (enemyPiece instanceof King) {
-				enemyMoves.addAll(((King)enemyPiece).getNormalKingMoves());
+			} else if (enemyPiece instanceof King) {
+				enemyMoves.addAll(((King) enemyPiece).getNormalKingMoves());
 			}
 		}
 
