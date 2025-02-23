@@ -5,17 +5,28 @@ import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.Position;
+import softwareschreiber.chessengine.evaluation.EvaluationCharts;
 import softwareschreiber.chessengine.move.CaptureMove;
 import softwareschreiber.chessengine.move.Move;
 
 public class Rook extends Piece {
-	public Rook(boolean isWhite, Board board) {
-		super(isWhite, board);
+	public Rook(PieceColor color, Board board) {
+		super(color, board);
 	}
 
 	@Override
 	public String getName() {
 		return "Rook";
+	}
+
+	@Override
+	public int getValue() {
+		return 5;
+	}
+
+	@Override
+	public int[][] evaluationChart() {
+		return EvaluationCharts.rookTable;
 	}
 
 	@Override

@@ -25,13 +25,13 @@ public class GuiGame extends Game {
 
 		switch (choice) {
 			case 0:
-				return new Queen(pawn.isWhite(), board);
+				return new Queen(pawn.getColor(), board);
 			case 1:
-				return new Rook(pawn.isWhite(), board);
+				return new Rook(pawn.getColor(), board);
 			case 2:
-				return new Bishop(pawn.isWhite(), board);
+				return new Bishop(pawn.getColor(), board);
 			case 3:
-				return new Knight(pawn.isWhite(), board);
+				return new Knight(pawn.getColor(), board);
 			default:
 				return getPromotionTarget(board, pawn);
 		}

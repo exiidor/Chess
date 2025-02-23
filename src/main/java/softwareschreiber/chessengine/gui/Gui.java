@@ -18,7 +18,9 @@ import javax.swing.JPanel;
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.Game;
 import softwareschreiber.chessengine.Position;
+import softwareschreiber.chessengine.evaluation.Evaluation;
 import softwareschreiber.chessengine.gamepieces.Piece;
+import softwareschreiber.chessengine.gamepieces.PieceColor;
 import softwareschreiber.chessengine.move.CaptureMove;
 import softwareschreiber.chessengine.move.Move;
 import softwareschreiber.chessengine.move.PromotionMove;
@@ -48,7 +50,7 @@ public class Gui {
 
 		windowFrame = new JFrame();
 		windowFrame.setResizable(false);
-		windowFrame.setIconImage(new ImageIcon(Util.getResource("/graphics/Pawnfalse.png").toString()).getImage());
+		windowFrame.setIconImage(new ImageIcon(Util.getResource("/graphics/PawnBLACK.png").toString()).getImage());
 		windowFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		squareContainer = new JPanel();
@@ -168,17 +170,20 @@ public class Gui {
 	}
 
 	private void updateTitle() {
+		String title = "Software-Schreiber Schach";
+		String eval = String.valueOf(new Evaluation(board).chartEvaluate());
+
 		if (game.isGameOver()) {
 			if (game.isWhitesTurn()) {
-				windowFrame.setTitle("Software-Schreiber Schach - White won");
+				windowFrame.setTitle(title + " - White won");
 			} else {
-				windowFrame.setTitle("Software-Schreiber Schach - Black won");
+				windowFrame.setTitle(title + " - Black won");
 			}
 		} else {
 			if (game.isWhitesTurn()) {
-				windowFrame.setTitle("Software-Schreiber Schach - Whites turn");
+				windowFrame.setTitle(title + " - White's turn - Evaluation: " + eval);
 			} else {
-				windowFrame.setTitle("Software-Schreiber Schach - Blacks turn");
+				windowFrame.setTitle(title + " - Black's turn - Evaluation: " + eval);
 			}
 		}
 	}
@@ -236,7 +241,7 @@ public class Gui {
 		updateTitle();
 	}
 
-	private void onGameEnd(boolean whiteWon) {
+	private void onGameEnd(PieceColor winningColor) {
 		initGame();
 	}
 
@@ -269,8 +274,8 @@ public class Gui {
 	}
 
 	static ImageIcon getImageForPiece(Piece piece) {
-		char firstLetterOfFileName = (piece.getName() + piece.isWhite()).toUpperCase().charAt(0);
-		String restOfFileName = (piece.getName() + piece.isWhite()).substring(1).toLowerCase();
+		char firstLetterOfFileName = piece.getName().toUpperCase().charAt(0);
+		String restOfFileName = (piece.getName() + piece.getColor()).substring(1).toLowerCase();
 		String nameOfFile = (firstLetterOfFileName + restOfFileName).trim();
 		return new ImageIcon(Util.getResource("/graphics/" + nameOfFile + ".png").toString());
 	}

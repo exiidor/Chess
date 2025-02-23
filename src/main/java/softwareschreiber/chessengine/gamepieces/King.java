@@ -7,17 +7,18 @@ import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.Position;
+import softwareschreiber.chessengine.evaluation.EvaluationCharts;
 import softwareschreiber.chessengine.move.CaptureMove;
 import softwareschreiber.chessengine.move.CastlingMove;
 import softwareschreiber.chessengine.move.Move;
 
 public class King extends Piece {
-	public King(boolean isWhite, Board board) {
-		super(isWhite, board);
+	public King(PieceColor color, Board board) {
+		super(color, board);
 	}
 
 	public boolean isChecked() {
-		return board.getAllEnemyMovesExeptKingMoves(this).stream()
+		return board.getAllEnemyMovesExceptKingMoves(this).stream()
 				.map(Move::getTargetPos)
 				.anyMatch(pos -> pos.equals(getPosition()));
 	}
@@ -25,6 +26,16 @@ public class King extends Piece {
 	@Override
 	public String getName() {
 		return "King";
+	}
+
+	@Override
+	public int getValue() {
+		return 1000;
+	}
+
+	@Override
+	public int[][] evaluationChart() {
+		return EvaluationCharts.kingTable;
 	}
 
 	@Override
@@ -86,7 +97,7 @@ public class King extends Piece {
 				boolean canCastle = !rightRook.hasMoved()
 						&& board.getPieceAt(5, getY()) == null
 						&& board.getPieceAt(6, getY()) == null
-						&& !board.getAllEnemyMoves(this).stream()
+						&& !board.getAllEnemyMovesExceptKingMoves(this).stream()
 								.map(Move::getTargetPos)
 								.anyMatch(pos -> pos.equals(new Position(5, getY()))
 										|| pos.equals(new Position(6, getY())));

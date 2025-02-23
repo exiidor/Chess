@@ -21,13 +21,13 @@ public class CliGame extends Game {
 
 		switch (choice) {
 			case "Queen":
-				return new Queen(pawn.isWhite(), board);
+				return new Queen(pawn.getColor(), board);
 			case "Rook":
-				return new Rook(pawn.isWhite(), board);
+				return new Rook(pawn.getColor(), board);
 			case "Bishop":
-				return new Bishop(pawn.isWhite(), board);
+				return new Bishop(pawn.getColor(), board);
 			case "Knight":
-				return new Knight(pawn.isWhite(), board);
+				return new Knight(pawn.getColor(), board);
 			default:
 				System.out.println("Invalid choice");
 				return getPromotionTarget(board, pawn);

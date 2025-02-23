@@ -5,6 +5,7 @@ import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.Position;
+import softwareschreiber.chessengine.evaluation.EvaluationCharts;
 import softwareschreiber.chessengine.move.CaptureMove;
 import softwareschreiber.chessengine.move.EnPassantMove;
 import softwareschreiber.chessengine.move.Move;
@@ -12,8 +13,8 @@ import softwareschreiber.chessengine.move.PromotionMove;
 import softwareschreiber.chessengine.util.Pair;
 
 public class Pawn extends Piece {
-	public Pawn(boolean isWhite, Board board) {
-		super(isWhite, board);
+	public Pawn(PieceColor color, Board board) {
+		super(color, board);
 	}
 
 	@Override
@@ -21,8 +22,18 @@ public class Pawn extends Piece {
 		return "Pawn";
 	}
 
+	@Override
+	public int getValue() {
+		return 1;
+	}
+
+	@Override
+	public int[][] evaluationChart() {
+		return EvaluationCharts.pawnTable;
+	}
+
 	public int getDirection() {
-		return isWhite ? 1 : -1;
+		return isWhite() ? 1 : -1;
 	}
 
 	@Override
@@ -30,7 +41,7 @@ public class Pawn extends Piece {
 		Set<Move> moves = new LinkedHashSet<>();
 		boolean canMoveTwo;
 
-		if (isWhite) {
+		if (isWhite()) {
 			canMoveTwo = getY() == 1;
 		} else {
 			canMoveTwo = getY() == 6;

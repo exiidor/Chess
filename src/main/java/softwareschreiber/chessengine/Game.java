@@ -6,17 +6,18 @@ import java.util.function.Consumer;
 
 import softwareschreiber.chessengine.gamepieces.Pawn;
 import softwareschreiber.chessengine.gamepieces.Piece;
+import softwareschreiber.chessengine.gamepieces.PieceColor;
 
 public abstract class Game {
 	private final Board board;
-	private final List<Consumer<Boolean>> gameEndListeners;
-	private boolean isWhitesTurn;
+	private final List<Consumer<PieceColor>> gameEndListeners;
+	private PieceColor activeColor;
 	private boolean gameOver = false;
 
 	public Game() {
 		board = new Board(this);
 		gameEndListeners = new ArrayList<>();
-		isWhitesTurn = true;
+		activeColor = PieceColor.WHITE;
 	}
 
 	public Board getBoard() {
@@ -30,19 +31,19 @@ public abstract class Game {
 			board.checkForEnemyMates(piece);
 
 			if (!gameOver) {
-				isWhitesTurn = !piece.isWhite();
+				activeColor = piece.getColor().getOpposite();
 			}
 		});
 		board.addSubmittedUndoMoveDoneListener((piece, move) -> {
 			board.checkForEnemyMates(piece);
 
 			if (!gameOver) {
-				isWhitesTurn = piece.isWhite();
+				activeColor = piece.getColor();
 			}
 		});
 	}
 
-	public void addGameEndListener(Consumer<Boolean> listener) {
+	public void addGameEndListener(Consumer<PieceColor> listener) {
 		gameEndListeners.add(listener);
 	}
 
@@ -54,15 +55,15 @@ public abstract class Game {
 
 	protected void endGame() {
 		gameOver = true;
-		gameEndListeners.forEach(listener -> listener.accept(isWhitesTurn));
+		gameEndListeners.forEach(listener -> listener.accept(activeColor));
 	}
 
 	public boolean isWhitesTurn() {
-		return isWhitesTurn;
+		return activeColor == PieceColor.WHITE;
 	}
 
 	public boolean isTimeForTurn(Piece piece) {
-		return piece.isWhite() == isWhitesTurn;
+		return piece.getColor() == activeColor;
 	}
 
 	public boolean isGameOver() {

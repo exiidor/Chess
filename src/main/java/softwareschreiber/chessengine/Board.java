@@ -14,6 +14,7 @@ import softwareschreiber.chessengine.gamepieces.King;
 import softwareschreiber.chessengine.gamepieces.Knight;
 import softwareschreiber.chessengine.gamepieces.Pawn;
 import softwareschreiber.chessengine.gamepieces.Piece;
+import softwareschreiber.chessengine.gamepieces.PieceColor;
 import softwareschreiber.chessengine.gamepieces.Queen;
 import softwareschreiber.chessengine.gamepieces.Rook;
 import softwareschreiber.chessengine.move.CaptureMove;
@@ -72,19 +73,20 @@ public class Board {
 		for (int i = 0; i <= 1; i++) {
 			boolean isWhite = i == 0;
 			int y = isWhite ? 0 : 7;
+			PieceColor color = isWhite ? PieceColor.WHITE : PieceColor.BLACK;
 
-			addPiece(0, y, new Rook(isWhite, this));
-			addPiece(1, y, new Knight(isWhite, this));
-			addPiece(2, y, new Bishop(isWhite, this));
-			addPiece(3, y, new Queen(isWhite, this));
-			addPiece(4, y, new King(isWhite, this));
-			addPiece(5, y, new Bishop(isWhite, this));
-			addPiece(6, y, new Knight(isWhite, this));
-			addPiece(7, y, new Rook(isWhite, this));
+			addPiece(0, y, new Rook(color, this));
+			addPiece(1, y, new Knight(color, this));
+			addPiece(2, y, new Bishop(color, this));
+			addPiece(3, y, new Queen(color, this));
+			addPiece(4, y, new King(color, this));
+			addPiece(5, y, new Bishop(color, this));
+			addPiece(6, y, new Knight(color, this));
+			addPiece(7, y, new Rook(color, this));
 			y = isWhite ? 1 : 6;
 
 			for (int x = 0; x < 8; x++) {
-				addPiece(x, y, new Pawn(isWhite, this));
+				addPiece(x, y, new Pawn(color, this));
 			}
 		}
 	}
@@ -243,6 +245,18 @@ public class Board {
 		return getPieceAt(position.getX(), position.getY());
 	}
 
+	public Set<Piece> getPieces(PieceColor color) {
+		Set<Piece> pieces = new HashSet<>();
+
+		for (Piece piece : this.pieces) {
+			if (piece.getColor() == color) {
+				pieces.add(piece);
+			}
+		}
+
+		return pieces;
+	}
+
 	public Set<Piece> getEnemyPieces(Piece piece) {
 		Set<Piece> enemyPieces = new HashSet<>();
 
@@ -265,7 +279,7 @@ public class Board {
 		return enemyMoves;
 	}
 
-	public Set<? extends Move> getAllEnemyMovesExeptKingMoves(Piece piece) {
+	public Set<? extends Move> getAllEnemyMovesExceptKingMoves(Piece piece) {
 		Set<Move> enemyMoves = new HashSet<>();
 
 		for (Piece enemyPiece : getEnemyPieces(piece)) {
@@ -303,7 +317,7 @@ public class Board {
 
 	public void checkForEnemyMates(Piece piece) {
 		Set<? extends Move> enemyMoves = getAllEnemyMoves(piece);
-		String color = !piece.isWhite() ? "White" : "Black";
+		String color = piece.getColor().toString();
 
 		if (enemyMoves.isEmpty()) {
 			for (Piece enemyPiece : getEnemyPieces(piece)) {

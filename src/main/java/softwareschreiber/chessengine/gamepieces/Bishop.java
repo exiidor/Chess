@@ -5,17 +5,28 @@ import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.Position;
+import softwareschreiber.chessengine.evaluation.EvaluationCharts;
 import softwareschreiber.chessengine.move.CaptureMove;
 import softwareschreiber.chessengine.move.Move;
 
 public class Bishop extends Piece {
-	public Bishop(boolean isWhite, Board board) {
-		super(isWhite, board);
+	public Bishop(PieceColor color, Board board) {
+		super(color, board);
 	}
 
 	@Override
 	public String getName() {
 		return "Bishop";
+	}
+
+	@Override
+	public int getValue() {
+		return 3;
+	}
+
+	@Override
+	public int[][] evaluationChart() {
+		return EvaluationCharts.bishopTable;
 	}
 
 	@Override

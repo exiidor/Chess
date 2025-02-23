@@ -8,12 +8,12 @@ import softwareschreiber.chessengine.Position;
 import softwareschreiber.chessengine.move.Move;
 
 public abstract class Piece {
-	protected final boolean isWhite;
+	protected final PieceColor color;
 	protected final Board board;
 	private int moveCount;
 
-	public Piece(boolean isWhite, Board board) {
-		this.isWhite = isWhite;
+	public Piece(PieceColor color, Board board) {
+		this.color = color;
 		this.board = board;
 	}
 
@@ -23,12 +23,20 @@ public abstract class Piece {
 		return getName().charAt(0);
 	}
 
+	public PieceColor getColor() {
+		return color;
+	}
+
 	public boolean isWhite() {
-		return isWhite;
+		return color == PieceColor.WHITE;
+	}
+
+	public boolean isBlack() {
+		return color == PieceColor.BLACK;
 	}
 
 	public boolean isEnemyOf(Piece piece) {
-		return isWhite != piece.isWhite();
+		return color != piece.getColor();
 	}
 
 	public Position getPosition() {
@@ -42,6 +50,10 @@ public abstract class Piece {
 	public int getY() {
 		return board.getPosition(this).getY();
 	}
+
+	public abstract int getValue();
+
+	public abstract int[][] evaluationChart();
 
 	public abstract Set<? extends Move> getValidMovesInternal();
 
@@ -101,6 +113,6 @@ public abstract class Piece {
 
 	@Override
 	public String toString() {
-		return (isWhite ? "White" : "Black") + " " + getName() + " at " + getPosition();
+		return color + " " + getName() + " at " + getPosition();
 	}
 }

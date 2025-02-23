@@ -5,17 +5,28 @@ import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.Position;
+import softwareschreiber.chessengine.evaluation.EvaluationCharts;
 import softwareschreiber.chessengine.move.CaptureMove;
 import softwareschreiber.chessengine.move.Move;
 
 public class Queen extends Piece {
-	public Queen(boolean isWhite, Board board) {
-		super(isWhite, board);
+	public Queen(PieceColor color, Board board) {
+		super(color, board);
 	}
 
 	@Override
 	public String getName() {
 		return "Queen";
+	}
+
+	@Override
+	public int getValue() {
+		return 9;
+	}
+
+	@Override
+	public int[][] evaluationChart() {
+		return EvaluationCharts.queenTable;
 	}
 
 	@Override

@@ -7,12 +7,13 @@ import java.util.Set;
 
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.Position;
+import softwareschreiber.chessengine.evaluation.EvaluationCharts;
 import softwareschreiber.chessengine.move.CaptureMove;
 import softwareschreiber.chessengine.move.Move;
 
 public class Knight extends Piece {
-	public Knight(boolean isWhite, Board board) {
-		super(isWhite, board);
+	public Knight(PieceColor color, Board board) {
+		super(color, board);
 	}
 
 	@Override
@@ -23,6 +24,16 @@ public class Knight extends Piece {
 	@Override
 	public char getSymbol() {
 		return 'k';
+	}
+
+	@Override
+	public int getValue() {
+		return 3;
+	}
+
+	@Override
+	public int[][] evaluationChart() {
+		return EvaluationCharts.knightTable;
 	}
 
 	@Override
