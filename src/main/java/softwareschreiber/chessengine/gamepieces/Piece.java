@@ -63,7 +63,7 @@ public abstract class Piece {
 				movesToRemove.add(move);
 			}
 
-			board.undo();
+			board.undo(true);
 		}
 
 		validMoves.removeAll(movesToRemove);

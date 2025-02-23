@@ -30,7 +30,9 @@ public class Board {
 	private final Map<Piece, Position> positions;
 	private final History<Pair<Piece, Move>> history;
 	private final List<Consumer<Piece>> pieceAddedListeners;
+	private final List<BiConsumer<Piece, Move>> submittedMoveListeners;
 	private final List<BiConsumer<Piece, Move>> pieceMovedListeners;
+	private final List<BiConsumer<Piece, Move>> submittedUndoMoveDoneListeners;
 	private final List<BiConsumer<Piece, Move>> moveUndoneListeners;
 
 	public Board(Game game) {
@@ -40,7 +42,9 @@ public class Board {
 		positions = new HashMap<>();
 		history = new History<>(Pair.of(null, null));
 		pieceAddedListeners = new ArrayList<>();
+		submittedMoveListeners = new ArrayList<>();
 		pieceMovedListeners = new ArrayList<>();
+		submittedUndoMoveDoneListeners = new ArrayList<>();
 		moveUndoneListeners = new ArrayList<>();
 	}
 
@@ -48,8 +52,16 @@ public class Board {
 		pieceAddedListeners.add(listener);
 	}
 
+	public void addSubmittedMoveDoneListener(BiConsumer<Piece, Move> listener) {
+		submittedMoveListeners.add(listener);
+	}
+
 	public void addPieceMovedListener(BiConsumer<Piece, Move> listener) {
 		pieceMovedListeners.add(listener);
+	}
+
+	public void addSubmittedUndoMoveDoneListener(BiConsumer<Piece, Move> listener) {
+		submittedUndoMoveDoneListeners.add(listener);
 	}
 
 	public void addMoveUndoneListener(BiConsumer<Piece, Move> listener) {
@@ -90,14 +102,25 @@ public class Board {
 		return piece;
 	}
 
+	/**
+	 * Initiated by user input.
+	 */
 	public void move(Piece piece, Move move, boolean virtual) {
+		moveInternal(piece, move, virtual);
+
+		if (!virtual) {
+			submittedMoveListeners.forEach(listener -> listener.accept(piece, move));
+		}
+	}
+
+	private void moveInternal(Piece piece, Move move, boolean virtual) {
 		Piece origPiece = piece;
 		Position currentPosition = positions.get(piece);
 		Position targetPosition = move.getTargetPos();
 
 		// Special moves
 		if (move instanceof CastlingMove castlingMove) {
-			move(castlingMove.getOther(), castlingMove.getOtherMove(), false);
+			moveInternal(castlingMove.getOther(), castlingMove.getOtherMove(), false);
 		} else if (move instanceof PromotionMove promotionMove) {
 			if (promotionMove.getCaptured() != null) {
 				capture(promotionMove.getCaptured());
@@ -137,18 +160,26 @@ public class Board {
 		board[position.getY()][position.getX()] = null;
 	}
 
-	public void undo() {
+	public void undo(boolean virtual) {
 		Pair<Piece, Move> lastMove = history.getCurrent();
 
 		if (lastMove == null) {
 			return;
 		}
 
-		undoMove(lastMove.getLeft(), lastMove.getRight());
+		undoMove(lastMove.getLeft(), lastMove.getRight(), virtual);
 		history.goBack();
 	}
 
-	private void undoMove(Piece piece, Move move) {
+	private void undoMove(Piece piece, Move move, boolean virtual) {
+		undoMoveInternal(piece, move, virtual);
+
+		if (!virtual) {
+			submittedUndoMoveDoneListeners.forEach(listener -> listener.accept(piece, move));
+		}
+	}
+
+	public void undoMoveInternal(Piece piece, Move move, boolean virtual) {
 		Position currentPosition = move.getTargetPos();
 		Position targetPosition = move.getSourcePos();
 
@@ -157,7 +188,7 @@ public class Board {
 		positions.put(piece, targetPosition);
 
 		if (move instanceof CastlingMove castlingMove) {
-			undoMove(castlingMove.getOther(), castlingMove.getOtherMove());
+			undoMove(castlingMove.getOther(), castlingMove.getOtherMove(), virtual);
 		} else if (move instanceof PromotionMove promotionMove) {
 			Piece replacement = promotionMove.getReplacement();
 			Pawn originalPawn = (Pawn) piece;
@@ -168,12 +199,12 @@ public class Board {
 
 			if (promotionMove.getCaptured() != null) {
 				undoMove(originalPawn, new CaptureMove(promotionMove.getSourcePos(), promotionMove.getTargetPos(),
-						promotionMove.getCaptured()));
+						promotionMove.getCaptured()), virtual);
 			}
 		} else if (move instanceof CaptureMove captureMove) {
 			Position capturedPos = captureMove.getCaptured().getPosition();
 			addPiece(capturedPos, captureMove.getCaptured());
-			undoMove(captureMove.getCaptured(), new Move(capturedPos, capturedPos));
+			undoMove(captureMove.getCaptured(), new Move(capturedPos, capturedPos), virtual);
 		}
 
 		moveUndoneListeners.forEach(listener -> listener.accept(piece, move));
@@ -228,7 +259,7 @@ public class Board {
 		Set<Move> enemyMoves = new HashSet<>();
 
 		for (Piece enemyPiece : getEnemyPieces(piece)) {
-			enemyMoves.addAll(enemyPiece.getValidMovesInternal());
+			enemyMoves.addAll(enemyPiece.getValidMoves());
 		}
 
 		return enemyMoves;
@@ -264,40 +295,25 @@ public class Board {
 		Set<Move> allyMoves = new HashSet<>();
 
 		for (Piece allyPiece : getAllyPieces(piece)) {
-			allyMoves.addAll(allyPiece.getValidMoves());
+			allyMoves.addAll(allyPiece.getValidMovesInternal());
 		}
 
 		return allyMoves;
 	}
 
-	public void checkForMates(Piece piece) {
-		Set<? extends Move> allyMoves = getAllAllyMoves(piece);
-		String color = !piece.isWhite() ? "Weiß" : "Schwarz";
+	public void checkForEnemyMates(Piece piece) {
+		Set<? extends Move> enemyMoves = getAllEnemyMoves(piece);
+		String color = !piece.isWhite() ? "White" : "Black";
 
-		if (allyMoves.isEmpty()) {
-			for (Piece allyPiece : getAllyPieces(piece)) {
-				if (allyPiece instanceof King king && king.isChecked()) {
+		if (enemyMoves.isEmpty()) {
+			for (Piece enemyPiece : getEnemyPieces(piece)) {
+				if (enemyPiece instanceof King king && king.isChecked()) {
 					game.checkMate(color);
-				} else {
-					game.staleMate();
-				}
-			}
-		} else {
-			boolean checkMatePossible = true;
-
-			for (Piece allyPiece : getAllyPieces(piece)) {
-				if (allyPiece instanceof King king && king.isChecked() && king.getValidMovesInternal().isEmpty()) {
-					if (!allyPiece.getValidMoves().isEmpty()) {
-						checkMatePossible = false;
-					}
+					return;
 				}
 			}
 
-			if (checkMatePossible) {
-				game.checkMate(color);
-			} else {
-				return;
-			}
+			game.staleMate();
 		}
 	}
 

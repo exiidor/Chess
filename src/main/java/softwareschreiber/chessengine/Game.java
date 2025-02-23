@@ -1,38 +1,49 @@
 package softwareschreiber.chessengine;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
 import softwareschreiber.chessengine.gamepieces.Pawn;
 import softwareschreiber.chessengine.gamepieces.Piece;
 
 public abstract class Game {
-	private Board board;
+	private final Board board;
+	private final List<Consumer<Boolean>> gameEndListeners;
 	private boolean isWhitesTurn;
-	private boolean gameIsActive;
+	private boolean gameOver = false;
 
 	public Game() {
 		board = new Board(this);
+		gameEndListeners = new ArrayList<>();
 		isWhitesTurn = true;
-		gameIsActive = true;
-	}
-
-	public Game(Board board) {
-		this.board = board;
 	}
 
 	public Board getBoard() {
 		return board;
 	}
 
-	void startGame() {
+	public void startGame() {
 		board.initializeStartingPositions();
 
-		board.addPieceMovedListener((piece, move) -> {
-			isWhitesTurn = !isWhitesTurn;
-			board.checkForMates(piece);
+		board.addSubmittedMoveDoneListener((piece, move) -> {
+			board.checkForEnemyMates(piece);
+
+			if (!gameOver) {
+				isWhitesTurn = !piece.isWhite();
+			}
 		});
-		board.addMoveUndoneListener((piece, move) -> {
-			isWhitesTurn = !isWhitesTurn;
-			board.checkForMates(piece);
+		board.addSubmittedUndoMoveDoneListener((piece, move) -> {
+			board.checkForEnemyMates(piece);
+
+			if (!gameOver) {
+				isWhitesTurn = piece.isWhite();
+			}
 		});
+	}
+
+	public void addGameEndListener(Consumer<Boolean> listener) {
+		gameEndListeners.add(listener);
 	}
 
 	protected abstract Piece getPromotionTarget(Board board, Pawn pawn);
@@ -41,15 +52,20 @@ public abstract class Game {
 
 	protected abstract void staleMate();
 
-	public void timeForTurn(boolean isWhitesTurn) {
-		// Whites time for move
-	}
-
 	protected void endGame() {
-		gameIsActive = false;
+		gameOver = true;
+		gameEndListeners.forEach(listener -> listener.accept(isWhitesTurn));
 	}
 
-	public boolean isGameActive() {
-		return gameIsActive;
+	public boolean isWhitesTurn() {
+		return isWhitesTurn;
+	}
+
+	public boolean isTimeForTurn(Piece piece) {
+		return piece.isWhite() == isWhitesTurn;
+	}
+
+	public boolean isGameOver() {
+		return gameOver;
 	}
 }

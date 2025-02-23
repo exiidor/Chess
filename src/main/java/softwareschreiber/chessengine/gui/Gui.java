@@ -26,31 +26,71 @@ import softwareschreiber.chessengine.util.Util;
 
 public class Gui {
 	private static final Color BLUE = new Color(120, 200, 250);
+	private static final Color DIM_BLUE = new Color(40, 70, 90);
 	private static final Color RED = new Color(240, 105, 110);
+	private static final Color DIM_RED = new Color(80, 40, 40);
 	private static final Color GRAY = new Color(112, 112, 112);
 	private static final Color GOLD = new Color(252, 197, 45);
+	private static final Color DIM_GOLD = new Color(80, 70, 15);
 	private static final Color BACKGROUND_BLACK = new Color(36, 36, 36);
-	private final ChessPanel[][] squares;
+	private final JFrame windowFrame;
+	private final JPanel squareContainer;
 	private final List<ChessPanel> highlightedSquares;
 	private final Map<ChessPanel, Move> highlightedSquareMoves;
+	private ChessPanel[][] squares;
 	private Game game;
 	private Board board;
 	private Piece selectedPiece;
 
 	public Gui() {
-		squares = new ChessPanel[8][8];
 		highlightedSquares = new ArrayList<>();
 		highlightedSquareMoves = new HashMap<>();
 
+		windowFrame = new JFrame();
+		windowFrame.setResizable(false);
+		windowFrame.setIconImage(new ImageIcon(Util.getResource("/graphics/Pawnfalse.png").toString()).getImage());
+		windowFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		squareContainer = new JPanel();
+		windowFrame.add(squareContainer);
+
+		windowFrame.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_U) {
+					getBoard().undo(false);
+				}
+			}
+		});
+
+		initGame();
+
+		windowFrame.setSize(1024, 1024);
+		windowFrame.setVisible(true);
+	}
+
+	private Board getBoard() {
+		return board;
+	}
+
+	private void initGame() {
+		squareContainer.removeAll();
+		squareContainer.setLayout(new GridLayout(8, 8));
+
+		squares = new ChessPanel[8][8];
+		highlightedSquares.clear();
+		highlightedSquareMoves.clear();
+
 		game = new GuiGame();
 		board = game.getBoard();
-		board.initializeStartingPositions();
+		game.startGame();
 
-		JFrame frame = new JFrame("Software-Schreiber Schach");
-		frame.setIconImage(new ImageIcon(Util.getResource("/graphics/Pawnfalse.png").toString()).getImage());
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		board.addPieceMovedListener(this::onPieceMoved);
+		board.addSubmittedMoveDoneListener(this::onSubmittedMoveDone);
+		board.addMoveUndoneListener(this::onPieceMoveUndone);
+		board.addSubmittedUndoMoveDoneListener(this::onSubmittedUndoMoveDone);
+		game.addGameEndListener(this::onGameEnd);
 
-		JPanel panel = new JPanel(new GridLayout(8, 8));
 		boolean white = true;
 
 		for (int y = board.getMaxY(); y >= board.getMinY(); y--) {
@@ -69,7 +109,10 @@ public class Gui {
 						Piece piece = square.getPiece();
 
 						if (highlightedSquares.contains(square) && selectedPiece != piece) {
-							board.move(selectedPiece, highlightedSquareMoves.get(square), false);
+							if (game.isTimeForTurn(selectedPiece)) {
+								getBoard().move(selectedPiece, highlightedSquareMoves.get(square), false);
+							}
+
 							clearHighlightedSquares();
 							return;
 						}
@@ -104,28 +147,16 @@ public class Gui {
 					}
 				});
 
-				panel.add(square.getUI());
+				squareContainer.add(square.getUI());
 				white = !white;
 			}
 
 			white = !white;
 		}
 
-		board.addPieceMovedListener(this::onMoved);
-		board.addMoveUndoneListener(this::onMoveUndone);
-
-		frame.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_U) {
-					board.undo();
-				}
-			}
-		});
-
-		frame.add(panel);
-		frame.setSize(1024, 1024);
-		frame.setVisible(true);
+		squareContainer.revalidate();
+		squareContainer.repaint();
+		updateTitle();
 	}
 
 	private ChessPanel getSquareAt(Position position) {
@@ -136,7 +167,23 @@ public class Gui {
 		return squares[y][x];
 	}
 
-	private void onMoved(Piece piece, Move move) {
+	private void updateTitle() {
+		if (game.isGameOver()) {
+			if (game.isWhitesTurn()) {
+				windowFrame.setTitle("Software-Schreiber Schach - White won");
+			} else {
+				windowFrame.setTitle("Software-Schreiber Schach - Black won");
+			}
+		} else {
+			if (game.isWhitesTurn()) {
+				windowFrame.setTitle("Software-Schreiber Schach - Whites turn");
+			} else {
+				windowFrame.setTitle("Software-Schreiber Schach - Blacks turn");
+			}
+		}
+	}
+
+	private void onPieceMoved(Piece piece, Move move) {
 		Position sourcePos = move.getSourcePos();
 		Position targetPos = move.getTargetPos();
 		ChessPanel sourceSquare = getSquareAt(sourcePos);
@@ -157,9 +204,15 @@ public class Gui {
 		} else {
 			targetSquare.setPiece(piece);
 		}
+
+		updateTitle();
 	}
 
-	private void onMoveUndone(Piece piece, Move move) {
+	private void onSubmittedMoveDone(Piece piece, Move move) {
+		updateTitle();
+	}
+
+	private void onPieceMoveUndone(Piece piece, Move move) {
 		Position sourcePos = move.getSourcePos();
 		Position targetPos = move.getTargetPos();
 		ChessPanel sourceSquare = getSquareAt(sourcePos);
@@ -175,6 +228,16 @@ public class Gui {
 				getSquareAt(promotionMove.getCaptured().getPosition()).setPiece(promotionMove.getCaptured());
 			}
 		}
+
+		updateTitle();
+	}
+
+	private void onSubmittedUndoMoveDone(Piece piece, Move move) {
+		updateTitle();
+	}
+
+	private void onGameEnd(boolean whiteWon) {
+		initGame();
 	}
 
 	private void showPossibleMoves(Piece piece) {
@@ -182,13 +245,14 @@ public class Gui {
 			Position position = move.getTargetPos();
 			ChessPanel square = squares[position.getY()][position.getX()];
 			highlightedSquareMoves.put(square, move);
+			boolean isPiecesTurn = game.isTimeForTurn(piece);
 
 			if (move instanceof CaptureMove && !(move instanceof PromotionMove)) {
-				square.setColor(RED);
+				square.setColor(isPiecesTurn ? RED : DIM_RED);
 			} else if (move instanceof PromotionMove) {
-				square.setColor(GOLD);
+				square.setColor(isPiecesTurn ? GOLD : DIM_GOLD);
 			} else {
-				square.setColor(BLUE);
+				square.setColor(isPiecesTurn ? BLUE : DIM_BLUE);
 			}
 
 			highlightedSquares.add(square);
