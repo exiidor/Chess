@@ -18,7 +18,6 @@ import javax.swing.JPanel;
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.Game;
 import softwareschreiber.chessengine.Position;
-import softwareschreiber.chessengine.evaluation.Evaluation;
 import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.PieceColor;
 import softwareschreiber.chessengine.move.CaptureMove;
