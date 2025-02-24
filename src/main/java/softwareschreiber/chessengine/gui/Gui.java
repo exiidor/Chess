@@ -171,7 +171,7 @@ public class Gui {
 
 	private void updateTitle() {
 		String title = "Software-Schreiber Schach";
-		String eval = String.valueOf(new Evaluation(board).chartEvaluate());
+		String eval = String.valueOf(board.evaluate());
 
 		if (game.isGameOver()) {
 			if (game.isWhitesTurn()) {

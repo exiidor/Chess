@@ -12,7 +12,7 @@ public class Evaluation {
 	}
 
 	@Deprecated
-	public int pieceCountEvaluate() {
+	public int absoluteMaterialEvaluation() {
 		int score = 0;
 
 		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
@@ -26,7 +26,7 @@ public class Evaluation {
 		return score;
 	}
 
-	public int chartEvaluate() {
+	public int relativeMaterialEvaluation() {
 		int score = 0;
 
 		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
@@ -37,6 +37,26 @@ public class Evaluation {
 			score -= piece.evaluationChart()[piece.getX()][piece.getY()];
 		}
 
+		return score;
+	}
+
+	public int mobilityEvaluation() {
+		int score = 0;
+
+		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
+			score += (piece.getValidMovesInternal().size());
+		}
+
+		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
+			score -= (piece.getValidMovesInternal().size());
+		}
+
+		return score;
+	}
+
+	public int evaluate() {
+		int score = 0;
+		score += relativeMaterialEvaluation() + mobilityEvaluation();
 		return score;
 	}
 }

@@ -133,6 +133,9 @@ public class Board {
 
 			if (!virtual) {
 				piece = game.getPromotionTarget(this, pawn);
+			} else {
+				// Default to queen
+				piece = new Queen(piece.getColor(), this);
 			}
 
 			promotionMove.setReplacement(piece);
@@ -353,8 +356,8 @@ public class Board {
 		return isOutOfBounds(position.getX(), position.getY());
 	}
 
-	public int evaluate(){
-		return new Evaluation(this).chartEvaluate();
+	public int evaluate() {
+		return new Evaluation(this).evaluate();
 	}
 
 	public History<Pair<Piece, Move>> getHistory() {
@@ -363,6 +366,10 @@ public class Board {
 
 	void printBoard() {
 		System.out.println(toString());
+	}
+
+	public Set<Piece> getPieces() {
+		return new HashSet<>(pieces);
 	}
 
 	@Override

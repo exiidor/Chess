@@ -79,7 +79,7 @@ public class King extends Piece {
 						&& board.getPieceAt(1, getY()) == null
 						&& board.getPieceAt(2, getY()) == null
 						&& board.getPieceAt(3, getY()) == null
-						&& !board.getAllEnemyMoves(this).stream()
+						&& !board.getAllEnemyMovesExceptKingMoves(this).stream()
 								.map(Move::getTargetPos)
 								.anyMatch(pos -> pos.equals(new Position(2, getY()))
 										|| pos.equals(new Position(3, getY())));
