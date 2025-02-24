@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import softwareschreiber.chessengine.evaluation.Evaluation;
 import softwareschreiber.chessengine.gamepieces.Bishop;
 import softwareschreiber.chessengine.gamepieces.King;
 import softwareschreiber.chessengine.gamepieces.Knight;
@@ -297,12 +298,22 @@ public class Board {
 		Set<Piece> allyPieces = new HashSet<>();
 
 		for (Piece possibleAlly : pieces) {
-			if (!possibleAlly.isEnemyOf(piece)) {
+			if (!possibleAlly.isEnemyOf(piece.getColor())) {
 				allyPieces.add(possibleAlly);
 			}
 		}
 
 		return allyPieces;
+	}
+
+	public Set<? extends Move> getAllMoves() {
+		Set<Move> allMoves = new HashSet<>();
+
+		for (Piece piece : pieces) {
+			allMoves.addAll(piece.getValidMoves());
+		}
+
+		return allMoves;
 	}
 
 	public Set<? extends Move> getAllAllyMoves(Piece piece) {
@@ -317,7 +328,7 @@ public class Board {
 
 	public void checkForEnemyMates(Piece piece) {
 		Set<? extends Move> enemyMoves = getAllEnemyMoves(piece);
-		String color = piece.getColor().toString();
+		String color = piece.getEnemyColor().toString();
 
 		if (enemyMoves.isEmpty()) {
 			for (Piece enemyPiece : getEnemyPieces(piece)) {
@@ -340,6 +351,10 @@ public class Board {
 
 	public boolean isOutOfBounds(Position position) {
 		return isOutOfBounds(position.getX(), position.getY());
+	}
+
+	public int evaluate(){
+		return new Evaluation(this).chartEvaluate();
 	}
 
 	public History<Pair<Piece, Move>> getHistory() {

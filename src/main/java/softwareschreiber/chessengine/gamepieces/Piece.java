@@ -27,6 +27,10 @@ public abstract class Piece {
 		return color;
 	}
 
+	public PieceColor getEnemyColor() {
+		return color.getOpposite();
+	}
+
 	public boolean isWhite() {
 		return color == PieceColor.WHITE;
 	}
@@ -37,6 +41,10 @@ public abstract class Piece {
 
 	public boolean isEnemyOf(Piece piece) {
 		return color != piece.getColor();
+	}
+
+	public boolean isEnemyOf(PieceColor color) {
+		return this.color != color;
 	}
 
 	public Position getPosition() {
