@@ -12,12 +12,13 @@ public abstract class Game {
 	private final Board board;
 	private final List<Consumer<PieceColor>> gameEndListeners;
 	private PieceColor activeColor;
+	private PieceColor startColor = PieceColor.WHITE;
 	private boolean gameOver = false;
 
 	public Game() {
 		board = new Board(this);
 		gameEndListeners = new ArrayList<>();
-		activeColor = PieceColor.WHITE;
+		activeColor = startColor;
 	}
 
 	public Board getBoard() {

@@ -178,6 +178,7 @@ public class Board {
 	}
 
 	private void undoMove(Piece piece, Move move, boolean virtual) {
+
 		undoMoveInternal(piece, move, virtual);
 
 		if (!virtual) {
@@ -186,6 +187,7 @@ public class Board {
 	}
 
 	public void undoMoveInternal(Piece piece, Move move, boolean virtual) {
+
 		Position currentPosition = move.getTargetPos();
 		Position targetPosition = move.getSourcePos();
 
@@ -249,7 +251,7 @@ public class Board {
 		return getPieceAt(position.getX(), position.getY());
 	}
 
-	public Set<Piece> getPieces(PieceColor color) {
+	public Set<Piece> getPiecesFromColor(PieceColor color) {
 		Set<Piece> pieces = new HashSet<>();
 
 		for (Piece piece : this.pieces) {

@@ -15,11 +15,11 @@ public class Evaluation {
 	public int absoluteMaterialEvaluation() {
 		int score = 0;
 
-		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
+		for (Piece piece : board.getPiecesFromColor(PieceColor.WHITE)) {
 			score += piece.getValue();
 		}
 
-		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
+		for (Piece piece : board.getPiecesFromColor(PieceColor.BLACK)) {
 			score -= piece.getValue();
 		}
 
@@ -29,11 +29,11 @@ public class Evaluation {
 	public int relativeMaterialEvaluation() {
 		int score = 0;
 
-		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
+		for (Piece piece : board.getPiecesFromColor(PieceColor.WHITE)) {
 			score += piece.evaluationChart()[piece.getX()][piece.getY()];
 		}
 
-		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
+		for (Piece piece : board.getPiecesFromColor(PieceColor.BLACK)) {
 			score -= piece.evaluationChart()[piece.getX()][piece.getY()];
 		}
 
@@ -43,11 +43,11 @@ public class Evaluation {
 	public int mobilityEvaluation() {
 		int score = 0;
 
-		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
+		for (Piece piece : board.getPiecesFromColor(PieceColor.WHITE)) {
 			score += (piece.getValidMovesInternal().size());
 		}
 
-		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
+		for (Piece piece : board.getPiecesFromColor(PieceColor.BLACK)) {
 			score -= (piece.getValidMovesInternal().size());
 		}
 
@@ -55,8 +55,6 @@ public class Evaluation {
 	}
 
 	public int evaluate() {
-		int score = 0;
-		score += relativeMaterialEvaluation() + mobilityEvaluation();
-		return score;
+		return relativeMaterialEvaluation() + mobilityEvaluation();
 	}
 }
