@@ -14,6 +14,7 @@ import java.util.Map;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.Game;
@@ -60,6 +61,8 @@ public class Gui {
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_U) {
 					getBoard().undo(false);
+				} else if (e.getKeyCode() == KeyEvent.VK_R) {
+					reloadSquares();
 				}
 			}
 		});
@@ -82,7 +85,7 @@ public class Gui {
 		highlightedSquares.clear();
 		highlightedSquareMoves.clear();
 
-		game = new GuiGame();
+		game = new GuiGame(PieceColor.WHITE);
 		board = game.getBoard();
 		game.startGame();
 
@@ -160,6 +163,19 @@ public class Gui {
 		updateTitle();
 	}
 
+	private void reloadSquares() {
+		clearHighlightedSquares();
+
+		for (int y = board.getMaxY(); y >= board.getMinY(); y--) {
+			for (int x = board.getMinX(); x <= board.getMaxX(); x++) {
+				Piece piece = board.getPieceAt(x, y);
+				ChessPanel square = getSquareAt(x, y);
+
+				square.setPiece(piece);
+			}
+		}
+	}
+
 	private ChessPanel getSquareAt(Position position) {
 		return getSquareAt(position.getX(), position.getY());
 	}
@@ -213,7 +229,15 @@ public class Gui {
 	}
 
 	private void onSubmittedMoveDone(Piece piece, Move move) {
-		updateTitle();
+		SwingUtilities.invokeLater(() -> {
+			Move chosenMove = game.getBlackPlayer().chooseMove(board);
+			Position sourcePos = chosenMove.getSourcePos();
+			Piece pieceToMove = board.getPieceAt(sourcePos);
+
+			board.move(pieceToMove, chosenMove, true);
+			game.setIsWhitesTurn(true);
+			updateTitle();
+		});
 	}
 
 	private void onPieceMoveUndone(Piece piece, Move move) {

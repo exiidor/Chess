@@ -8,10 +8,15 @@ import softwareschreiber.chessengine.gamepieces.Bishop;
 import softwareschreiber.chessengine.gamepieces.Knight;
 import softwareschreiber.chessengine.gamepieces.Pawn;
 import softwareschreiber.chessengine.gamepieces.Piece;
+import softwareschreiber.chessengine.gamepieces.PieceColor;
 import softwareschreiber.chessengine.gamepieces.Queen;
 import softwareschreiber.chessengine.gamepieces.Rook;
 
 public class GuiGame extends Game {
+	public GuiGame(PieceColor startingColor) {
+		super(startingColor);
+	}
+
 	@Override
 	protected Piece getPromotionTarget(Board board, Pawn pawn) {
 		String[] options = { "Queen", "Rook", "Bishop", "Knight" };

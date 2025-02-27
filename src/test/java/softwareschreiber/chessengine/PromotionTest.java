@@ -47,7 +47,7 @@ class PromotionTest {
 	}
 
 	private Board createBoard() {
-		return new Board(new CliGame() {
+		return new Board(new CliGame(WHITE) {
 			@Override
 			protected Piece getPromotionTarget(Board board, Pawn pawn) {
 				return new Queen(pawn.getColor(), board);

@@ -121,9 +121,13 @@ public class Board {
 		Position currentPosition = positions.get(piece);
 		Position targetPosition = move.getTargetPos();
 
+		if (!currentPosition.equals(move.getSourcePos())) {
+			throw new IllegalArgumentException("Piece is not at source position");
+		}
+
 		// Special moves
 		if (move instanceof CastlingMove castlingMove) {
-			moveInternal(castlingMove.getOther(), castlingMove.getOtherMove(), false);
+			moveInternal(castlingMove.getOther(), castlingMove.getOtherMove(), virtual);
 		} else if (move instanceof PromotionMove promotionMove) {
 			if (promotionMove.getCaptured() != null) {
 				capture(promotionMove.getCaptured());
@@ -173,21 +177,22 @@ public class Board {
 			return;
 		}
 
+		if (lastMove.getLeft() == null || lastMove.getRight() == null) {
+			throw new IllegalStateException("Last move is invalid");
+		}
+
 		undoMove(lastMove.getLeft(), lastMove.getRight(), virtual);
-		history.goBack();
 	}
 
 	private void undoMove(Piece piece, Move move, boolean virtual) {
-
-		undoMoveInternal(piece, move, virtual);
+		undoMoveInternal(piece, move, virtual, true);
 
 		if (!virtual) {
 			submittedUndoMoveDoneListeners.forEach(listener -> listener.accept(piece, move));
 		}
 	}
 
-	public void undoMoveInternal(Piece piece, Move move, boolean virtual) {
-
+	public void undoMoveInternal(Piece piece, Move move, boolean virtual, boolean modifyHistory) {
 		Position currentPosition = move.getTargetPos();
 		Position targetPosition = move.getSourcePos();
 
@@ -196,7 +201,7 @@ public class Board {
 		positions.put(piece, targetPosition);
 
 		if (move instanceof CastlingMove castlingMove) {
-			undoMove(castlingMove.getOther(), castlingMove.getOtherMove(), virtual);
+			undoMoveInternal(castlingMove.getOther(), castlingMove.getOtherMove(), virtual, true);
 		} else if (move instanceof PromotionMove promotionMove) {
 			Piece replacement = promotionMove.getReplacement();
 			Pawn originalPawn = (Pawn) piece;
@@ -206,13 +211,23 @@ public class Board {
 			addPiece(targetPosition, originalPawn);
 
 			if (promotionMove.getCaptured() != null) {
-				undoMove(originalPawn, new CaptureMove(promotionMove.getSourcePos(), promotionMove.getTargetPos(),
-						promotionMove.getCaptured()), virtual);
+				undoMoveInternal(originalPawn,
+						new CaptureMove(promotionMove.getSourcePos(), promotionMove.getTargetPos(),
+								promotionMove.getCaptured()),
+						virtual, false);
 			}
 		} else if (move instanceof CaptureMove captureMove) {
 			Position capturedPos = captureMove.getCaptured().getPosition();
 			addPiece(capturedPos, captureMove.getCaptured());
-			undoMove(captureMove.getCaptured(), new Move(capturedPos, capturedPos), virtual);
+			undoMoveInternal(captureMove.getCaptured(), new Move(capturedPos, capturedPos), virtual, false);
+		}
+
+		if (!history.canGoBack()) {
+			throw new RuntimeException("Went back too far");
+		}
+
+		if (modifyHistory) {
+			history.goBack();
 		}
 
 		moveUndoneListeners.forEach(listener -> listener.accept(piece, move));

@@ -16,7 +16,7 @@ import softwareschreiber.chessengine.move.Move;
 class EnPassantTest {
 	@Test
 	void test() {
-		onlyTwoPieces(new Board(new CliGame()), WHITE);
+		onlyTwoPieces(new Board(new CliGame(WHITE)), WHITE);
 	}
 
 	private void onlyTwoPieces(Board board, PieceColor color) {

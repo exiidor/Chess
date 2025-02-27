@@ -17,15 +17,15 @@ import softwareschreiber.chessengine.move.Move;
 class CastlingTest {
 	@Test
 	void test() {
-		noObstruction(new Board(new CliGame()), WHITE, true);
-		noObstruction(new Board(new CliGame()), WHITE, false);
-		noObstruction(new Board(new CliGame()), BLACK, true);
-		noObstruction(new Board(new CliGame()), BLACK, false);
+		noObstruction(new Board(new CliGame(WHITE)), WHITE, true);
+		noObstruction(new Board(new CliGame(WHITE)), WHITE, false);
+		noObstruction(new Board(new CliGame(WHITE)), BLACK, true);
+		noObstruction(new Board(new CliGame(WHITE)), BLACK, false);
 
-		obstruction(new Board(new CliGame()), WHITE, true);
-		obstruction(new Board(new CliGame()), WHITE, false);
-		obstruction(new Board(new CliGame()), BLACK, true);
-		obstruction(new Board(new CliGame()), BLACK, false);
+		obstruction(new Board(new CliGame(WHITE)), WHITE, true);
+		obstruction(new Board(new CliGame(WHITE)), WHITE, false);
+		obstruction(new Board(new CliGame(WHITE)), BLACK, true);
+		obstruction(new Board(new CliGame(WHITE)), BLACK, false);
 	}
 
 	private void noObstruction(Board board, PieceColor color, boolean left) {
