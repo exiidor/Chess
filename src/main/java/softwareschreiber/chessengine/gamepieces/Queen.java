@@ -30,6 +30,11 @@ public class Queen extends Piece {
 	}
 
 	@Override
+	public int getMaxMoves() {
+		return 27;
+	}
+
+	@Override
 	public Set<? extends Move> getValidMovesInternal() {
 		Set<Move> validMoves = new LinkedHashSet<>();
 

@@ -82,11 +82,11 @@ public class Evaluation {
 		double score = 0;
 
 		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
-			score += (piece.evaluationChart()[7 - piece.getY()][piece.getX()] / 100) * piece.getValue() * piece.getValidMovesInternal().size() * (piece.isUnderAttack() ? 0.5 : 1);
+			score += (piece.evaluationChart()[7 - piece.getY()][piece.getX()] / 100) * piece.getValue() * piece.getValidMovesInternal().size()/piece.getMaxMoves() * (piece.isUnderAttack() ? 0.2 : 1);
 		}
 
 		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
-			score -= (piece.evaluationChart()[piece.getY()][piece.getX()] / 100) * piece.getValue() * piece.getValidMovesInternal().size() * (piece.isUnderAttack() ? 0.5 : 1);
+			score -= (piece.evaluationChart()[piece.getY()][piece.getX()] / 100) * piece.getValue() * piece.getValidMovesInternal().size()/piece.getMaxMoves() * (piece.isUnderAttack() ? 0.2 : 1);
 		}
 
 		return (int) Math.round(score);

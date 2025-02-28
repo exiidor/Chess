@@ -109,6 +109,8 @@ public abstract class Piece {
 		return moveCount > 0;
 	}
 
+	public abstract int getMaxMoves();
+
 	protected boolean isAtBoardTop() {
 		return getY() == board.getMaxY();
 	}

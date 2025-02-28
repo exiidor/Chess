@@ -30,6 +30,11 @@ public class Bishop extends Piece {
 	}
 
 	@Override
+	public int getMaxMoves() {
+		return 13;
+	}
+
+	@Override
 	public Set<? extends Move> getValidMovesInternal() {
 		Set<Move> validMoves = new LinkedHashSet<>();
 

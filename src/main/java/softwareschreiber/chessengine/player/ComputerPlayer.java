@@ -12,6 +12,6 @@ public class ComputerPlayer extends Player {
 
 	@Override
 	public Move chooseMove(Board board) {
-		return new Evaluation(board).bestMove(3, pieceColor);
+		return new Evaluation(board).bestMove(4, pieceColor);
 	}
 }

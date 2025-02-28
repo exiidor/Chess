@@ -32,6 +32,11 @@ public class Pawn extends Piece {
 		return EvaluationCharts.pawnTable;
 	}
 
+	@Override
+	public int getMaxMoves() {
+		return 4;
+	}
+
 	public int getDirection() {
 		return isWhite() ? 1 : -1;
 	}
