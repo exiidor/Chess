@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import org.jetbrains.annotations.Nullable;
+
 import softwareschreiber.chessengine.evaluation.Evaluation;
 import softwareschreiber.chessengine.gamepieces.Bishop;
 import softwareschreiber.chessengine.gamepieces.King;
@@ -368,16 +370,43 @@ public class Board {
 		return allyMoves;
 	}
 
-	public void checkForEnemyMates(Piece piece) {
-		Set<? extends Move> enemyMoves = getAllEnemyMoves(piece);
-		String color = piece.getEnemyColor().toString();
+	@Nullable
+	public King getKing(PieceColor color) {
+		for (Piece piece : pieces) {
+			if (piece instanceof King king && king.getColor() == color) {
+				return king;
+			}
+		}
 
-		if (enemyMoves.isEmpty()) {
-			for (Piece enemyPiece : getEnemyPieces(piece)) {
-				if (enemyPiece instanceof King king && king.isChecked()) {
-					game.checkMate(color);
-					return;
-				}
+		return null;
+	}
+
+	// Schachmatt
+	public boolean isInCheckMate(PieceColor pieceColor) {
+		King king = getKing(pieceColor);
+
+		if (king == null) {
+			System.err.println(pieceColor + " King not found in Board.isInCheckMate");
+			Thread.dumpStack();
+			return false;
+		}
+
+		return king.isChecked() && getAllAllyMoves(king).isEmpty();
+	}
+
+	public void checkForEnemyMates(Piece piece) {
+		PieceColor enemyColor = piece.getEnemyColor();
+		King enemyKing = getKing(enemyColor);
+
+		if (enemyKing == null) {
+			System.err.println(enemyColor + " King not found in Board.checkForEnemyMates");
+			Thread.dumpStack();
+			return;
+		}
+
+		if (getAllEnemyMoves(piece).isEmpty()) {
+			if (enemyKing.isChecked()) {
+				game.checkMate(enemyColor.toString());
 			}
 
 			game.staleMate();
@@ -458,9 +487,11 @@ public class Board {
 				newSubmittedUndoMoveDoneListeners,
 				newMoveUndoneListeners);
 
-		for (Piece piece : pieces) {
-			Piece newPiece = piece.copyWith(newBoard);
-			newBoard.addPiece(positions.get(piece), newPiece);
+		synchronized (pieces) {
+			for (Piece piece : pieces) {
+				Piece newPiece = piece.copyWith(newBoard);
+				newBoard.addPiece(positions.get(piece), newPiece);
+			}
 		}
 
 		return newBoard;

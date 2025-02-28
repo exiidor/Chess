@@ -26,7 +26,9 @@ public class PromotionMove extends CaptureMove {
 
 	@Override
 	public Move copyWith(Board board) {
-		PromotionMove copy = new PromotionMove(getSourcePos(), getTargetPos(), board.getPieceAt(getCaptured().getPosition()));
+		Piece capturedCopy = getCaptured() == null ? null : board.getPieceAt(getCaptured().getPosition());
+
+		PromotionMove copy = new PromotionMove(getSourcePos(), getTargetPos(), capturedCopy);
 
 		if (replacement != null) {
 			copy.setReplacement(board.getPieceAt(replacement.getPosition()));

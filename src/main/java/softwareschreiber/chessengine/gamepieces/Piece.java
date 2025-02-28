@@ -67,28 +67,34 @@ public abstract class Piece {
 
 	public final Set<? extends Move> getValidMoves() {
 		Set<? extends Move> validMoves = getValidMovesInternal();
+		King king = board.getKing(color);
 
-		King king = board.getAllyPieces(this).stream()
-				.filter(p -> p instanceof King)
-				.map(King.class::cast)
-				.findFirst()
-				.orElseThrow();
+		if (king == null) {
+			System.err.println(color + " King not found in Piece.getValidMoves");
+			Thread.dumpStack();
+		} else {
+			Set<Move> movesToRemove = new HashSet<>();
 
-		Set<Move> movesToRemove = new HashSet<>();
+			for (Move move : validMoves) {
+				board.move(this, move, true);
 
-		for (Move move : validMoves) {
-			board.move(this, move, true);
+				if (king.isChecked()) {
+					movesToRemove.add(move);
+				}
 
-			if (king.isChecked()) {
-				movesToRemove.add(move);
+				board.undo(true);
 			}
 
-			board.undo(true);
+			validMoves.removeAll(movesToRemove);
 		}
 
-		validMoves.removeAll(movesToRemove);
-
 		return validMoves;
+	}
+
+	public boolean isUnderAttack(){
+		return board.getAllEnemyMovesExceptKingMoves(this).stream()
+				.map(Move::getTargetPos)
+				.anyMatch(pos -> pos.equals(getPosition()));
 	}
 
 	public void onMoved(Position oldPosition, Position newPosition) {
