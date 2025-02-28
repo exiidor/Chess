@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import softwareschreiber.chessengine.evaluation.Evaluation;
@@ -468,22 +467,22 @@ public class Board {
 	}
 
 	@FunctionalInterface
-	public static interface SubmittedMoveConsumer {
+	public interface SubmittedMoveConsumer {
 		void accept(Piece piece, Move move);
 	}
 
 	@FunctionalInterface
-	public static interface PieceMovedConsumer {
+	public interface PieceMovedConsumer {
 		void accept(Piece piece, Move move);
 	}
 
 	@FunctionalInterface
-	public static interface SubmittedUndoMoveDoneConsumer {
+	public interface SubmittedUndoMoveDoneConsumer {
 		void accept(Piece piece, Move move);
 	}
 
 	@FunctionalInterface
-	public static interface MoveUndoneConsumer {
+	public interface MoveUndoneConsumer {
 		void accept(Piece piece, Move move);
 	}
 }
