@@ -32,41 +32,64 @@ public class Board {
 	private final Map<Piece, Position> positions;
 	private final History<Pair<Piece, Move>> history;
 	private final List<Consumer<Piece>> pieceAddedListeners;
-	private final List<BiConsumer<Piece, Move>> submittedMoveListeners;
-	private final List<BiConsumer<Piece, Move>> pieceMovedListeners;
-	private final List<BiConsumer<Piece, Move>> submittedUndoMoveDoneListeners;
-	private final List<BiConsumer<Piece, Move>> moveUndoneListeners;
+	private final List<SubmittedMoveConsumer> submittedMoveListeners;
+	private final List<PieceMovedConsumer> pieceMovedListeners;
+	private final List<SubmittedUndoMoveDoneConsumer> submittedUndoMoveDoneListeners;
+	private final List<MoveUndoneConsumer> moveUndoneListeners;
 
 	public Board(Game game) {
+		this(game,
+				new Piece[8][8],
+				new ArrayList<>(),
+				new HashMap<>(),
+				new History<>(Pair.of(null, null)),
+				new ArrayList<>(),
+				new ArrayList<>(),
+				new ArrayList<>(),
+				new ArrayList<>(),
+				new ArrayList<>());
+	}
+
+	private Board(
+			Game game,
+			Piece[][] board,
+			List<Piece> pieces,
+			Map<Piece, Position> positions,
+			History<Pair<Piece, Move>> history,
+			List<Consumer<Piece>> pieceAddedListeners,
+			List<SubmittedMoveConsumer> submittedMoveListeners,
+			List<PieceMovedConsumer> pieceMovedListeners,
+			List<SubmittedUndoMoveDoneConsumer> submittedUndoMoveDoneListeners,
+			List<MoveUndoneConsumer> moveUndoneListeners) {
 		this.game = game;
-		board = new Piece[8][8];
-		pieces = new ArrayList<>();
-		positions = new HashMap<>();
-		history = new History<>(Pair.of(null, null));
-		pieceAddedListeners = new ArrayList<>();
-		submittedMoveListeners = new ArrayList<>();
-		pieceMovedListeners = new ArrayList<>();
-		submittedUndoMoveDoneListeners = new ArrayList<>();
-		moveUndoneListeners = new ArrayList<>();
+		this.board = board;
+		this.pieces = pieces;
+		this.positions = positions;
+		this.history = history;
+		this.pieceAddedListeners = pieceAddedListeners;
+		this.submittedMoveListeners = submittedMoveListeners;
+		this.pieceMovedListeners = pieceMovedListeners;
+		this.submittedUndoMoveDoneListeners = submittedUndoMoveDoneListeners;
+		this.moveUndoneListeners = moveUndoneListeners;
 	}
 
 	public void addPieceAddedListener(Consumer<Piece> listener) {
 		pieceAddedListeners.add(listener);
 	}
 
-	public void addSubmittedMoveDoneListener(BiConsumer<Piece, Move> listener) {
+	public void addSubmittedMoveDoneListener(SubmittedMoveConsumer listener) {
 		submittedMoveListeners.add(listener);
 	}
 
-	public void addPieceMovedListener(BiConsumer<Piece, Move> listener) {
+	public void addPieceMovedListener(PieceMovedConsumer listener) {
 		pieceMovedListeners.add(listener);
 	}
 
-	public void addSubmittedUndoMoveDoneListener(BiConsumer<Piece, Move> listener) {
+	public void addSubmittedUndoMoveDoneListener(SubmittedUndoMoveDoneConsumer listener) {
 		submittedUndoMoveDoneListeners.add(listener);
 	}
 
-	public void addMoveUndoneListener(BiConsumer<Piece, Move> listener) {
+	public void addMoveUndoneListener(MoveUndoneConsumer listener) {
 		moveUndoneListeners.add(listener);
 	}
 
@@ -266,7 +289,7 @@ public class Board {
 		return getPieceAt(position.getX(), position.getY());
 	}
 
-	public Set<Piece> getPiecesFromColor(PieceColor color) {
+	public Set<Piece> getPieces(PieceColor color) {
 		Set<Piece> pieces = new HashSet<>();
 
 		for (Piece piece : this.pieces) {
@@ -408,5 +431,59 @@ public class Board {
 		}
 
 		return sb.toString();
+	}
+
+	/**
+	 * Clones the board with an empty history and no event listeners.
+	 */
+	public Board copy() {
+		Piece[][] newBoardArray = new Piece[8][8];
+		List<Piece> newPieces = new ArrayList<>();
+		Map<Piece, Position> newPositions = new HashMap<>();
+		History<Pair<Piece, Move>> newHistory = new History<Pair<Piece, Move>>(Pair.of(null, null));
+		List<Consumer<Piece>> newPieceAddedListeners = new ArrayList<>(pieceAddedListeners.size());
+		List<SubmittedMoveConsumer> newSubmittedMoveListeners = new ArrayList<>();
+		List<PieceMovedConsumer> newPieceMovedListeners = new ArrayList<>();
+		List<SubmittedUndoMoveDoneConsumer> newSubmittedUndoMoveDoneListeners = new ArrayList<>();
+		List<MoveUndoneConsumer> newMoveUndoneListeners = new ArrayList<>();
+
+		Board newBoard = new Board(
+				game,
+				newBoardArray,
+				newPieces,
+				newPositions,
+				newHistory,
+				newPieceAddedListeners,
+				newSubmittedMoveListeners,
+				newPieceMovedListeners,
+				newSubmittedUndoMoveDoneListeners,
+				newMoveUndoneListeners);
+
+		for (Piece piece : pieces) {
+			Piece newPiece = piece.copyWith(newBoard);
+			newBoard.addPiece(positions.get(piece), newPiece);
+		}
+
+		return newBoard;
+	}
+
+	@FunctionalInterface
+	public static interface SubmittedMoveConsumer {
+		void accept(Piece piece, Move move);
+	}
+
+	@FunctionalInterface
+	public static interface PieceMovedConsumer {
+		void accept(Piece piece, Move move);
+	}
+
+	@FunctionalInterface
+	public static interface SubmittedUndoMoveDoneConsumer {
+		void accept(Piece piece, Move move);
+	}
+
+	@FunctionalInterface
+	public static interface MoveUndoneConsumer {
+		void accept(Piece piece, Move move);
 	}
 }

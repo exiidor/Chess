@@ -1,10 +1,11 @@
 package softwareschreiber.chessengine.move;
 
+import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.Position;
 
 public class Move {
-	private Position source;
-	private Position target;
+	private final Position source;
+	private final Position target;
 
 	public Move(Position from, Position to) {
 		this.source = from;
@@ -26,5 +27,9 @@ public class Move {
 	@Override
 	public String toString() {
 		return source + " -> " + target;
+	}
+
+	public Move copyWith(Board board) {
+		return this;
 	}
 }

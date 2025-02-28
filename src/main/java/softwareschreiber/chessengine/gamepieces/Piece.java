@@ -123,4 +123,9 @@ public abstract class Piece {
 	public String toString() {
 		return color + " " + getName() + " at " + getPosition();
 	}
+
+	/**
+	 * Clones the piece and sets the board to the given board.
+	 */
+	public abstract Piece copyWith(Board board);
 }

@@ -6,6 +6,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +45,7 @@ public class Gui {
 	private Game game;
 	private Board board;
 	private Piece selectedPiece;
+	private Duration timeTaken;
 
 	public Gui() {
 		highlightedSquares = new ArrayList<>();
@@ -190,17 +193,25 @@ public class Gui {
 
 		if (game.isGameOver()) {
 			if (game.isWhitesTurn()) {
-				windowFrame.setTitle(title + " - White won");
+				title += " - White won";
 			} else {
-				windowFrame.setTitle(title + " - Black won");
+				title += " - Black won";
 			}
 		} else {
 			if (game.isWhitesTurn()) {
-				windowFrame.setTitle(title + " - White's turn - Evaluation: " + eval);
+				title += " - White's turn";
 			} else {
-				windowFrame.setTitle(title + " - Black's turn - Evaluation: " + eval);
+				title += " - Black's turn";
+			}
+
+			title += " - Evaluation: " + eval;
+
+			if (timeTaken != null) {
+				title += " - Last move took " + timeTaken.toMillis() + " ms";
 			}
 		}
+
+		windowFrame.setTitle(title);
 	}
 
 	private void onPieceMoved(Piece piece, Move move) {
@@ -224,18 +235,19 @@ public class Gui {
 		} else {
 			targetSquare.setPiece(piece);
 		}
-
-		updateTitle();
 	}
 
 	private void onSubmittedMoveDone(Piece piece, Move move) {
 		SwingUtilities.invokeLater(() -> {
+			Instant before = Instant.now();
 			Move chosenMove = game.getBlackPlayer().chooseMove(board);
 			Position sourcePos = chosenMove.getSourcePos();
 			Piece pieceToMove = board.getPieceAt(sourcePos);
+			Instant after = Instant.now();
 
 			board.move(pieceToMove, chosenMove, true);
 			game.setIsWhitesTurn(true);
+			timeTaken = Duration.between(before, after);
 			updateTitle();
 		});
 	}
@@ -256,8 +268,6 @@ public class Gui {
 				getSquareAt(promotionMove.getCaptured().getPosition()).setPiece(promotionMove.getCaptured());
 			}
 		}
-
-		updateTitle();
 	}
 
 	private void onSubmittedUndoMoveDone(Piece piece, Move move) {

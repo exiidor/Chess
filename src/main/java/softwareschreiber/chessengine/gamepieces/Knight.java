@@ -66,4 +66,9 @@ public class Knight extends Piece {
 
 		return validMoves;
 	}
+
+	@Override
+	public Piece copyWith(Board board) {
+		return new Knight(color, board);
+	}
 }

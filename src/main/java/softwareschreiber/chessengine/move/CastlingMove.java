@@ -1,5 +1,6 @@
 package softwareschreiber.chessengine.move;
 
+import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.Position;
 import softwareschreiber.chessengine.gamepieces.Piece;
 
@@ -19,5 +20,15 @@ public class CastlingMove extends Move {
 
 	public Move getOtherMove() {
 		return otherMove;
+	}
+
+	@Override
+	public String toString() {
+		return super.toString() + " Castling with " + other;
+	}
+
+	@Override
+	public Move copyWith(Board board) {
+		return new CastlingMove(getSourcePos(), getTargetPos(), board.getPieceAt(other.getPosition()), otherMove.getTargetPos());
 	}
 }

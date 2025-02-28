@@ -103,4 +103,9 @@ public class Queen extends Piece {
 
 		return validMoves;
 	}
+
+	@Override
+	public Piece copyWith(Board board) {
+		return new Queen(color, board);
+	}
 }

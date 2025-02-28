@@ -79,4 +79,9 @@ public class Rook extends Piece {
 
 		return validMoves;
 	}
+
+	@Override
+	public Piece copyWith(Board board) {
+		return new Rook(color, board);
+	}
 }

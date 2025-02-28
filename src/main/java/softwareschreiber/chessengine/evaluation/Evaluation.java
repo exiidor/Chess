@@ -1,11 +1,15 @@
 package softwareschreiber.chessengine.evaluation;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.PieceColor;
 import softwareschreiber.chessengine.move.Move;
+import softwareschreiber.chessengine.util.Pair;
 
 public class Evaluation {
 	private Board board;
@@ -18,11 +22,11 @@ public class Evaluation {
 	public int absoluteMaterialEvaluation() {
 		int score = 0;
 
-		for (Piece piece : board.getPiecesFromColor(PieceColor.WHITE)) {
+		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
 			score += piece.getValue();
 		}
 
-		for (Piece piece : board.getPiecesFromColor(PieceColor.BLACK)) {
+		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
 			score -= piece.getValue();
 		}
 
@@ -32,11 +36,11 @@ public class Evaluation {
 	public int relativeMaterialEvaluation() {
 		int score = 0;
 
-		for (Piece piece : board.getPiecesFromColor(PieceColor.WHITE)) {
+		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
 			score += piece.evaluationChart()[piece.getX()][7 - piece.getY()];
 		}
 
-		for (Piece piece : board.getPiecesFromColor(PieceColor.BLACK)) {
+		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
 			score -= piece.evaluationChart()[piece.getX()][piece.getY()];
 		}
 
@@ -46,11 +50,11 @@ public class Evaluation {
 	public int mobilityEvaluation() {
 		int score = 0;
 
-		for (Piece piece : board.getPiecesFromColor(PieceColor.WHITE)) {
+		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
 			score += (piece.getValidMovesInternal().size());
 		}
 
-		for (Piece piece : board.getPiecesFromColor(PieceColor.BLACK)) {
+		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
 			score -= (piece.getValidMovesInternal().size());
 		}
 
@@ -69,7 +73,7 @@ public class Evaluation {
 		if (color == PieceColor.WHITE) {
 			int max = Integer.MIN_VALUE;
 
-			for (Piece piece : board.getPiecesFromColor(color)) {
+			for (Piece piece : board.getPieces(color)) {
 				Set<? extends Move> validMoves = piece.getValidMoves();
 
 				for (Move move : validMoves) {
@@ -92,7 +96,7 @@ public class Evaluation {
 		} else {
 			int min = Integer.MAX_VALUE;
 
-			for (Piece piece : board.getPiecesFromColor(color)) {
+			for (Piece piece : board.getPieces(color)) {
 				Set<? extends Move> validMoves = piece.getValidMoves();
 
 				for (Move move : validMoves) {
@@ -119,15 +123,30 @@ public class Evaluation {
 		int max = Integer.MIN_VALUE;
 		Move bestMove = null;
 
-		for (Piece piece : board.getPiecesFromColor(color)) {
+		for (Piece piece : board.getPieces(color)) {
 			Set<? extends Move> validMoves = piece.getValidMoves();
+			List<CompletableFuture<Pair<Integer, Move>>> futures = new ArrayList<>();
 
 			for (Move move : validMoves) {
-				board.move(piece, move, true);
+				futures.add(CompletableFuture.supplyAsync(() -> {
+					Board copiedBoard = this.board.copy();
+					Piece copiedPiece = copiedBoard.getPieceAt(move.getSourcePos());
+					Move copiedMove = move.copyWith(copiedBoard);
 
-				int score = -minMax(depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, color.getOpposite());
+					copiedBoard.move(copiedPiece, copiedMove, true);
 
-				board.undo(true);
+					int score = -new Evaluation(copiedBoard).minMax(depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, color.getOpposite());
+
+					copiedBoard.undo(true);
+
+					return Pair.of(score, move);
+				}));
+			}
+
+			for (CompletableFuture<Pair<Integer, Move>> future : futures) {
+				Pair<Integer, Move> pair = future.join();
+				int score = pair.getLeft();
+				Move move = pair.getRight();
 
 				if (score > max) {
 					max = score;

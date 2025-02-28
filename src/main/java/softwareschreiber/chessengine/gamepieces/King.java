@@ -146,4 +146,9 @@ public class King extends Piece {
 
 		return validMoves;
 	}
+
+	@Override
+	public Piece copyWith(Board board) {
+		return new King(color, board);
+	}
 }

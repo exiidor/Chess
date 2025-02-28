@@ -107,4 +107,9 @@ public class Pawn extends Piece {
 
 		return moves;
 	}
+
+	@Override
+	public Piece copyWith(Board board) {
+		return new Pawn(color, board);
+	}
 }

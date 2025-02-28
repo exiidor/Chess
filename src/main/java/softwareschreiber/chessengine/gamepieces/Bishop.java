@@ -59,4 +59,9 @@ public class Bishop extends Piece {
 
 		return validMoves;
 	}
+
+	@Override
+	public Piece copyWith(Board board) {
+		return new Bishop(color, board);
+	}
 }
