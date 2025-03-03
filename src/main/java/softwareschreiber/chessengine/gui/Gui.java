@@ -308,7 +308,7 @@ public class Gui {
 
 	static ImageIcon getImageForPiece(Piece piece) {
 		char firstLetterOfFileName = piece.getName().toUpperCase().charAt(0);
-		String restOfFileName = (piece.getName() + piece.getColor()).substring(1).toLowerCase();
+		String restOfFileName = (piece.getName() + piece.getColor()).substring(1);
 		String nameOfFile = (firstLetterOfFileName + restOfFileName).trim();
 		return new ImageIcon(Util.getResource("/graphics/" + nameOfFile + ".png").toString());
 	}
