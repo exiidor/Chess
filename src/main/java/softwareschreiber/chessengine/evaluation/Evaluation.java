@@ -98,12 +98,12 @@ public class Evaluation {
 		} else if (board.getKing(PieceColor.BLACK) == null || board.isInCheckMate(PieceColor.BLACK)) {
 			return 100_000;
 		} else {
-			return 1;
+			return 0;
 		}
 	}
 
 	public int evaluate() {
-		return everythingEvaluation() * enemyInCheckMate();
+		return absoluteMaterialEvaluation() + mobilityEvaluation() + enemyInCheckMate();
 	}
 
 	private int minMax(int depth, int alpha, int beta, PieceColor color) {

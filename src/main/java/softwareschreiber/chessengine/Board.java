@@ -364,7 +364,7 @@ public class Board {
 		Set<Move> allyMoves = new HashSet<>();
 
 		for (Piece allyPiece : getAllyPieces(piece)) {
-			allyMoves.addAll(allyPiece.getValidMovesInternal());
+			allyMoves.addAll(allyPiece.getValidMoves());
 		}
 
 		return allyMoves;
@@ -388,10 +388,10 @@ public class Board {
 		if (king == null) {
 			System.err.println(pieceColor + " King not found in Board.isInCheckMate");
 			Thread.dumpStack();
-			return false;
+			return true;
 		}
 
-		return king.isChecked() && getAllAllyMoves(king).isEmpty();
+		return getAllAllyMoves(king).isEmpty();
 	}
 
 	public void checkForEnemyMates(Piece piece) {
