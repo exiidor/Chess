@@ -18,7 +18,7 @@ public class King extends Piece {
 	}
 
 	public boolean isChecked() {
-		return board.getAllEnemyMovesExceptKingMoves(this).stream()
+		return board.getEnemyMovesExceptKingMoves(this).stream()
 				.map(Move::getTargetPos)
 				.anyMatch(pos -> pos.equals(getPosition()));
 	}
@@ -97,7 +97,7 @@ public class King extends Piece {
 						&& board.getPieceAt(1, getY()) == null
 						&& board.getPieceAt(2, getY()) == null
 						&& board.getPieceAt(3, getY()) == null
-						&& !board.getAllEnemyMovesExceptKingMoves(this).stream()
+						&& !board.getEnemyMovesExceptKingMoves(this).stream()
 								.map(Move::getTargetPos)
 								.anyMatch(pos -> pos.equals(new Position(2, getY()))
 										|| pos.equals(new Position(3, getY())));
@@ -115,7 +115,7 @@ public class King extends Piece {
 				boolean canCastle = !rightRook.hasMoved()
 						&& board.getPieceAt(5, getY()) == null
 						&& board.getPieceAt(6, getY()) == null
-						&& !board.getAllEnemyMovesExceptKingMoves(this).stream()
+						&& !board.getEnemyMovesExceptKingMoves(this).stream()
 								.map(Move::getTargetPos)
 								.anyMatch(pos -> pos.equals(new Position(5, getY()))
 										|| pos.equals(new Position(6, getY())));

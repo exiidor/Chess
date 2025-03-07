@@ -220,7 +220,7 @@ public class Board {
 		}
 	}
 
-	public void undoMoveInternal(Piece piece, Move move, boolean virtual, boolean modifyHistory) {
+	private void undoMoveInternal(Piece piece, Move move, boolean virtual, boolean modifyHistory) {
 		Position currentPosition = move.getTargetPos();
 		Position targetPosition = move.getSourcePos();
 
@@ -318,7 +318,7 @@ public class Board {
 		return enemyPieces;
 	}
 
-	public Set<? extends Move> getAllEnemyMoves(Piece piece) {
+	public Set<? extends Move> getEnemyMoves(Piece piece) {
 		Set<Move> enemyMoves = new HashSet<>();
 
 		for (Piece enemyPiece : getEnemyPieces(piece)) {
@@ -328,7 +328,7 @@ public class Board {
 		return enemyMoves;
 	}
 
-	public Set<? extends Move> getAllEnemyMovesExceptKingMoves(Piece piece) {
+	public Set<? extends Move> getEnemyMovesExceptKingMoves(Piece piece) {
 		Set<Move> enemyMoves = new HashSet<>();
 
 		for (Piece enemyPiece : getEnemyPieces(piece)) {
@@ -354,21 +354,11 @@ public class Board {
 		return allyPieces;
 	}
 
-	public Set<? extends Move> getAllMoves() {
-		Set<Move> allMoves = new HashSet<>();
-
-		for (Piece piece : pieces) {
-			allMoves.addAll(piece.getSafeMoves());
-		}
-
-		return allMoves;
-	}
-
-	public Set<? extends Move> getAllAllyMoves(Piece piece) {
+	public Set<? extends Move> getAllyMoves(Piece piece) {
 		Set<Move> allyMoves = new HashSet<>();
 
 		for (Piece allyPiece : getAllyPieces(piece)) {
-			allyMoves.addAll(allyPiece.getValidMoves());
+			allyMoves.addAll(allyPiece.getSafeMoves());
 		}
 
 		return allyMoves;
@@ -395,7 +385,7 @@ public class Board {
 			return null;
 		}
 
-		if (getAllAllyMoves(king).isEmpty()) {
+		if (getAllyMoves(king).isEmpty()) {
 			if (king.isChecked()) {
 				return MateKind.CHECKMATE;
 			}
@@ -458,7 +448,7 @@ public class Board {
 	 * Clones the board with an empty history and no event listeners.
 	 */
 	public Board copy() {
-		Piece[][] newBoardArray = new Piece[getMaxY()][getMaxX()];
+		Piece[][] newBoardArray = new Piece[getMaxY() + 1][getMaxX() + 1];
 		List<Piece> newPieces = new ArrayList<>();
 		Map<Piece, Position> newPositions = new HashMap<>();
 		History<Pair<Piece, Move>> newHistory = new History<Pair<Piece, Move>>(Pair.of(null, null));

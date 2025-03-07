@@ -98,7 +98,11 @@ public abstract class Piece {
 	}
 
 	public boolean isUnderAttack() {
-		return board.getAllEnemyMovesExceptKingMoves(this).stream()
+		Set<? extends Move> enemyMoves = this instanceof King king
+				? board.getEnemyMovesExceptKingMoves(king)
+				: board.getEnemyMoves(this);
+
+		return enemyMoves.stream()
 				.map(Move::getTargetPos)
 				.anyMatch(pos -> pos.equals(getPosition()));
 	}

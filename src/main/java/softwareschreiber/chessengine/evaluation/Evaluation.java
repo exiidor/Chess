@@ -68,7 +68,7 @@ public class Evaluation {
 		double score = 0;
 
 		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
-			score += (piece.evaluationChart()[7 - piece.getY()][piece.getX()] / 100) * piece.getValue();
+			score += (piece.evaluationChart()[board.getMaxY() - piece.getY()][piece.getX()] / 100) * piece.getValue();
 		}
 
 		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
@@ -82,7 +82,7 @@ public class Evaluation {
 		double score = 0;
 
 		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
-			score += (piece.evaluationChart()[7 - piece.getY()][piece.getX()] / 100) * piece.getValue() * piece.getValidMoves().size()/piece.getMaxMoves() * (piece.isUnderAttack() ? 0.2 : 1);
+			score += (piece.evaluationChart()[board.getMaxY() - piece.getY()][piece.getX()] / 100) * piece.getValue() * piece.getValidMoves().size()/piece.getMaxMoves() * (piece.isUnderAttack() ? 0.2 : 1);
 		}
 
 		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
