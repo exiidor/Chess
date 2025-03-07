@@ -35,7 +35,7 @@ public class Bishop extends Piece {
 	}
 
 	@Override
-	public Set<? extends Move> getValidMovesInternal() {
+	public Set<? extends Move> getValidMoves() {
 		Set<Move> validMoves = new LinkedHashSet<>();
 
 		for (int yDirection = -1; yDirection <= 1; yDirection += 2) {

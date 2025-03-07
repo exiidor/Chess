@@ -51,19 +51,30 @@ public abstract class Game {
 		board.initializeStartingPositions();
 
 		board.addSubmittedMoveDoneListener((piece, move) -> {
-			board.checkForEnemyMates(piece);
+			checkForMate(piece.getColor().getOpposite());
 
 			if (!gameOver) {
 				activeColor = piece.getColor().getOpposite();
 			}
 		});
 		board.addSubmittedUndoMoveDoneListener((piece, move) -> {
-			board.checkForEnemyMates(piece);
-
 			if (!gameOver) {
 				activeColor = piece.getColor();
 			}
 		});
+	}
+
+	private void checkForMate(PieceColor color) {
+		switch (board.checkForMate(color)) {
+			case CHECKMATE:
+				checkMate(color.getOpposite().toString());
+				break;
+			case STALEMATE:
+				staleMate();
+				break;
+			case null:
+				break;
+		}
 	}
 
 	public void addGameEndListener(Consumer<PieceColor> listener) {

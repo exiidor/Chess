@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import softwareschreiber.chessengine.Board;
+import softwareschreiber.chessengine.MateKind;
 import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.PieceColor;
 import softwareschreiber.chessengine.move.CaptureMove;
@@ -39,7 +40,7 @@ public class Evaluation {
 		int score = 0;
 
 		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
-			score += piece.evaluationChart()[7 - piece.getY()][piece.getX()];
+			score += piece.evaluationChart()[board.getMaxY() - piece.getY()][piece.getX()];
 		}
 
 		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
@@ -53,11 +54,11 @@ public class Evaluation {
 		int score = 0;
 
 		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
-			score += (piece.getValidMovesInternal().size());
+			score += (piece.getValidMoves().size());
 		}
 
 		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
-			score -= (piece.getValidMovesInternal().size());
+			score -= (piece.getValidMoves().size());
 		}
 
 		return score;
@@ -81,24 +82,28 @@ public class Evaluation {
 		double score = 0;
 
 		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
-			score += (piece.evaluationChart()[7 - piece.getY()][piece.getX()] / 100) * piece.getValue() * piece.getValidMovesInternal().size()/piece.getMaxMoves() * (piece.isUnderAttack() ? 0.2 : 1);
+			score += (piece.evaluationChart()[7 - piece.getY()][piece.getX()] / 100) * piece.getValue() * piece.getValidMoves().size()/piece.getMaxMoves() * (piece.isUnderAttack() ? 0.2 : 1);
 		}
 
 		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
-			score -= (piece.evaluationChart()[piece.getY()][piece.getX()] / 100) * piece.getValue() * piece.getValidMovesInternal().size()/piece.getMaxMoves() * (piece.isUnderAttack() ? 0.2 : 1);
+			score -= (piece.evaluationChart()[piece.getY()][piece.getX()] / 100) * piece.getValue() * piece.getValidMoves().size()/piece.getMaxMoves() * (piece.isUnderAttack() ? 0.2 : 1);
 		}
 
 		return (int) Math.round(score);
 	}
 
 	public int enemyInCheckMate() {
-		if (board.getKing(PieceColor.WHITE) == null || board.isInCheckMate(PieceColor.WHITE)) {
+		if (board.getKing(PieceColor.WHITE) == null || isInCheckMate(PieceColor.WHITE)) {
 			return -100_000;
-		} else if (board.getKing(PieceColor.BLACK) == null || board.isInCheckMate(PieceColor.BLACK)) {
+		} else if (board.getKing(PieceColor.BLACK) == null || isInCheckMate(PieceColor.BLACK)) {
 			return 100_000;
 		} else {
 			return 0;
 		}
+	}
+
+	private boolean isInCheckMate(PieceColor color) {
+		return board.checkForMate(color) == MateKind.CHECKMATE;
 	}
 
 	public int evaluate() {
@@ -109,8 +114,8 @@ public class Evaluation {
 		if (depth == 0
 				|| board.getKing(PieceColor.WHITE) == null
 				|| board.getKing(PieceColor.BLACK) == null
-				|| board.isInCheckMate(PieceColor.WHITE)
-				|| board.isInCheckMate(PieceColor.BLACK)) {
+				|| isInCheckMate(PieceColor.WHITE)
+				|| isInCheckMate(PieceColor.BLACK)) {
 			return evaluate();
 		}
 
@@ -118,7 +123,7 @@ public class Evaluation {
 			int max = Integer.MIN_VALUE;
 
 			for (Piece piece : board.getPieces(color)) {
-				List<? extends Move> validMoves = new ArrayList<>(piece.getValidMoves());
+				List<? extends Move> validMoves = new ArrayList<>(piece.getSafeMoves());
 				validMoves.sort(this::compareMoves);
 
 				for (Move move : validMoves) {
@@ -142,7 +147,7 @@ public class Evaluation {
 			int min = Integer.MAX_VALUE;
 
 			for (Piece piece : board.getPieces(color)) {
-				List<? extends Move> validMoves = new ArrayList<>(piece.getValidMoves());
+				List<? extends Move> validMoves = new ArrayList<>(piece.getSafeMoves());
 				validMoves.sort(this::compareMoves);
 
 				for (Move move : validMoves) {
@@ -172,20 +177,20 @@ public class Evaluation {
 		List<Piece> pieces = new ArrayList<>(board.getPieces(color));
 
 		for (Piece piece : pieces) {
-			Board copiedBoard = this.board.copy();
+			Board board = this.board.copy();
 			Set<? extends Move> validMoves = piece.getValidMoves();
 
 			for (Move move : validMoves) {
 				futures.add(CompletableFuture.supplyAsync(() -> {
-					Board duplicateBoard = copiedBoard.copy();
-					Piece copiedPiece = duplicateBoard.getPieceAt(move.getSourcePos());
-					Move copiedMove = move.copyWith(duplicateBoard);
+					Board copiedBoard = board.copy();
+					Piece copiedPiece = copiedBoard.getPieceAt(move.getSourcePos());
+					Move copiedMove = move.copyWith(copiedBoard);
 
-					duplicateBoard.move(copiedPiece, copiedMove, true);
+					copiedBoard.move(copiedPiece, copiedMove, true);
 
-					int score = -new Evaluation(duplicateBoard).minMax(depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, color.getOpposite());
+					int score = -new Evaluation(copiedBoard).minMax(depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, color.getOpposite());
 
-					duplicateBoard.undo(true);
+					copiedBoard.undo(true);
 
 					return Pair.of(score, move);
 				}));

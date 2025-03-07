@@ -44,10 +44,19 @@ public class King extends Piece {
 	}
 
 	@Override
-	public Set<? extends Move> getValidMovesInternal() {
-		Set<Move> validMoves = new LinkedHashSet<>();
+	public Set<? extends Move> getValidMoves() {
+		Set<? extends Move> standardMoves = getStandardMoves();
+		Set<? extends Move> castlingMoves = getCastlingMoves();
 
-		// Normal moves for King
+		Set<Move> validMoves = LinkedHashSet.newLinkedHashSet(standardMoves.size() + castlingMoves.size());
+		validMoves.addAll(standardMoves);
+		validMoves.addAll(castlingMoves);
+
+		return validMoves;
+	}
+
+	public Set<Move> getStandardMoves() {
+		Set<Move> validMoves = new LinkedHashSet<>();
 
 		Position forward = new Position(getX(), getY() + 1);
 		Position forwardRight = new Position(getX() + 1, getY() + 1);
@@ -73,7 +82,11 @@ public class King extends Piece {
 			}
 		}
 
-		// Casting
+		return validMoves;
+	}
+
+	public Set<Move> getCastlingMoves() {
+		Set<Move> validMoves = new LinkedHashSet<>();
 
 		if (!hasMoved() && !isChecked()) {
 			Piece leftPiece = board.getPieceAt(0, getY());
@@ -114,38 +127,6 @@ public class King extends Piece {
 							rightRook,
 							new Position(5, getY())));
 				}
-			}
-		}
-
-		return validMoves;
-	}
-
-	public Set<? extends Move> getNormalKingMoves() {
-		Set<Move> validMoves = new LinkedHashSet<>();
-
-		// Normal moves for King
-
-		Position forward = new Position(getX(), getY() + 1);
-		Position forwardRight = new Position(getX() + 1, getY() + 1);
-		Position right = new Position(getX() + 1, getY());
-		Position backRight = new Position(getX() + 1, getY() - 1);
-		Position back = new Position(getX(), getY() - 1);
-		Position backLeft = new Position(getX() - 1, getY() - 1);
-		Position left = new Position(getX() - 1, getY());
-		Position forwardLeft = new Position(getX() - 1, getY() + 1);
-
-		List<Position> targetPositions = Arrays.asList(forward, forwardRight, right, backRight, back, backLeft, left,
-				forwardLeft);
-
-		for (Position targetPos : targetPositions) {
-			Piece other = board.getPieceAt(targetPos);
-
-			if (other != null && other.isEnemyOf(this)) {
-				validMoves.add(new CaptureMove(getPosition(), targetPos, other));
-			}
-
-			if (other == null && !board.isOutOfBounds(targetPos)) {
-				validMoves.add(new Move(getPosition(), targetPos));
 			}
 		}
 

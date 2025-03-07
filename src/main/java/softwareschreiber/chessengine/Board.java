@@ -39,8 +39,12 @@ public class Board {
 	private final List<MoveUndoneConsumer> moveUndoneListeners;
 
 	public Board(Game game) {
+		this(game, 7, 7);
+	}
+
+	public Board(Game game, int maxX, int maxY) {
 		this(game,
-				new Piece[8][8],
+				new Piece[maxY + 1][maxX + 1],
 				new ArrayList<>(),
 				new HashMap<>(),
 				new History<>(Pair.of(null, null)),
@@ -97,7 +101,7 @@ public class Board {
 	public void initializeStartingPositions() {
 		for (int i = 0; i <= 1; i++) {
 			boolean isWhite = i == 0;
-			int y = isWhite ? 0 : 7;
+			int y = isWhite ? getMinY() : getMaxY();
 			PieceColor color = isWhite ? PieceColor.WHITE : PieceColor.BLACK;
 
 			addPiece(0, y, new Rook(color, this));
@@ -267,11 +271,11 @@ public class Board {
 	}
 
 	public int getMaxX() {
-		return 7;
+		return board[0].length - 1;
 	}
 
 	public int getMaxY() {
-		return 7;
+		return board.length - 1;
 	}
 
 	public Position getPosition(Piece piece) {
@@ -318,7 +322,7 @@ public class Board {
 		Set<Move> enemyMoves = new HashSet<>();
 
 		for (Piece enemyPiece : getEnemyPieces(piece)) {
-			enemyMoves.addAll(enemyPiece.getValidMoves());
+			enemyMoves.addAll(enemyPiece.getSafeMoves());
 		}
 
 		return enemyMoves;
@@ -329,9 +333,9 @@ public class Board {
 
 		for (Piece enemyPiece : getEnemyPieces(piece)) {
 			if (!(enemyPiece instanceof King)) {
-				enemyMoves.addAll(enemyPiece.getValidMovesInternal());
+				enemyMoves.addAll(enemyPiece.getValidMoves());
 			} else if (enemyPiece instanceof King) {
-				enemyMoves.addAll(((King) enemyPiece).getNormalKingMoves());
+				enemyMoves.addAll(((King) enemyPiece).getStandardMoves());
 			}
 		}
 
@@ -354,7 +358,7 @@ public class Board {
 		Set<Move> allMoves = new HashSet<>();
 
 		for (Piece piece : pieces) {
-			allMoves.addAll(piece.getValidMoves());
+			allMoves.addAll(piece.getSafeMoves());
 		}
 
 		return allMoves;
@@ -381,36 +385,25 @@ public class Board {
 		return null;
 	}
 
-	// Schachmatt
-	public boolean isInCheckMate(PieceColor pieceColor) {
+	@Nullable
+	public MateKind checkForMate(PieceColor pieceColor) {
 		King king = getKing(pieceColor);
 
 		if (king == null) {
-			System.err.println(pieceColor + " King not found in Board.isInCheckMate");
+			System.err.println(pieceColor + " King not found in Board.checkForEnemyMates");
 			Thread.dumpStack();
-			return true;
+			return null;
 		}
 
-		return getAllAllyMoves(king).isEmpty();
-	}
-
-	public void checkForEnemyMates(Piece piece) {
-		PieceColor enemyColor = piece.getEnemyColor();
-		King enemyKing = getKing(enemyColor);
-
-		if (enemyKing == null) {
-			System.err.println(enemyColor + " King not found in Board.checkForEnemyMates");
-			Thread.dumpStack();
-			return;
-		}
-
-		if (getAllEnemyMoves(piece).isEmpty()) {
-			if (enemyKing.isChecked()) {
-				game.checkMate(enemyColor.toString());
+		if (getAllAllyMoves(king).isEmpty()) {
+			if (king.isChecked()) {
+				return MateKind.CHECKMATE;
 			}
 
-			game.staleMate();
+			return MateKind.STALEMATE;
 		}
+
+		return null;
 	}
 
 	public boolean isOutOfBounds(int x, int y) {
@@ -444,8 +437,8 @@ public class Board {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		for (int y = 7; y >= 0; y--) {
-			for (int x = 0; x < 8; x++) {
+		for (int y = getMaxY(); y >= getMinY(); y--) {
+			for (int x = getMinX(); x < getMaxX(); x++) {
 				if (board[y][x] != null) {
 					sb.append(board[y][x].getSymbol());
 				} else {
@@ -465,7 +458,7 @@ public class Board {
 	 * Clones the board with an empty history and no event listeners.
 	 */
 	public Board copy() {
-		Piece[][] newBoardArray = new Piece[8][8];
+		Piece[][] newBoardArray = new Piece[getMaxY()][getMaxX()];
 		List<Piece> newPieces = new ArrayList<>();
 		Map<Piece, Position> newPositions = new HashMap<>();
 		History<Pair<Piece, Move>> newHistory = new History<Pair<Piece, Move>>(Pair.of(null, null));

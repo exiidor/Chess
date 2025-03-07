@@ -5,7 +5,6 @@ import softwareschreiber.chessengine.gamepieces.PieceColor;
 import softwareschreiber.chessengine.move.Move;
 
 public class HumanPlayer extends Player {
-
 	public HumanPlayer(PieceColor pieceColor) {
 		super(pieceColor);
 	}

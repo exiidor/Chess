@@ -34,7 +34,7 @@ class CastlingTest {
 		King king = board.addPiece(4, y, new King(color, board));
 		Rook rook = board.addPiece(left ? 0 : 7, y, new Rook(color, board));
 
-		Set<? extends Move> kingMoves = king.getValidMovesInternal();
+		Set<? extends Move> kingMoves = king.getSafeMoves();
 		int castleCount = 0;
 
 		for (Move move : kingMoves) {
@@ -59,7 +59,7 @@ class CastlingTest {
 		board.addPiece(left ? 0 : 7, y, new Rook(color, board));
 		board.addPiece(left ? 3 : 5, 4, new Rook(color.getOpposite(), board));
 
-		Set<? extends Move> kingMoves = king.getValidMovesInternal();
+		Set<? extends Move> kingMoves = king.getValidMoves();
 		int castleCount = 0;
 
 		for (Move move : kingMoves) {

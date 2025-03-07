@@ -63,11 +63,17 @@ public abstract class Piece {
 
 	public abstract int[][] evaluationChart();
 
-	public abstract Set<? extends Move> getValidMovesInternal();
+	/**
+	 * Returns the valid moves of the piece, even the ones that would put the king in check.
+	 */
+	public abstract Set<? extends Move> getValidMoves();
 
-	public final Set<? extends Move> getValidMoves() {
-		Set<? extends Move> validMoves = getValidMovesInternal();
-		King king = board.getKing(color);
+	/**
+	 * Returns the valid moves of the piece, excluding the ones that would put the king in check.
+	 */
+	public final Set<? extends Move> getSafeMoves() {
+		Set<? extends Move> validMoves = getValidMoves();
+		King king = this instanceof King thisKing ? thisKing : board.getKing(color);
 
 		if (king == null) {
 			System.err.println(color + " King not found in Piece.getValidMoves");
@@ -91,7 +97,7 @@ public abstract class Piece {
 		return validMoves;
 	}
 
-	public boolean isUnderAttack(){
+	public boolean isUnderAttack() {
 		return board.getAllEnemyMovesExceptKingMoves(this).stream()
 				.map(Move::getTargetPos)
 				.anyMatch(pos -> pos.equals(getPosition()));
@@ -112,6 +118,7 @@ public abstract class Piece {
 	/**
 	 * Returns the theoretical maximum number of moves this piece can make.
 	 */
+	// TODO: Adjust for dynamic board sizes
 	public abstract int getMaxMoves();
 
 	protected boolean isAtBoardTop() {

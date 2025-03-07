@@ -42,7 +42,7 @@ public class Pawn extends Piece {
 	}
 
 	@Override
-	public Set<? extends Move> getValidMovesInternal() {
+	public Set<? extends Move> getValidMoves() {
 		Set<Move> moves = new LinkedHashSet<>();
 		boolean canMoveTwo;
 

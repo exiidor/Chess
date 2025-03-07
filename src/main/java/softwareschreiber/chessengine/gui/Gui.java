@@ -81,16 +81,16 @@ public class Gui {
 	}
 
 	private void initGame() {
-		squareContainer.removeAll();
-		squareContainer.setLayout(new GridLayout(8, 8));
-
-		squares = new ChessPanel[8][8];
-		highlightedSquares.clear();
-		highlightedSquareMoves.clear();
-
 		game = new GuiGame(PieceColor.WHITE);
 		board = game.getBoard();
 		game.startGame();
+
+		squareContainer.removeAll();
+		squareContainer.setLayout(new GridLayout(board.getMaxY() + 1, board.getMaxX() + 1));
+
+		squares = new ChessPanel[board.getMaxY() + 1][board.getMaxX() + 1];
+		highlightedSquares.clear();
+		highlightedSquareMoves.clear();
 
 		board.addPieceMovedListener(this::onPieceMoved);
 		board.addSubmittedMoveDoneListener(this::onSubmittedMoveDone);
@@ -279,7 +279,7 @@ public class Gui {
 	}
 
 	private void showPossibleMoves(Piece piece) {
-		for (Move move : piece.getValidMoves()) {
+		for (Move move : piece.getSafeMoves()) {
 			Position position = move.getTargetPos();
 			ChessPanel square = squares[position.getY()][position.getX()];
 			highlightedSquareMoves.put(square, move);

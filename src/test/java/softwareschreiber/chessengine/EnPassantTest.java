@@ -27,7 +27,7 @@ class EnPassantTest {
 		assertEquals(pawn.getY(), enemyPawn.getY());
 		assertEquals(pawn.getX(), enemyPawn.getX() + (color == WHITE ? -1 : 1));
 
-		Set<? extends Move> enemyMoves = enemyPawn.getValidMovesInternal();
+		Set<? extends Move> enemyMoves = enemyPawn.getSafeMoves();
 		boolean hasEnPassant = false;
 
 		for (Move move : enemyMoves) {
