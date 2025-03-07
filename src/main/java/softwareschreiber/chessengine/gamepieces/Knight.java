@@ -32,6 +32,11 @@ public class Knight extends Piece {
 	}
 
 	@Override
+	public int getMaxMoves() {
+		return 8;
+	}
+
+	@Override
 	public int[][] evaluationChart() {
 		return EvaluationCharts.knightTable;
 	}

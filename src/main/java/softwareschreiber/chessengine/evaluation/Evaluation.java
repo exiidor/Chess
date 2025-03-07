@@ -1,6 +1,7 @@
 package softwareschreiber.chessengine.evaluation;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -8,7 +9,9 @@ import java.util.concurrent.CompletableFuture;
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.PieceColor;
+import softwareschreiber.chessengine.move.CaptureMove;
 import softwareschreiber.chessengine.move.Move;
+import softwareschreiber.chessengine.move.PromotionMove;
 import softwareschreiber.chessengine.util.Pair;
 
 public class Evaluation {
@@ -37,11 +40,11 @@ public class Evaluation {
 		int score = 0;
 
 		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
-			score += piece.evaluationChart()[piece.getX()][7 - piece.getY()];
+			score += piece.evaluationChart()[7 - piece.getY()][piece.getX()];
 		}
 
 		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
-			score -= piece.evaluationChart()[piece.getX()][piece.getY()];
+			score -= piece.evaluationChart()[piece.getY()][piece.getX()];
 		}
 
 		return score;
@@ -61,12 +64,54 @@ public class Evaluation {
 		return score;
 	}
 
+	public int absoluteAndRelativeMaterialEvaluation() {
+		double score = 0;
+
+		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
+			score += (piece.evaluationChart()[7 - piece.getY()][piece.getX()] / 100) * piece.getValue();
+		}
+
+		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
+			score -= (piece.evaluationChart()[piece.getY()][piece.getX()] / 100) * piece.getValue();
+		}
+
+		return (int) Math.round(score);
+	}
+
+	public int everythingEvaluation() {
+		double score = 0;
+
+		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
+			score += (piece.evaluationChart()[7 - piece.getY()][piece.getX()] / 100) * piece.getValue() * piece.getValidMovesInternal().size()/piece.getMaxMoves() * (piece.isUnderAttack() ? 0.2 : 1);
+		}
+
+		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
+			score -= (piece.evaluationChart()[piece.getY()][piece.getX()] / 100) * piece.getValue() * piece.getValidMovesInternal().size()/piece.getMaxMoves() * (piece.isUnderAttack() ? 0.2 : 1);
+		}
+
+		return (int) Math.round(score);
+	}
+
+	public int enemyInCheckMate() {
+		if (board.getKing(PieceColor.WHITE) == null || board.isInCheckMate(PieceColor.WHITE)) {
+			return -100_000;
+		} else if (board.getKing(PieceColor.BLACK) == null || board.isInCheckMate(PieceColor.BLACK)) {
+			return 100_000;
+		} else {
+			return 0;
+		}
+	}
+
 	public int evaluate() {
-		return absoluteMaterialEvaluation() + mobilityEvaluation();
+		return absoluteMaterialEvaluation() + mobilityEvaluation() + enemyInCheckMate();
 	}
 
 	private int minMax(int depth, int alpha, int beta, PieceColor color) {
-		if (depth == 0) {
+		if (depth == 0
+				|| board.getKing(PieceColor.WHITE) == null
+				|| board.getKing(PieceColor.BLACK) == null
+				|| board.isInCheckMate(PieceColor.WHITE)
+				|| board.isInCheckMate(PieceColor.BLACK)) {
 			return evaluate();
 		}
 
@@ -74,7 +119,8 @@ public class Evaluation {
 			int max = Integer.MIN_VALUE;
 
 			for (Piece piece : board.getPieces(color)) {
-				Set<? extends Move> validMoves = piece.getValidMoves();
+				List<? extends Move> validMoves = new ArrayList<>(piece.getValidMoves());
+				validMoves.sort(this::compareMoves);
 
 				for (Move move : validMoves) {
 					board.move(piece, move, true);
@@ -97,7 +143,8 @@ public class Evaluation {
 			int min = Integer.MAX_VALUE;
 
 			for (Piece piece : board.getPieces(color)) {
-				Set<? extends Move> validMoves = piece.getValidMoves();
+				List<? extends Move> validMoves = new ArrayList<>(piece.getValidMoves());
+				validMoves.sort(this::compareMoves);
 
 				for (Move move : validMoves) {
 					board.move(piece, move, true);
@@ -120,12 +167,13 @@ public class Evaluation {
 	}
 
 	public Move bestMove(int depth, PieceColor color) {
+		List<CompletableFuture<Pair<Integer, Move>>> futures = new ArrayList<>();
 		int max = Integer.MIN_VALUE;
 		Move bestMove = null;
+		List<Piece> pieces = new ArrayList<>(board.getPieces(color));
 
-		for (Piece piece : board.getPieces(color)) {
+		for (Piece piece : pieces) {
 			Set<? extends Move> validMoves = piece.getValidMoves();
-			List<CompletableFuture<Pair<Integer, Move>>> futures = new ArrayList<>();
 
 			for (Move move : validMoves) {
 				futures.add(CompletableFuture.supplyAsync(() -> {
@@ -142,19 +190,39 @@ public class Evaluation {
 					return Pair.of(score, move);
 				}));
 			}
+		}
 
-			for (CompletableFuture<Pair<Integer, Move>> future : futures) {
-				Pair<Integer, Move> pair = future.join();
-				int score = pair.getLeft();
-				Move move = pair.getRight();
+		for (CompletableFuture<Pair<Integer, Move>> future : futures) {
+			Pair<Integer, Move> pair = future.join();
+			int score = pair.getLeft();
+			Move move = pair.getRight();
 
-				if (score > max) {
-					max = score;
-					bestMove = move;
-				}
+			if (score > max) {
+				max = score;
+				bestMove = move;
 			}
 		}
 
 		return bestMove;
+	}
+
+	// Sorts better moves first
+	private int compareMoves(Move moveA, Move moveB) {
+		boolean isACapture = moveA instanceof CaptureMove;
+		boolean isBCapture = moveB instanceof CaptureMove;
+		boolean isAPromotion = moveA instanceof PromotionMove;
+		boolean isBPromotion = moveB instanceof PromotionMove;
+
+		if (isACapture && !isBCapture) {
+			return -1;
+		} else if (!isACapture && isBCapture) {
+			return 1;
+		} else if (isAPromotion && !isBPromotion) {
+			return -1;
+		} else if (!isAPromotion && isBPromotion) {
+			return 1;
+		} else {
+			return 0;
+		}
 	}
 }

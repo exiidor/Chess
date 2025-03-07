@@ -30,12 +30,17 @@ public class King extends Piece {
 
 	@Override
 	public int getValue() {
-		return 1000;
+		return 10;
 	}
 
 	@Override
 	public int[][] evaluationChart() {
 		return EvaluationCharts.kingTable;
+	}
+
+	@Override
+	public int getMaxMoves() {
+		return 8;
 	}
 
 	@Override
