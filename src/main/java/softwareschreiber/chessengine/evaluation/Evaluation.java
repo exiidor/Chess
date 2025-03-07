@@ -172,19 +172,20 @@ public class Evaluation {
 		List<Piece> pieces = new ArrayList<>(board.getPieces(color));
 
 		for (Piece piece : pieces) {
+			Board copiedBoard = this.board.copy();
 			Set<? extends Move> validMoves = piece.getValidMoves();
 
 			for (Move move : validMoves) {
 				futures.add(CompletableFuture.supplyAsync(() -> {
-					Board copiedBoard = this.board.copy();
-					Piece copiedPiece = copiedBoard.getPieceAt(move.getSourcePos());
-					Move copiedMove = move.copyWith(copiedBoard);
+					Board duplicateBoard = copiedBoard.copy();
+					Piece copiedPiece = duplicateBoard.getPieceAt(move.getSourcePos());
+					Move copiedMove = move.copyWith(duplicateBoard);
 
-					copiedBoard.move(copiedPiece, copiedMove, true);
+					duplicateBoard.move(copiedPiece, copiedMove, true);
 
-					int score = -new Evaluation(copiedBoard).minMax(depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, color.getOpposite());
+					int score = -new Evaluation(duplicateBoard).minMax(depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, color.getOpposite());
 
-					copiedBoard.undo(true);
+					duplicateBoard.undo(true);
 
 					return Pair.of(score, move);
 				}));
