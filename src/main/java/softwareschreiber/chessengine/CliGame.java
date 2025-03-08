@@ -40,8 +40,8 @@ public class CliGame extends Game {
 	}
 
 	@Override
-	public void checkMate(String color) {
-		System.out.println("Das Spiel ist vorbei " + color + " hat gewonnen");
+	public void checkMate(PieceColor winningColor) {
+		System.out.println("Das Spiel ist vorbei " + winningColor + " hat gewonnen");
 		endGame();
 	}
 

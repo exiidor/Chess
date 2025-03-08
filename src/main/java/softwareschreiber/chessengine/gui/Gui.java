@@ -42,7 +42,7 @@ public class Gui {
 	private final List<ChessPanel> highlightedSquares;
 	private final Map<ChessPanel, Move> highlightedSquareMoves;
 	private ChessPanel[][] squares;
-	private Game game;
+	private GuiGame game;
 	private Board board;
 	private Piece selectedPiece;
 	private Duration timeTaken;
@@ -62,10 +62,12 @@ public class Gui {
 		windowFrame.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_U) {
-					getBoard().undo(false);
-				} else if (e.getKeyCode() == KeyEvent.VK_R) {
-					reloadSquares();
+				switch (e.getKeyCode()) {
+					case KeyEvent.VK_U -> getBoard().undo(false);
+					case KeyEvent.VK_R -> reloadSquares();
+					case KeyEvent.VK_N -> initGame();
+					case KeyEvent.VK_L -> game.checkMate(PieceColor.BLACK);
+					case KeyEvent.VK_W -> game.checkMate(PieceColor.WHITE);
 				}
 			}
 		});

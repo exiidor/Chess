@@ -43,10 +43,10 @@ public class GuiGame extends Game {
 	}
 
 	@Override
-	public void checkMate(String color) {
+	public void checkMate(PieceColor winningColor) {
 		JOptionPane.showMessageDialog(
 				null,
-				color + " is in checkmate. Game over.",
+				winningColor.getOpposite() + " is in checkmate. Game over.",
 				"Checkmate",
 				JOptionPane.INFORMATION_MESSAGE);
 		endGame();

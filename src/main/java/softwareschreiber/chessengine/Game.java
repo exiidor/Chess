@@ -67,7 +67,7 @@ public abstract class Game {
 	private void checkForMate(PieceColor color) {
 		switch (board.checkForMate(color)) {
 			case CHECKMATE:
-				checkMate(color.getOpposite().toString());
+				checkMate(color.getOpposite());
 				break;
 			case STALEMATE:
 				staleMate();
@@ -83,7 +83,7 @@ public abstract class Game {
 
 	protected abstract Piece getPromotionTarget(Board board, Pawn pawn);
 
-	protected abstract void checkMate(String color);
+	protected abstract void checkMate(PieceColor winningColor);
 
 	protected abstract void staleMate();
 
