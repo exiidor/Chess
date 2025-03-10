@@ -20,9 +20,11 @@ class EnPassantTest {
 	}
 
 	private void onlyTwoPieces(Board board, PieceColor color) {
+		TestPlayer player = new TestPlayer(color);
 		Pawn pawn = board.addPiece(1, 1, new Pawn(color, board));
 		Pawn enemyPawn = board.addPiece(2, 3, new Pawn(color.getOpposite(), board));
-		board.move(pawn, new Move(pawn.getX(), pawn.getY(), pawn.getX(), pawn.getY() + pawn.getDirection() * 2), false);
+
+		board.move(pawn, new Move(pawn.getX(), pawn.getY(), pawn.getX(), pawn.getY() + pawn.getDirection() * 2), player);
 
 		assertEquals(pawn.getY(), enemyPawn.getY());
 		assertEquals(pawn.getX(), enemyPawn.getX() + (color == WHITE ? -1 : 1));
@@ -32,7 +34,7 @@ class EnPassantTest {
 
 		for (Move move : enemyMoves) {
 			if (move instanceof EnPassantMove enPassantMove) {
-				assertTrue(enPassantMove.getCaptured().equals(pawn));
+				assertEquals(enPassantMove.getCaptured(), pawn);
 				hasEnPassant = true;
 			}
 		}

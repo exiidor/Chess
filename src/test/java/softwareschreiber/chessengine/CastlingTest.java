@@ -1,5 +1,6 @@
 package softwareschreiber.chessengine;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static softwareschreiber.chessengine.gamepieces.PieceColor.BLACK;
 import static softwareschreiber.chessengine.gamepieces.PieceColor.WHITE;
@@ -13,6 +14,7 @@ import softwareschreiber.chessengine.gamepieces.PieceColor;
 import softwareschreiber.chessengine.gamepieces.Rook;
 import softwareschreiber.chessengine.move.CastlingMove;
 import softwareschreiber.chessengine.move.Move;
+import softwareschreiber.chessengine.player.Player;
 
 class CastlingTest {
 	@Test
@@ -34,14 +36,15 @@ class CastlingTest {
 		King king = board.addPiece(4, y, new King(color, board));
 		Rook rook = board.addPiece(left ? 0 : 7, y, new Rook(color, board));
 
+		Player player = new TestPlayer(color);
 		Set<? extends Move> kingMoves = king.getSafeMoves();
 		int castleCount = 0;
 
 		for (Move move : kingMoves) {
 			if (move instanceof CastlingMove castlingMove) {
-				assertTrue(castleCount == 0);
+				assertEquals(0, castleCount);
 
-				board.move(king, castlingMove, false);
+				board.move(king, castlingMove, player);
 
 				assertTrue(king.getPosition().equals(new Position(left ? 2 : 6, king.getY())));
 				assertTrue(rook.getPosition().equals(new Position(left ? 3 : 5, y)));
@@ -68,6 +71,6 @@ class CastlingTest {
 			}
 		}
 
-		assertTrue(castleCount == 0);
+		assertEquals(0, castleCount);
 	}
 }

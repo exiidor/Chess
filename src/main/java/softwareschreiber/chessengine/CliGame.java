@@ -16,7 +16,7 @@ public class CliGame extends Game {
 	}
 
 	@Override
-	protected Piece getPromotionTarget(Board board, Pawn pawn) {
+	public Piece getPromotionTarget(Board board, Pawn pawn) {
 		String choice = null;
 
 		try (Scanner scanner = new Scanner(System.in)) {
@@ -24,19 +24,16 @@ public class CliGame extends Game {
 			choice = scanner.nextLine();
 		}
 
-		switch (choice) {
-			case "Queen":
-				return new Queen(pawn.getColor(), board);
-			case "Rook":
-				return new Rook(pawn.getColor(), board);
-			case "Bishop":
-				return new Bishop(pawn.getColor(), board);
-			case "Knight":
-				return new Knight(pawn.getColor(), board);
-			default:
+		return switch (choice) {
+			case "Queen" -> new Queen(pawn.getColor(), board);
+			case "Rook" -> new Rook(pawn.getColor(), board);
+			case "Bishop" -> new Bishop(pawn.getColor(), board);
+			case "Knight" -> new Knight(pawn.getColor(), board);
+			default -> {
 				System.out.println("Invalid choice");
-				return getPromotionTarget(board, pawn);
-		}
+				yield getPromotionTarget(board, pawn);
+			}
+		};
 	}
 
 	@Override

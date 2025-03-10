@@ -18,7 +18,7 @@ public class GuiGame extends Game {
 	}
 
 	@Override
-	protected Piece getPromotionTarget(Board board, Pawn pawn) {
+	public Piece getPromotionTarget(Board board, Pawn pawn) {
 		String[] options = { "Queen", "Rook", "Bishop", "Knight" };
 		int choice = JOptionPane.showOptionDialog(
 				null,
@@ -28,18 +28,13 @@ public class GuiGame extends Game {
 				JOptionPane.INFORMATION_MESSAGE,
 				null, options, options[0]);
 
-		switch (choice) {
-			case 0:
-				return new Queen(pawn.getColor(), board);
-			case 1:
-				return new Rook(pawn.getColor(), board);
-			case 2:
-				return new Bishop(pawn.getColor(), board);
-			case 3:
-				return new Knight(pawn.getColor(), board);
-			default:
-				return getPromotionTarget(board, pawn);
-		}
+		return switch (choice) {
+			case 0 -> new Queen(pawn.getColor(), board);
+			case 1 -> new Rook(pawn.getColor(), board);
+			case 2 -> new Bishop(pawn.getColor(), board);
+			case 3 -> new Knight(pawn.getColor(), board);
+			default -> getPromotionTarget(board, pawn);
+		};
 	}
 
 	@Override

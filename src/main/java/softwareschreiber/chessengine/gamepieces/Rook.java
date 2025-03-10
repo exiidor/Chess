@@ -50,7 +50,7 @@ public class Rook extends Piece {
 
 				if (other == null) {
 					validMoves.add(new Move(getPosition(), targetPos));
-				} else if (other != null) {
+				} else {
 					if (other.isEnemyOf(this)) {
 						validMoves.add(new CaptureMove(getPosition(), targetPos, other));
 					}
@@ -72,7 +72,7 @@ public class Rook extends Piece {
 
 				if (other == null) {
 					validMoves.add(new Move(getPosition(), targetPos));
-				} else if (other != null) {
+				} else {
 					if (other.isEnemyOf(this)) {
 						validMoves.add(new CaptureMove(getPosition(), targetPos, other));
 					}

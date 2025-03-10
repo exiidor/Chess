@@ -51,7 +51,7 @@ public class Bishop extends Piece {
 
 					if (other == null) {
 						validMoves.add(new Move(getPosition(), targetPos));
-					} else if (other != null) {
+					} else {
 						if (other.isEnemyOf(this)) {
 							validMoves.add(new CaptureMove(getPosition(), targetPos, other));
 						}

@@ -19,19 +19,21 @@ import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.PieceColor;
 import softwareschreiber.chessengine.gamepieces.Queen;
 import softwareschreiber.chessengine.gamepieces.Rook;
+import softwareschreiber.chessengine.history.History;
+import softwareschreiber.chessengine.history.HistoryEntry;
 import softwareschreiber.chessengine.move.CaptureMove;
 import softwareschreiber.chessengine.move.CastlingMove;
 import softwareschreiber.chessengine.move.Move;
 import softwareschreiber.chessengine.move.PromotionMove;
-import softwareschreiber.chessengine.util.History;
-import softwareschreiber.chessengine.util.Pair;
+import softwareschreiber.chessengine.player.Player;
+import softwareschreiber.chessengine.player.SimulationPlayer;
 
 public class Board {
 	private final Game game;
 	private final Piece[][] board;
 	private final List<Piece> pieces;
 	private final Map<Piece, Position> positions;
-	private final History<Pair<Piece, Move>> history;
+	private final History history;
 	private final List<Consumer<Piece>> pieceAddedListeners;
 	private final List<SubmittedMoveConsumer> submittedMoveListeners;
 	private final List<PieceMovedConsumer> pieceMovedListeners;
@@ -47,7 +49,7 @@ public class Board {
 				new Piece[maxY + 1][maxX + 1],
 				new ArrayList<>(),
 				new HashMap<>(),
-				new History<>(Pair.of(null, null)),
+				new History(),
 				new ArrayList<>(),
 				new ArrayList<>(),
 				new ArrayList<>(),
@@ -60,7 +62,7 @@ public class Board {
 			Piece[][] board,
 			List<Piece> pieces,
 			Map<Piece, Position> positions,
-			History<Pair<Piece, Move>> history,
+			History history,
 			List<Consumer<Piece>> pieceAddedListeners,
 			List<SubmittedMoveConsumer> submittedMoveListeners,
 			List<PieceMovedConsumer> pieceMovedListeners,
@@ -136,15 +138,15 @@ public class Board {
 	/**
 	 * Initiated by user input.
 	 */
-	public void move(Piece piece, Move move, boolean virtual) {
-		moveInternal(piece, move, virtual);
+	public void move(Piece piece, Move move, Player player) {
+		moveInternal(piece, move, player);
 
-		if (!virtual) {
+		if (!(player instanceof SimulationPlayer)) {
 			submittedMoveListeners.forEach(listener -> listener.accept(piece, move));
 		}
 	}
 
-	private void moveInternal(Piece piece, Move move, boolean virtual) {
+	private void moveInternal(Piece piece, Move move, Player player) {
 		Piece origPiece = piece;
 		Position currentPosition = positions.get(piece);
 		Position targetPosition = move.getTargetPos();
@@ -155,7 +157,7 @@ public class Board {
 
 		// Special moves
 		if (move instanceof CastlingMove castlingMove) {
-			moveInternal(castlingMove.getOther(), castlingMove.getOtherMove(), virtual);
+			moveInternal(castlingMove.getOther(), castlingMove.getOtherMove(), player);
 		} else if (move instanceof PromotionMove promotionMove) {
 			if (promotionMove.getCaptured() != null) {
 				capture(promotionMove.getCaptured());
@@ -163,13 +165,7 @@ public class Board {
 
 			Pawn pawn = (Pawn) piece;
 
-			if (!virtual) {
-				piece = game.getPromotionTarget(this, pawn);
-			} else {
-				// Default to queen
-				piece = new Queen(piece.getColor(), this);
-			}
-
+			piece = player.getPromotionTarget(this, pawn);
 			promotionMove.setReplacement(piece);
 			pieces.remove(pawn);
 			pieces.add(piece);
@@ -187,29 +183,33 @@ public class Board {
 		piece.onMoved(currentPosition, targetPosition);
 
 		// History
-		history.push(Pair.of(origPiece, move));
+		history.push(new HistoryEntry(player, origPiece, move));
 
 		pieceMovedListeners.forEach(listener -> listener.accept(origPiece, move));
 	}
 
 	private void capture(Piece piece) {
+		removePiece(piece);
+	}
+
+	public void removePiece(Piece piece) {
 		Position position = positions.get(piece);
 		pieces.remove(piece);
 		board[position.getY()][position.getX()] = null;
 	}
 
 	public void undo(boolean virtual) {
-		Pair<Piece, Move> lastMove = history.getCurrent();
+		HistoryEntry lastMove = history.getCurrent();
 
 		if (lastMove == null) {
 			return;
 		}
 
-		if (lastMove.getLeft() == null || lastMove.getRight() == null) {
+		if (lastMove.getPiece() == null || lastMove.getMove() == null) {
 			throw new IllegalStateException("Last move is invalid");
 		}
 
-		undoMove(lastMove.getLeft(), lastMove.getRight(), virtual);
+		undoMove(lastMove.getPiece(), lastMove.getMove(), virtual);
 	}
 
 	private void undoMove(Piece piece, Move move, boolean virtual) {
@@ -260,6 +260,10 @@ public class Board {
 
 		moveUndoneListeners.forEach(listener -> listener.accept(piece, move));
 		piece.onMoveUndone(currentPosition, targetPosition);
+	}
+
+	public Game getGame() {
+		return game;
 	}
 
 	public int getMinX() {
@@ -328,14 +332,14 @@ public class Board {
 		return enemyMoves;
 	}
 
-	public Set<? extends Move> getEnemyMovesExceptKingMoves(Piece piece) {
+	public Set<Move> getEnemyMovesExceptKingMoves(Piece piece) {
 		Set<Move> enemyMoves = new HashSet<>();
 
 		for (Piece enemyPiece : getEnemyPieces(piece)) {
-			if (!(enemyPiece instanceof King)) {
-				enemyMoves.addAll(enemyPiece.getValidMoves());
-			} else if (enemyPiece instanceof King) {
+			if (enemyPiece instanceof King) {
 				enemyMoves.addAll(((King) enemyPiece).getStandardMoves());
+			} else {
+				enemyMoves.addAll(enemyPiece.getValidMoves());
 			}
 		}
 
@@ -408,10 +412,10 @@ public class Board {
 	}
 
 	public int evaluate() {
-		return new Evaluation(this).evaluate();
+		return new Evaluation(game, this).evaluate();
 	}
 
-	public History<Pair<Piece, Move>> getHistory() {
+	public History getHistory() {
 		return history;
 	}
 
@@ -451,7 +455,7 @@ public class Board {
 		Piece[][] newBoardArray = new Piece[getMaxY() + 1][getMaxX() + 1];
 		List<Piece> newPieces = new ArrayList<>();
 		Map<Piece, Position> newPositions = new HashMap<>();
-		History<Pair<Piece, Move>> newHistory = new History<Pair<Piece, Move>>(Pair.of(null, null));
+		History newHistory = new History();
 		List<Consumer<Piece>> newPieceAddedListeners = new ArrayList<>(pieceAddedListeners.size());
 		List<SubmittedMoveConsumer> newSubmittedMoveListeners = new ArrayList<>();
 		List<PieceMovedConsumer> newPieceMovedListeners = new ArrayList<>();

@@ -6,11 +6,11 @@ import java.util.Set;
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.Position;
 import softwareschreiber.chessengine.evaluation.EvaluationCharts;
+import softwareschreiber.chessengine.history.HistoryEntry;
 import softwareschreiber.chessengine.move.CaptureMove;
 import softwareschreiber.chessengine.move.EnPassantMove;
 import softwareschreiber.chessengine.move.Move;
 import softwareschreiber.chessengine.move.PromotionMove;
-import softwareschreiber.chessengine.util.Pair;
 
 public class Pawn extends Piece {
 	public Pawn(PieceColor color, Board board) {
@@ -87,9 +87,9 @@ public class Pawn extends Piece {
 
 		// En Passant
 
-		Pair<Piece, Move> historyItem = board.getHistory().getCurrent();
-		Piece enemyPiece = historyItem.getLeft();
-		Move enemyMove = historyItem.getRight();
+		HistoryEntry historyItem = board.getHistory().getCurrent();
+		Piece enemyPiece = historyItem.getPiece();
+		Move enemyMove = historyItem.getMove();
 
 		if (enemyPiece instanceof Pawn && Math.abs(enemyMove.getSourcePos().getY() - enemyMove.getTargetPos().getY()) == 2) {
 			Position left = new Position(getX() - 1, getY());
@@ -98,13 +98,13 @@ public class Pawn extends Piece {
 			Piece rightPiece = board.getPieceAt(right);
 
 			if (leftPiece instanceof Pawn leftPawn && leftPawn.equals(enemyPiece)) {
-				if (leftPawn != null && leftPiece.isEnemyOf(this)) {
+				if (leftPiece.isEnemyOf(this)) {
 					moves.add(new EnPassantMove(getPosition(), forwardLeftPos, leftPawn));
 				}
 			}
 
 			if (rightPiece instanceof Pawn rightPawn && rightPawn.equals(enemyPiece)) {
-				if (rightPawn != null && rightPiece.isEnemyOf(this)) {
+				if (rightPiece.isEnemyOf(this)) {
 					moves.add(new EnPassantMove(getPosition(), forwardRightPos, rightPawn));
 				}
 			}

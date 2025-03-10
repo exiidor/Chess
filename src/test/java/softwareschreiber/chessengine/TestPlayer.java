@@ -1,18 +1,15 @@
-package softwareschreiber.chessengine.player;
+package softwareschreiber.chessengine;
 
-import softwareschreiber.chessengine.Board;
-import softwareschreiber.chessengine.Game;
 import softwareschreiber.chessengine.gamepieces.Pawn;
 import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.PieceColor;
+import softwareschreiber.chessengine.gamepieces.Queen;
 import softwareschreiber.chessengine.move.Move;
+import softwareschreiber.chessengine.player.Player;
 
-public class HumanPlayer extends Player {
-	private final Game game;
-
-	public HumanPlayer(PieceColor pieceColor, Game game) {
+public class TestPlayer extends Player {
+	public TestPlayer(PieceColor pieceColor) {
 		super(pieceColor);
-		this.game = game;
 	}
 
 	@Override
@@ -22,6 +19,6 @@ public class HumanPlayer extends Player {
 
 	@Override
 	public Piece getPromotionTarget(Board board, Pawn pawn) {
-		return game.getPromotionTarget(board, pawn);
+		return new Queen(pawn.getColor(), board);
 	}
 }

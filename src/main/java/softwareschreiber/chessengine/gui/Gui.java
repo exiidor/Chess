@@ -63,7 +63,10 @@ public class Gui {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				switch (e.getKeyCode()) {
-					case KeyEvent.VK_U -> getBoard().undo(false);
+					case KeyEvent.VK_U -> {
+						getBoard().undo(false);
+						getBoard().undo(false);
+					}
 					case KeyEvent.VK_R -> reloadSquares();
 					case KeyEvent.VK_N -> initGame();
 					case KeyEvent.VK_L -> game.checkMate(PieceColor.BLACK);
@@ -80,6 +83,10 @@ public class Gui {
 
 	private Board getBoard() {
 		return board;
+	}
+
+	public Game getGame() {
+		return game;
 	}
 
 	private void initGame() {
@@ -119,7 +126,7 @@ public class Gui {
 
 						if (highlightedSquares.contains(square) && selectedPiece != piece) {
 							if (game.isTimeForTurn(selectedPiece)) {
-								getBoard().move(selectedPiece, highlightedSquareMoves.get(square), false);
+								getBoard().move(selectedPiece, highlightedSquareMoves.get(square), game.getWhitePlayer());
 							}
 
 							clearHighlightedSquares();
@@ -168,7 +175,7 @@ public class Gui {
 		updateTitle();
 	}
 
-	private void reloadSquares() {
+	public void reloadSquares() {
 		clearHighlightedSquares();
 
 		for (int y = board.getMaxY(); y >= board.getMinY(); y--) {
@@ -240,6 +247,12 @@ public class Gui {
 	}
 
 	private void onSubmittedMoveDone(Piece piece, Move move) {
+		updateTitle();
+
+		if (piece.isBlack()) {
+			return;
+		}
+
 		SwingUtilities.invokeLater(() -> {
 			Instant before = Instant.now();
 			Move chosenMove = game.getBlackPlayer().chooseMove(board);
@@ -247,7 +260,7 @@ public class Gui {
 			Piece pieceToMove = board.getPieceAt(sourcePos);
 			Instant after = Instant.now();
 
-			board.move(pieceToMove, chosenMove, true);
+			board.move(pieceToMove, chosenMove, game.getBlackPlayer());
 			game.setIsWhitesTurn(true);
 			timeTaken = Duration.between(before, after);
 			updateTitle();

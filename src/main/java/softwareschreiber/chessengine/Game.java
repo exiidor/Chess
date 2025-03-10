@@ -10,20 +10,23 @@ import softwareschreiber.chessengine.gamepieces.PieceColor;
 import softwareschreiber.chessengine.player.ComputerPlayer;
 import softwareschreiber.chessengine.player.HumanPlayer;
 import softwareschreiber.chessengine.player.Player;
+import softwareschreiber.chessengine.player.SimulationPlayer;
 
 public abstract class Game {
 	private final Board board;
 	private final List<Consumer<PieceColor>> gameEndListeners;
+	private final Player whitePlayer;
+	private final Player blackPlayer;
 	private PieceColor activeColor;
 	private boolean gameOver = false;
-	private Player whitePlayer;
-	private Player blackPlayer;
+	private SimulationPlayer whiteSimulationPlayer;
+	private SimulationPlayer blackSimulationPlayer;
 
 	public Game(PieceColor startingColor) {
 		board = new Board(this);
 		gameEndListeners = new ArrayList<>();
 		activeColor = startingColor;
-		whitePlayer = new HumanPlayer(PieceColor.WHITE);
+		whitePlayer = new HumanPlayer(PieceColor.WHITE, this);
 		blackPlayer = new ComputerPlayer(PieceColor.BLACK);
 	}
 
@@ -45,6 +48,28 @@ public abstract class Game {
 
 	public Player getBlackPlayer() {
 		return blackPlayer;
+	}
+
+	public SimulationPlayer getWhiteSimulationPlayer() {
+		if (whiteSimulationPlayer == null) {
+			whiteSimulationPlayer = new SimulationPlayer(PieceColor.WHITE);
+		}
+
+		return whiteSimulationPlayer;
+	}
+
+	public SimulationPlayer getBlackSimulationPlayer() {
+		if (blackSimulationPlayer == null) {
+			blackSimulationPlayer = new SimulationPlayer(PieceColor.BLACK);
+		}
+
+		return blackSimulationPlayer;
+	}
+
+	public SimulationPlayer getSimulationPlayer(PieceColor color) {
+		return color == PieceColor.WHITE
+				? getWhiteSimulationPlayer()
+				: getBlackSimulationPlayer();
 	}
 
 	public void startGame() {
@@ -81,7 +106,7 @@ public abstract class Game {
 		gameEndListeners.add(listener);
 	}
 
-	protected abstract Piece getPromotionTarget(Board board, Pawn pawn);
+	public abstract Piece getPromotionTarget(Board board, Pawn pawn);
 
 	protected abstract void checkMate(PieceColor winningColor);
 

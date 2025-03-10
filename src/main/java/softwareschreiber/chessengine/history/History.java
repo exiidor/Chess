@@ -1,28 +1,32 @@
-package softwareschreiber.chessengine.util;
+package softwareschreiber.chessengine.history;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-public class History<T> {
-	private final Deque<T> previous = new ArrayDeque<>();
-	private final Deque<T> next = new ArrayDeque<>();
-	private T current;
+public class History {
+	private final Deque<HistoryEntry> previous = new ArrayDeque<>();
+	private final Deque<HistoryEntry> next = new ArrayDeque<>();
+	private HistoryEntry current;
 
-	public History(T initial) {
+	public History() {
+		this(HistoryEntry.EMPTY);
+	}
+
+	public History(HistoryEntry initial) {
 		current = initial;
 	}
 
-	public T getCurrent() {
+	public HistoryEntry getCurrent() {
 		return current;
 	}
 
-	public void push(T value) {
+	public void push(HistoryEntry value) {
 		previous.addLast(current);
 		current = value;
 		next.clear();
 	}
 
-	public void replace(T value) {
+	public void replace(HistoryEntry value) {
 		current = value;
 	}
 
@@ -30,7 +34,7 @@ public class History<T> {
 		return !previous.isEmpty();
 	}
 
-	public T goBack() {
+	public HistoryEntry goBack() {
 		next.addFirst(current);
 		current = previous.removeLast();
 		return current;
@@ -40,7 +44,7 @@ public class History<T> {
 		return !next.isEmpty();
 	}
 
-	public T goForward() {
+	public HistoryEntry goForward() {
 		previous.addLast(current);
 		current = next.removeFirst();
 		return current;

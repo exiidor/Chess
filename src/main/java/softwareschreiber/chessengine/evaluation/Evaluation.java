@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import softwareschreiber.chessengine.Board;
+import softwareschreiber.chessengine.Game;
 import softwareschreiber.chessengine.MateKind;
 import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.PieceColor;
@@ -15,9 +16,11 @@ import softwareschreiber.chessengine.move.PromotionMove;
 import softwareschreiber.chessengine.util.Pair;
 
 public class Evaluation {
+	private Game game;
 	private Board board;
 
-	public Evaluation(Board board) {
+	public Evaluation(Game game, Board board) {
+		this.game = game;
 		this.board = board;
 	}
 
@@ -127,7 +130,7 @@ public class Evaluation {
 				validMoves.sort(this::compareMoves);
 
 				for (Move move : validMoves) {
-					board.move(piece, move, true);
+					board.move(piece, move, game.getSimulationPlayer(color));
 
 					int score = minMax(depth - 1, alpha, beta, color.getOpposite());
 
@@ -151,7 +154,7 @@ public class Evaluation {
 				validMoves.sort(this::compareMoves);
 
 				for (Move move : validMoves) {
-					board.move(piece, move, true);
+					board.move(piece, move, game.getSimulationPlayer(color));
 
 					int score = minMax(depth - 1, alpha, beta, color.getOpposite());
 
@@ -174,11 +177,10 @@ public class Evaluation {
 		List<CompletableFuture<Pair<Integer, Move>>> futures = new ArrayList<>();
 		int max = Integer.MIN_VALUE;
 		Move bestMove = null;
-		List<Piece> pieces = new ArrayList<>(board.getPieces(color));
 
-		for (Piece piece : pieces) {
+		for (Piece piece : board.getPieces(color)) {
 			Board board = this.board.copy();
-			Set<? extends Move> validMoves = piece.getValidMoves();
+			Set<? extends Move> validMoves = piece.getSafeMoves();
 
 			for (Move move : validMoves) {
 				futures.add(CompletableFuture.supplyAsync(() -> {
@@ -186,9 +188,9 @@ public class Evaluation {
 					Piece copiedPiece = copiedBoard.getPieceAt(move.getSourcePos());
 					Move copiedMove = move.copyWith(copiedBoard);
 
-					copiedBoard.move(copiedPiece, copiedMove, true);
+					copiedBoard.move(copiedPiece, copiedMove, game.getSimulationPlayer(color));
 
-					int score = -new Evaluation(copiedBoard).minMax(depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, color.getOpposite());
+					int score = -new Evaluation(game, copiedBoard).minMax(depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, color.getOpposite());
 
 					copiedBoard.undo(true);
 
