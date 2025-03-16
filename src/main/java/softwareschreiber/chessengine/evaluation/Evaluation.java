@@ -124,7 +124,7 @@ public class Evaluation {
 	}
 
 	public int evaluate() {
-		return absoluteMaterialEvaluation() + relativeMobilityEvaluation() + enemyInCheckMate();
+		return absoluteMaterialEvaluation() * 2 + mobilityEvaluation() + relativeMobilityEvaluation() + enemyInCheckMate();
 	}
 
 	private int minMax(int depth, int alpha, int beta, PieceColor color) {

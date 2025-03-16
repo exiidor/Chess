@@ -22,7 +22,7 @@ public class CaptureMove extends Move {
 	}
 
 	@Override
-	public Move copyWith(Board board) {
+	public CaptureMove copyWith(Board board) {
 		return new CaptureMove(getSourcePos(), getTargetPos(), board.getPieceAt(other.getPosition()));
 	}
 }
