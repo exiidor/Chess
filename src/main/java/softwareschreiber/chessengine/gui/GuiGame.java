@@ -1,16 +1,16 @@
 package softwareschreiber.chessengine.gui;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import javax.swing.JOptionPane;
 
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.Game;
-import softwareschreiber.chessengine.gamepieces.Bishop;
-import softwareschreiber.chessengine.gamepieces.Knight;
 import softwareschreiber.chessengine.gamepieces.Pawn;
-import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.PieceColor;
-import softwareschreiber.chessengine.gamepieces.Queen;
-import softwareschreiber.chessengine.gamepieces.Rook;
+import softwareschreiber.chessengine.move.PromotionMove;
 
 public class GuiGame extends Game {
 	public GuiGame(PieceColor startingColor) {
@@ -18,23 +18,31 @@ public class GuiGame extends Game {
 	}
 
 	@Override
-	public Piece getPromotionTarget(Board board, Pawn pawn) {
-		String[] options = { "Queen", "Rook", "Bishop", "Knight" };
-		int choice = JOptionPane.showOptionDialog(
-				null,
-				"Choose piece to promote to:",
-				"Pawn Promotion",
-				JOptionPane.DEFAULT_OPTION,
-				JOptionPane.INFORMATION_MESSAGE,
-				null, options, options[0]);
+	public PromotionMove choosePromotionMove(Board board, Pawn pawn, Set<PromotionMove> moves) {
+		Map<String, PromotionMove> movesByName = new HashMap<>();
 
-		return switch (choice) {
-			case 0 -> new Queen(pawn.getColor(), board);
-			case 1 -> new Rook(pawn.getColor(), board);
-			case 2 -> new Bishop(pawn.getColor(), board);
-			case 3 -> new Knight(pawn.getColor(), board);
-			default -> getPromotionTarget(board, pawn);
-		};
+		for (PromotionMove move : moves) {
+			movesByName.put(move.getReplacement().getName(), move);
+		}
+
+		String[] options = movesByName.keySet().toArray(String[]::new);
+
+		while (true) {
+			int choiceIndex = JOptionPane.showOptionDialog(
+					null,
+					"Choose piece to promote to:",
+					"Pawn Promotion",
+					JOptionPane.DEFAULT_OPTION,
+					JOptionPane.INFORMATION_MESSAGE,
+					null, options, options[0]);
+
+			if (choiceIndex == -1) {
+				// User cancelled the dialog
+			} else {
+				String choice = options[choiceIndex];
+				return movesByName.get(choice);
+			}
+		}
 	}
 
 	@Override

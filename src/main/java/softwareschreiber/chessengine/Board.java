@@ -159,16 +159,18 @@ public class Board {
 		if (move instanceof CastlingMove castlingMove) {
 			moveInternal(castlingMove.getOther(), castlingMove.getOtherMove(), player);
 		} else if (move instanceof PromotionMove promotionMove) {
+			Pawn pawn = (Pawn) piece;
+			Piece replacement = promotionMove.getReplacement();
+
+			assert replacement != null;
+
 			if (promotionMove.getCaptured() != null) {
 				capture(promotionMove.getCaptured());
 			}
 
-			Pawn pawn = (Pawn) piece;
-
-			piece = player.getPromotionTarget(this, pawn);
-			promotionMove.setReplacement(piece);
 			pieces.remove(pawn);
-			pieces.add(piece);
+			pieces.add(replacement);
+			piece = replacement;
 		} else if (move instanceof CaptureMove captureMove) {
 			capture(captureMove.getCaptured());
 		}

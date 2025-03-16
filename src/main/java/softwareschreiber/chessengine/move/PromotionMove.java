@@ -7,11 +7,8 @@ import softwareschreiber.chessengine.gamepieces.Piece;
 public class PromotionMove extends CaptureMove {
 	private Piece replacement;
 
-	public PromotionMove(Position position, Position targetPosition, Piece captured) {
+	public PromotionMove(Position position, Position targetPosition, Piece captured, Piece replacement) {
 		super(position, targetPosition, captured);
-	}
-
-	public void setReplacement(Piece replacement) {
 		this.replacement = replacement;
 	}
 
@@ -25,15 +22,9 @@ public class PromotionMove extends CaptureMove {
 	}
 
 	@Override
-	public Move copyWith(Board board) {
+	public PromotionMove copyWith(Board board) {
 		Piece capturedCopy = getCaptured() == null ? null : board.getPieceAt(getCaptured().getPosition());
 
-		PromotionMove copy = new PromotionMove(getSourcePos(), getTargetPos(), capturedCopy);
-
-		if (replacement != null) {
-			copy.setReplacement(board.getPieceAt(replacement.getPosition()));
-		}
-
-		return copy;
+		return new PromotionMove(getSourcePos(), getTargetPos(), capturedCopy, replacement.copyWith(board));
 	}
 }

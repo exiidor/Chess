@@ -1,11 +1,13 @@
 package softwareschreiber.chessengine.player;
 
+import java.util.Set;
+
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.Game;
 import softwareschreiber.chessengine.gamepieces.Pawn;
-import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.PieceColor;
 import softwareschreiber.chessengine.move.Move;
+import softwareschreiber.chessengine.move.PromotionMove;
 
 public class HumanPlayer extends Player {
 	private final Game game;
@@ -21,7 +23,7 @@ public class HumanPlayer extends Player {
 	}
 
 	@Override
-	public Piece getPromotionTarget(Board board, Pawn pawn) {
-		return game.getPromotionTarget(board, pawn);
+	public PromotionMove choosePromotionMove(Board board, Pawn pawn, Set<PromotionMove> moves) {
+		return game.choosePromotionMove(board, pawn, moves);
 	}
 }

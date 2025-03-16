@@ -10,8 +10,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -21,6 +23,7 @@ import javax.swing.SwingUtilities;
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.Game;
 import softwareschreiber.chessengine.Position;
+import softwareschreiber.chessengine.gamepieces.Pawn;
 import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.PieceColor;
 import softwareschreiber.chessengine.move.CaptureMove;
@@ -40,7 +43,7 @@ public class Gui {
 	private final JFrame windowFrame;
 	private final JPanel squareContainer;
 	private final List<ChessPanel> highlightedSquares;
-	private final Map<ChessPanel, Move> highlightedSquareMoves;
+	private final Map<ChessPanel, Set<Move>> highlightedSquareMoves;
 	private ChessPanel[][] squares;
 	private GuiGame game;
 	private Board board;
@@ -126,7 +129,16 @@ public class Gui {
 
 						if (highlightedSquares.contains(square) && selectedPiece != piece) {
 							if (game.isTimeForTurn(selectedPiece)) {
-								getBoard().move(selectedPiece, highlightedSquareMoves.get(square), game.getWhitePlayer());
+								Set<? extends Move> moves = highlightedSquareMoves.get(square);
+								Move move;
+
+								if (moves.size() == 1) {
+									move = moves.iterator().next();
+								} else {
+									move = game.getPlayer(selectedPiece.getColor()).choosePromotionMove(getBoard(), (Pawn) selectedPiece, (Set<PromotionMove>) moves);
+								}
+
+								getBoard().move(selectedPiece, move, game.getWhitePlayer());
 							}
 
 							clearHighlightedSquares();
@@ -297,7 +309,7 @@ public class Gui {
 		for (Move move : piece.getSafeMoves()) {
 			Position position = move.getTargetPos();
 			ChessPanel square = squares[position.getY()][position.getX()];
-			highlightedSquareMoves.put(square, move);
+			highlightedSquareMoves.computeIfAbsent(square, unused -> new HashSet<>()).add(move);
 			boolean isPiecesTurn = game.isTimeForTurn(piece);
 
 			if (move instanceof CaptureMove && !(move instanceof PromotionMove)) {

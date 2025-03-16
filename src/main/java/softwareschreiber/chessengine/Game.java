@@ -2,11 +2,17 @@ package softwareschreiber.chessengine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
+import softwareschreiber.chessengine.gamepieces.Bishop;
+import softwareschreiber.chessengine.gamepieces.Knight;
 import softwareschreiber.chessengine.gamepieces.Pawn;
 import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.PieceColor;
+import softwareschreiber.chessengine.gamepieces.Queen;
+import softwareschreiber.chessengine.gamepieces.Rook;
+import softwareschreiber.chessengine.move.PromotionMove;
 import softwareschreiber.chessengine.player.ComputerPlayer;
 import softwareschreiber.chessengine.player.HumanPlayer;
 import softwareschreiber.chessengine.player.Player;
@@ -48,6 +54,12 @@ public abstract class Game {
 
 	public Player getBlackPlayer() {
 		return blackPlayer;
+	}
+
+	public Player getPlayer(PieceColor color) {
+		return color == PieceColor.WHITE
+				? getWhitePlayer()
+				: getBlackPlayer();
 	}
 
 	public SimulationPlayer getWhiteSimulationPlayer() {
@@ -106,7 +118,7 @@ public abstract class Game {
 		gameEndListeners.add(listener);
 	}
 
-	public abstract Piece getPromotionTarget(Board board, Pawn pawn);
+	public abstract PromotionMove choosePromotionMove(Board board, Pawn pawn, Set<PromotionMove> moves);
 
 	protected abstract void checkMate(PieceColor winningColor);
 
@@ -127,5 +139,17 @@ public abstract class Game {
 
 	public boolean isGameOver() {
 		return gameOver;
+	}
+
+	// TODO
+	public List<Class<? extends Piece>> getAllowedPromotionTargets() {
+		List<Class<? extends Piece>> pieces = new ArrayList<>();
+
+		pieces.add(Bishop.class);
+		pieces.add(Knight.class);
+		pieces.add(Queen.class);
+		pieces.add(Rook.class);
+
+		return pieces;
 	}
 }

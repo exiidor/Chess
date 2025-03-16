@@ -56,10 +56,11 @@ public class Pawn extends Piece {
 		Position forwardByTwoPos = new Position(getX(), getY() + getDirection() * 2);
 
 		if (board.getPieceAt(forwardPos) == null) {
-			Move move = forwardPos.getY() == (isWhite() ? board.getMaxY() : board.getMinY())
-					? new PromotionMove(getPosition(), forwardPos, null)
-					: new Move(getPosition(), forwardPos);
-			moves.add(move);
+			if (forwardPos.getY() == (isWhite() ? board.getMaxY() : board.getMinY())) {
+				moves.addAll(getAllPossiblePromotionMoves(getPosition(), forwardPos, null));
+			} else {
+				moves.add(new Move(getPosition(), forwardPos));
+			}
 
 			if (canMoveTwo && board.getPieceAt(forwardByTwoPos) == null) {
 				moves.add(new Move(getPosition(), forwardByTwoPos));
@@ -72,17 +73,19 @@ public class Pawn extends Piece {
 		Piece forwardRightPiece = board.getPieceAt(forwardRightPos);
 
 		if (forwardLeftPiece != null && forwardLeftPiece.isEnemyOf(this)) {
-			Move move = forwardLeftPiece.getY() == (isWhite() ? board.getMaxY() : board.getMinY())
-					? new PromotionMove(getPosition(), forwardLeftPos, forwardLeftPiece)
-					: new CaptureMove(getPosition(), forwardLeftPos, forwardLeftPiece);
-			moves.add(move);
+			if (forwardLeftPiece.getY() == (isWhite() ? board.getMaxY() : board.getMinY())) {
+				moves.addAll(getAllPossiblePromotionMoves(getPosition(), forwardLeftPos, forwardLeftPiece));
+			} else {
+				moves.add(new CaptureMove(getPosition(), forwardLeftPos, forwardLeftPiece));
+			}
 		}
 
 		if (forwardRightPiece != null && forwardRightPiece.isEnemyOf(this)) {
-			Move move = forwardRightPiece.getY() == (isWhite() ? board.getMaxY() : board.getMinY())
-					? new PromotionMove(getPosition(), forwardRightPos, forwardRightPiece)
-					: new CaptureMove(getPosition(), forwardRightPos, forwardRightPiece);
-			moves.add(move);
+			if (forwardRightPiece.getY() == (isWhite() ? board.getMaxY() : board.getMinY())) {
+				moves.addAll(getAllPossiblePromotionMoves(getPosition(), forwardRightPos, forwardRightPiece));
+			} else {
+				moves.add(new CaptureMove(getPosition(), forwardRightPos, forwardRightPiece));
+			}
 		}
 
 		// En Passant
@@ -108,6 +111,29 @@ public class Pawn extends Piece {
 					moves.add(new EnPassantMove(getPosition(), forwardRightPos, rightPawn));
 				}
 			}
+		}
+
+		return moves;
+	}
+
+	private Set<? extends Move> getAllPossiblePromotionMoves(Position position, Position targetPosition, Piece captured) {
+		Set<Move> moves = new LinkedHashSet<>();
+		Piece replacement;
+
+		for (Class<? extends Piece> pieceClass : board.getGame().getAllowedPromotionTargets()) {
+			if (pieceClass == Knight.class) {
+				replacement = new Knight(color, board);
+			} else if (pieceClass == Bishop.class) {
+				replacement = new Bishop(color, board);
+			} else if (pieceClass == Rook.class) {
+				replacement = new Rook(color, board);
+			} else if (pieceClass == Queen.class) {
+				replacement = new Queen(color, board);
+			} else {
+				throw new IllegalStateException();
+			}
+
+			moves.add(new PromotionMove(position, targetPosition, captured, replacement));
 		}
 
 		return moves;

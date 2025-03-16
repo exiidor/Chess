@@ -1,10 +1,12 @@
 package softwareschreiber.chessengine.player;
 
+import java.util.Set;
+
 import softwareschreiber.chessengine.Board;
 import softwareschreiber.chessengine.gamepieces.Pawn;
-import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.PieceColor;
 import softwareschreiber.chessengine.move.Move;
+import softwareschreiber.chessengine.move.PromotionMove;
 
 public abstract class Player {
 	protected final PieceColor pieceColor;
@@ -23,5 +25,5 @@ public abstract class Player {
 
 	public abstract Move chooseMove(Board board);
 
-	public abstract Piece getPromotionTarget(Board board, Pawn pawn);
+	public abstract PromotionMove choosePromotionMove(Board board, Pawn pawn, Set<PromotionMove> moves);
 }

@@ -28,7 +28,7 @@ public class CastlingMove extends Move {
 	}
 
 	@Override
-	public Move copyWith(Board board) {
+	public CastlingMove copyWith(Board board) {
 		return new CastlingMove(getSourcePos(), getTargetPos(), board.getPieceAt(other.getPosition()), otherMove.getTargetPos());
 	}
 }

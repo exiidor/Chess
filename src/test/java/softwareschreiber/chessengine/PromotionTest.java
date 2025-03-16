@@ -30,7 +30,7 @@ class PromotionTest {
 
 		Player player = new TestPlayer(color);
 		Pawn pawn = board.addPiece(srcPos, new Pawn(color, board));
-		board.move(pawn, new PromotionMove(srcPos, destPos, null), player);
+		board.move(pawn, new PromotionMove(srcPos, destPos, null, new Queen(color, board)), player);
 
 		assertInstanceOf(Queen.class, board.getPieceAt(destPos));
 	}
@@ -43,7 +43,7 @@ class PromotionTest {
 		Player player = new TestPlayer(color);
 		Pawn pawn = board.addPiece(srcPos, new Pawn(color, board));
 		Piece enemy = board.addPiece(destPos, new Pawn(color.getOpposite(), board));
-		board.move(pawn, new PromotionMove(srcPos, destPos, enemy), player);
+		board.move(pawn, new PromotionMove(srcPos, destPos, enemy, new Queen(color, board)), player);
 
 		assertTrue(board.getEnemyPieces(pawn).isEmpty());
 		assertInstanceOf(Queen.class, board.getPieceAt(destPos));

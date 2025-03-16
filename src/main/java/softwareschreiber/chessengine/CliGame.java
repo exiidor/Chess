@@ -1,14 +1,14 @@
 package softwareschreiber.chessengine;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 
-import softwareschreiber.chessengine.gamepieces.Bishop;
-import softwareschreiber.chessengine.gamepieces.Knight;
 import softwareschreiber.chessengine.gamepieces.Pawn;
 import softwareschreiber.chessengine.gamepieces.Piece;
 import softwareschreiber.chessengine.gamepieces.PieceColor;
-import softwareschreiber.chessengine.gamepieces.Queen;
-import softwareschreiber.chessengine.gamepieces.Rook;
+import softwareschreiber.chessengine.move.PromotionMove;
 
 public class CliGame extends Game {
 	public CliGame(PieceColor startingColor) {
@@ -16,24 +16,39 @@ public class CliGame extends Game {
 	}
 
 	@Override
-	public Piece getPromotionTarget(Board board, Pawn pawn) {
-		String choice = null;
+	public PromotionMove choosePromotionMove(Board board, Pawn pawn, Set<PromotionMove> moves) {
+		StringBuilder messageBuilder = new StringBuilder("Choose piece to promote to:");
+		Map<Character, PromotionMove> movesBySymbol = new HashMap<>();
 
-		try (Scanner scanner = new Scanner(System.in)) {
-			System.out.println("Choose piece to promote to: (Queen, Rook, Bishop, Knight)");
-			choice = scanner.nextLine();
+		for (PromotionMove move : moves) {
+			Piece replacement = move.getReplacement();
+
+			movesBySymbol.put(replacement.getSymbol(), move);
+			messageBuilder.append("\n")
+					.append(replacement.getName())
+					.append(": ")
+					.append(replacement.getSymbol());
 		}
 
-		return switch (choice) {
-			case "Queen" -> new Queen(pawn.getColor(), board);
-			case "Rook" -> new Rook(pawn.getColor(), board);
-			case "Bishop" -> new Bishop(pawn.getColor(), board);
-			case "Knight" -> new Knight(pawn.getColor(), board);
-			default -> {
-				System.out.println("Invalid choice");
-				yield getPromotionTarget(board, pawn);
+		System.out.println(messageBuilder.toString());
+
+		while (true) {
+			String choice = null;
+
+			try (Scanner scanner = new Scanner(System.in)) {
+				choice = scanner.nextLine();
 			}
-		};
+
+			if (choice.length() == 1) {
+				PromotionMove selected = movesBySymbol.get(choice.charAt(0));
+
+				if (selected != null) {
+					return selected;
+				}
+			}
+
+			System.out.println("Invalid choice");
+		}
 	}
 
 	@Override
