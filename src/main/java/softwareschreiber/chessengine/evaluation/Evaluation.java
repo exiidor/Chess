@@ -67,6 +67,20 @@ public class Evaluation {
 		return score;
 	}
 
+	public int relativeMobilityEvaluation() {
+		int score = 0;
+
+		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
+			score += (piece.getValidMoves().size()/piece.getMaxMoves());
+		}
+
+		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
+			score -= (piece.getValidMoves().size()/piece.getMaxMoves());
+		}
+
+		return score;
+	}
+
 	public int absoluteAndRelativeMaterialEvaluation() {
 		double score = 0;
 
@@ -110,7 +124,7 @@ public class Evaluation {
 	}
 
 	public int evaluate() {
-		return absoluteMaterialEvaluation() + mobilityEvaluation() + enemyInCheckMate();
+		return absoluteMaterialEvaluation() + relativeMobilityEvaluation() + enemyInCheckMate();
 	}
 
 	private int minMax(int depth, int alpha, int beta, PieceColor color) {
