@@ -36,7 +36,7 @@ public class King extends Piece {
 
 	@Override
 	public int getValue() {
-		return 10;
+		return 0;
 	}
 
 	@Override
