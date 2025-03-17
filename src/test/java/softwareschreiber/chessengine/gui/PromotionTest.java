@@ -10,14 +10,12 @@ import softwareschreiber.chessengine.Game;
 import softwareschreiber.chessengine.gamepieces.King;
 import softwareschreiber.chessengine.gamepieces.Pawn;
 import softwareschreiber.chessengine.gamepieces.Piece;
-import softwareschreiber.chessengine.player.Player;
 
 class PromotionTest {
 	public static void main(String[] args) {
 		Gui gui = new Gui();
 		Game game = gui.getGame();
 		Board board = game.getBoard();
-		Player blackPlayer = game.getBlackPlayer();
 
 		List<Piece> piecesToRemove = new ArrayList<>();
 
