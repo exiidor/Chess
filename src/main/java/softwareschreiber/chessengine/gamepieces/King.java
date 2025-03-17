@@ -18,9 +18,15 @@ public class King extends Piece {
 	}
 
 	public boolean isChecked() {
-		return board.getEnemyMovesExceptKingMoves(this).stream()
-				.map(Move::getTargetPos)
-				.anyMatch(pos -> pos.equals(getPosition()));
+		for (Move move : board.getEnemyMovesExceptKingMoves(this)) {
+			Position targetPos = move.getTargetPos();
+
+			if (targetPos.equals(getPosition())) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Override
