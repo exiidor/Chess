@@ -16,7 +16,20 @@ public class ComputerPlayer extends Player {
 
 	@Override
 	public Move chooseMove(Board board) {
-		return new Evaluation(board.getGame(), board).bestMove(3, pieceColor);
+		int level = 3;
+		if (board.getPieces().size() < 18) {
+			level = 4;
+		}
+		if (board.getPieces().size() < 10) {
+			level = 5;
+		}
+		if (board.getPieces().size() < 8) {
+			level = 6;
+		}
+		if (board.getPieces().size() < 6) {
+			level = 7;
+		}
+		return new Evaluation(board.getGame(), board).bestMove(level, pieceColor);
 	}
 
 	@Override
