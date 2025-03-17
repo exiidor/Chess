@@ -123,6 +123,7 @@ public class Gui {
 				}
 
 				square.getUI().addMouseListener(new MouseListener() {
+					@SuppressWarnings("unchecked")
 					@Override
 					public void mouseClicked(MouseEvent e) {
 						Piece piece = square.getPiece();
