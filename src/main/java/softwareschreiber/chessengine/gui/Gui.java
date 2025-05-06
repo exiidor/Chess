@@ -340,8 +340,5 @@ public class Gui {
 		String nameOfFile = (firstLetterOfFileName + restOfFileName).trim();
 		return new ImageIcon(Util.getResource("/graphics/" + nameOfFile + ".png").toString());
 	}
-
-	public static void main(String[] args) {
-		new Gui();
-	}
+	
 }
