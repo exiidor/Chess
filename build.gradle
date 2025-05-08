@@ -1,92 +1,88 @@
 plugins {
-	id 'java'
-	id 'application'
-	id 'maven-publish'
-	id "checkstyle"
-	id 'com.diffplug.spotless'
-	id 'com.gradleup.shadow'
+	id 'com.diffplug.spotless' apply false
+	id 'com.gradleup.shadow' apply false
 }
 
-checkstyle {
-	configFile = rootProject.file("checkstyle.xml")
-	toolVersion = project.checkstyle_version
-}
+allprojects {
+	apply plugin: 'java'
+	apply plugin: 'maven-publish'
+	apply plugin: 'checkstyle'
+	apply plugin: 'com.diffplug.spotless'
+	apply plugin: 'com.gradleup.shadow'
 
-spotless {
-	lineEndings = com.diffplug.spotless.LineEnding.UNIX
-
-	java {
-		removeUnusedImports()
-		importOrder("java.", "javax.", "", "softwareschreiber.")
-		indentWithTabs()
-		trimTrailingWhitespace()
+	checkstyle {
+		configFile = rootProject.file('checkstyle.xml')
+		toolVersion = project.checkstyle_version
 	}
-}
 
-group "softwareschreiber"
-version = rootProject.version
+	spotless {
+		lineEndings = com.diffplug.spotless.LineEnding.UNIX
 
-tasks.withType(JavaCompile).configureEach {
-	it.options.encoding = "UTF-8"
-	it.options.release = 21
-}
-
-java {
-	withSourcesJar()
-	withJavadocJar()
-
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
-
-	if (!JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)) {
-		toolchain {
-			languageVersion = JavaLanguageVersion.of(21)
+		java {
+			removeUnusedImports()
+			importOrder('java.', 'javax.', '', 'softwareschreiber.')
+			indentWithTabs()
+			trimTrailingWhitespace()
 		}
 	}
-}
 
-repositories {
-	mavenCentral()
-}
+	version = rootProject.version
+	group = 'softwareschreiber.chess'
 
-dependencies {
-	compileOnly "org.jetbrains:annotations:${jetbrains_annotations_version}"
-	runtimeOnly "org.tinylog:slf4j-tinylog:${tinylog_version}"
-	runtimeOnly "org.tinylog:tinylog-impl:${tinylog_version}"
-	implementation "org.tinylog:tinylog-api:${tinylog_version}"
+	tasks.withType(JavaCompile).configureEach {
+		it.options.encoding = 'UTF-8'
+		it.options.release = 21
+	}
 
-	testImplementation "org.jooq:joor:${joor_version}"
-	testImplementation "org.junit.jupiter:junit-jupiter:${junit_jupiter_version}"
-	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
-	testCompileOnly "org.jetbrains:annotations:${jetbrains_annotations_version}"
-}
+	java {
+		withSourcesJar()
+		withJavadocJar()
 
-application {
-	mainClass = "softwareschreiber.chessengine.Main"
-}
+		sourceCompatibility = JavaVersion.VERSION_21
+		targetCompatibility = JavaVersion.VERSION_21
 
-jar {
-	processResources.exclude('tinylog-dev.properties')
-}
+		if (!JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)) {
+			toolchain {
+				languageVersion = JavaLanguageVersion.of(21)
+			}
+		}
+	}
 
-test {
-	useJUnitPlatform()
-}
+	repositories {
+		mavenCentral()
+	}
 
-javadoc {
-	failOnError = false
-	options.addBooleanOption('html5', true)
+	dependencies {
+		compileOnly "org.jetbrains:annotations:${jetbrains_annotations_version}"
+		runtimeOnly "org.tinylog:slf4j-tinylog:${tinylog_version}"
+		runtimeOnly "org.tinylog:tinylog-impl:${tinylog_version}"
+		implementation "org.tinylog:tinylog-api:${tinylog_version}"
 
-	// disable 'missing' warnings
-	options.addStringOption('Xdoclint:all,-missing', '-quiet')
-}
+		testImplementation "org.jooq:joor:${joor_version}"
+		testImplementation "org.junit.jupiter:junit-jupiter:${junit_jupiter_version}"
+		testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+		testCompileOnly "org.jetbrains:annotations:${jetbrains_annotations_version}"
+	}
 
-assemble.dependsOn javadocJar
+	test {
+		useJUnitPlatform()
+	}
 
-publishing {
-	publications {
-		"$project.name"(MavenPublication) {
-			from components.java
+	javadoc {
+		failOnError = false
+		options.addBooleanOption('html5', true)
+
+		// disable 'missing' warnings
+		options.addStringOption('Xdoclint:all,-missing', '-quiet')
+	}
+
+	assemble.dependsOn javadocJar
+
+	publishing {
+		publications {
+			"$project.name"(MavenPublication) {
+				from components.java
+			}
 		}
 	}
 }

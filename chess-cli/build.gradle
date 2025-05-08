@@ -1,0 +1,15 @@
+plugins {
+	id 'application'
+}
+
+dependencies {
+	implementation project(':chess-engine')
+}
+
+application {
+	mainClass = 'softwareschreiber.chess.cli.Main'
+}
+
+jar {
+	processResources.exclude('tinylog-dev.properties')
+}

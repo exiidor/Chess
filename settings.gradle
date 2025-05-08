@@ -9,4 +9,8 @@ pluginManagement {
 	}
 }
 
-rootProject.name = 'chess-engine'
+rootProject.name = 'softwareschreiber-chess'
+
+include 'chess-engine'
+include 'chess-cli'
+include 'chess-gui'
