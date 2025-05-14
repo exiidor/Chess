@@ -4,7 +4,7 @@
 
 	watch(wsClient.data, (newData) => {
 		if (newData.startsWith("new-game")) {
-			board.value = newData.substring(9)
+			board.value = newData.substring(8)
 		}
 	})
 

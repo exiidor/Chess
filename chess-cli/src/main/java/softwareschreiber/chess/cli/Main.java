@@ -1,9 +1,12 @@
 package softwareschreiber.chess.cli;
 
+import softwareschreiber.chess.engine.Game;
 import softwareschreiber.chess.engine.gamepieces.PieceColor;
 
 public class Main {
 	public static void main(String[] args) {
-		new CliGame(PieceColor.WHITE).startGame();
+		Game game = new CliGame(PieceColor.WHITE);
+		game.startGame();
+		System.out.println(game.getBoard());
 	}
 }

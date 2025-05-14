@@ -434,7 +434,7 @@ public class Board {
 		StringBuilder sb = new StringBuilder();
 
 		for (int y = getMaxY(); y >= getMinY(); y--) {
-			for (int x = getMinX(); x < getMaxX(); x++) {
+			for (int x = getMinX(); x <= getMaxX(); x++) {
 				if (board[y][x] != null) {
 					sb.append(board[y][x].getSymbol());
 				} else {
