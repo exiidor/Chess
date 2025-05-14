@@ -18,7 +18,5 @@
 		<button type="submit">Start new Game</button>
 	</form>
 
-	<p>
-		<pre>{{ board }}</pre>
-	</p>
+	<pre>{{ board }}</pre>
 </template>
