@@ -129,6 +129,10 @@ public abstract class Game {
 		gameEndListeners.forEach(listener -> listener.accept(activeColor));
 	}
 
+	public PieceColor getActiveColor() {
+		return activeColor;
+	}
+
 	public boolean isWhitesTurn() {
 		return activeColor == PieceColor.WHITE;
 	}

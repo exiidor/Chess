@@ -25,6 +25,11 @@ public class Queen extends Piece {
 	}
 
 	@Override
+	public char getSymbol() {
+		return isWhite() ? '♕' : '♛';
+	}
+
+	@Override
 	public int[][] evaluationChart() {
 		return EvaluationCharts.queenTable;
 	}

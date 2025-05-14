@@ -20,6 +20,11 @@ public class Bishop extends Piece {
 	}
 
 	@Override
+	public char getSymbol() {
+		return isWhite() ? '♗' : '♝';
+	}
+
+	@Override
 	public int getValue() {
 		return 3;
 	}

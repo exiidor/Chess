@@ -2,16 +2,24 @@ package softwareschreiber.chess.server;
 
 import java.net.InetSocketAddress;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.tinylog.Logger;
 
 import softwareschreiber.chess.cli.CliGame;
+import softwareschreiber.chess.engine.Board;
 import softwareschreiber.chess.engine.Game;
+import softwareschreiber.chess.engine.gamepieces.Piece;
 import softwareschreiber.chess.engine.gamepieces.PieceColor;
+import softwareschreiber.chess.server.packet.GameLoadPacket;
 
 public class ChessServer extends WebSocketServer {
+	private ObjectMapper mapper = new ObjectMapper();
+	private Game game;
+
 	ChessServer(int port) {
 		super(new InetSocketAddress(port));
 	}
@@ -30,10 +38,29 @@ public class ChessServer extends WebSocketServer {
 		InetSocketAddress remoteAddress = conn.getRemoteSocketAddress();
 		broadcast("[Server] Received " + message + " from " + remoteAddress.getHostName() + ":" + remoteAddress.getPort());
 
-		if (message.equalsIgnoreCase("new-game")) {
-			Game game = new CliGame(PieceColor.WHITE);
+		if (message.equalsIgnoreCase(Commands.NEW_GAME.asText())) {
+			game = new CliGame(PieceColor.WHITE);
 			game.startGame();
-			conn.send("new-game"+game.getBoard());
+			Board board = game.getBoard();
+
+			String[][] pieces = new String[board.getMaxX() + 1][board.getMaxY() + 1];
+
+			for (int x = 0; x <= board.getMaxX(); x++) {
+				for (int y = 0; y <= board.getMaxY(); y++) {
+					Piece piece = board.getPieceAt(x, y);
+					pieces[board.getMaxY() - y][x] = piece == null
+							? null
+							: Character.toString(piece.getSymbol());
+				}
+			}
+
+			GameLoadPacket packet = new GameLoadPacket(pieces, game.getActiveColor().name().toLowerCase());
+
+			try {
+				conn.send("new-game" + mapper.writeValueAsString(packet));
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

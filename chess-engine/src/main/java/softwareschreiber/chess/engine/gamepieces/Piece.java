@@ -19,9 +19,7 @@ public abstract class Piece {
 
 	public abstract String getName();
 
-	public char getSymbol() {
-		return getName().charAt(0);
-	}
+	public abstract char getSymbol();
 
 	public PieceColor getColor() {
 		return color;

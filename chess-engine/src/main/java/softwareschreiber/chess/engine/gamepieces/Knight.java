@@ -23,7 +23,7 @@ public class Knight extends Piece {
 
 	@Override
 	public char getSymbol() {
-		return 'k';
+		return isWhite() ? '♘' : '♞';
 	}
 
 	@Override
