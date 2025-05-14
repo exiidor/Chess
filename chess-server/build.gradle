@@ -1,0 +1,17 @@
+plugins {
+	id 'application'
+}
+
+dependencies {
+	implementation project(':chess-engine')
+	implementation project(':chess-cli')
+	implementation "org.java-websocket:Java-WebSocket:${java_websocket_version}"
+}
+
+application {
+	mainClass = 'softwareschreiber.chess.server.Main'
+}
+
+jar {
+	processResources.exclude('tinylog-dev.properties')
+}

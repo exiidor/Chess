@@ -13,4 +13,6 @@ rootProject.name = 'softwareschreiber-chess'
 
 include 'chess-engine'
 include 'chess-cli'
+include 'chess-server'
 include 'chess-gui'
+include 'chess-gui-nuxt'
