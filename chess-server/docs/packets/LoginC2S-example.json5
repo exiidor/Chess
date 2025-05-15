@@ -1,0 +1,8 @@
+{
+	"type": "LoginC2S",
+	"data": {
+		"username": "John Doe",
+		"password": "123456",
+		"clientVersion": "1.0.0"
+	}
+}

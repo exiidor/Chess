@@ -1,0 +1,6 @@
+{
+	"type": "PlayerJoinedS2C",
+	"data": {
+		// PlayerInfo component
+	}
+}

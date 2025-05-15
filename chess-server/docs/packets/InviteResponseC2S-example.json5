@@ -1,0 +1,6 @@
+{
+	"type": "InviteResponseC2S",
+	"data": {
+		"accept": true
+	}
+}

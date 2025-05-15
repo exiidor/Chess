@@ -1,0 +1,8 @@
+{
+	"username": "John Doe",
+	"status": "online",
+	"rating": 1500,
+	"gamesPlayed": 10,
+	"gamesWon": 5,
+	"gamesLost": 5
+}

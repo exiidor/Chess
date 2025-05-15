@@ -1,0 +1,7 @@
+{
+	"type": "KickS2C",
+	"data": {
+		"initiator": "Server",
+		"reason": "Inactivity for 30 minutes"
+	}
+}

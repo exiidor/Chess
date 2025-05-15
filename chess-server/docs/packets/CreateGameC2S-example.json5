@@ -1,0 +1,6 @@
+{
+	"type": "CreateGameC2S",
+	"data": {
+		// GameInfo component
+	}
+}

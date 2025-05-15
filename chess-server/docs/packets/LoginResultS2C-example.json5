@@ -1,0 +1,7 @@
+{
+	"type": "LoginResultS2C",
+	"data": {
+		"success": true,
+		"error": null
+	}
+}

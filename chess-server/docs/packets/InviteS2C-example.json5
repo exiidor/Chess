@@ -1,0 +1,9 @@
+{
+	"type": "InviteS2C",
+	"data": {
+		"initiator": "John Doe",
+		"gameInfo": {
+			// GameInfo component
+		}
+	}
+}
