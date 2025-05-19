@@ -6,6 +6,9 @@ dependencies {
 	implementation project(':chess-engine')
 	implementation project(':chess-cli')
 	implementation "org.java-websocket:Java-WebSocket:${java_websocket_version}"
+
+	compileOnly "org.projectlombok:lombok:${lombok_version}"
+	annotationProcessor "org.projectlombok:lombok:${lombok_version}"
 }
 
 application {
