@@ -1,0 +1,29 @@
+{
+	"$id": "de.softwareschreiber.chess.server.protocol.0.1.0.packets.LoginResultS2C",
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"type": "object",
+	"properties": {
+		"$schema": {
+			"type": "string"
+		},
+		"type": {
+			"$ref": "../components/PacketType.jsonc",
+			"const": "LoginResultS2C"
+		},
+		"data": {
+			"type": "object",
+			"properties": {
+				"success": {
+					"type": "boolean"
+				},
+				"error": {
+					"type": ["string", "null"]
+				}
+			},
+			"required": ["success", "error"],
+			"additionalProperties": false
+		}
+	},
+	"required": ["type", "data"],
+	"additionalProperties": false
+}

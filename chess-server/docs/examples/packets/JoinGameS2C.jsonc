@@ -1,0 +1,9 @@
+{
+	"$schema": "../../schemas/packets/JoinGameS2C.jsonc",
+	"type": "JoinGameS2C",
+	"data": {
+		"cpuOpponent": false,
+		"requestedOpponent": "Jane Smith",
+		"maxSecondsPerMove": 30
+	}
+}

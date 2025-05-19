@@ -1,0 +1,11 @@
+{
+	"$schema": "../../schemas/packets/UserListS2C.jsonc",
+	"type": "UserListS2C",
+	"data": [
+		{
+			"username": "John Doe",
+			"status": "online",
+			"playing": false
+		}
+	]
+}

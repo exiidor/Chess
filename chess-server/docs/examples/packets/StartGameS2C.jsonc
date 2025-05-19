@@ -1,0 +1,7 @@
+{
+	"$schema": "../../schemas/packets/StartGameS2C.jsonc",
+	"type": "StartGameS2C",
+	"data": {
+		"gameId": "123"
+	}
+}

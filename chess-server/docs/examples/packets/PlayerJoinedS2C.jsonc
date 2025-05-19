@@ -1,0 +1,12 @@
+{
+	"$schema": "../../schemas/packets/PlayerJoinedS2C.jsonc",
+	"type": "PlayerJoinedS2C",
+	"data": {
+		"username": "John Doe",
+		"status": "online",
+		"playing": true,
+		"gamesPlayed": 10,
+		"gamesWon": 5,
+		"gamesLost": 5
+	}
+}

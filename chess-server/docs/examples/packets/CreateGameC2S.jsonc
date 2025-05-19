@@ -1,0 +1,9 @@
+{
+	"$schema": "../../schemas/packets/CreateGameC2S.jsonc",
+	"type": "CreateGameC2S",
+	"data": {
+		"cpuOpponent": false,
+		"requestedOpponent": "Jane Smith",
+		"maxSecondsPerMove": 30
+	}
+}

@@ -1,0 +1,35 @@
+{
+	"$id": "de.softwareschreiber.chess.server.protocol.0.1.0.packets.MoveResultS2C",
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"type": "object",
+	"properties": {
+		"$schema": {
+			"type": "string"
+		},
+		"type": {
+			"$ref": "../components/PacketType.jsonc",
+			"const": "MoveResultS2C"
+		},
+		"data": {
+			"type": "object",
+			"properties": {
+				"gameId": {
+					"type": "string"
+				},
+				"pieceId": {
+					"type": "string"
+				},
+				"success": {
+					"type": "boolean"
+				},
+				"error": {
+					"type": ["string", "null"]
+				}
+			},
+			"required": ["gameId", "pieceId", "success", "error"],
+			"additionalItems": false
+		}
+	},
+	"required": ["type", "data"],
+	"additionalItems": false
+}

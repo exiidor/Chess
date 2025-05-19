@@ -1,0 +1,19 @@
+{
+	"$schema": "../../schemas/packets/MoveC2S.jsonc",
+	"type": "MoveC2S",
+	"data": {
+		"gameId": "123",
+		"pieceId": "black-pawn-1",
+		"move": {
+			"moveType": "normal",
+			"from": {
+				"x": 1,
+				"y": 2
+			},
+			"to": {
+				"x": 1,
+				"y": 3
+			}
+		}
+	}
+}

@@ -1,6 +1,6 @@
 # Chess Server Protocol
 The chess server uses JSON transmitted over WebSockets for communication. The general structure of these JSON strings is as follows:
-```json5
+```jsonc
 {
 	"type": "...",
 	"data": {
@@ -31,19 +31,19 @@ Client A       Server      Client B
 The server will ignore any other packets from the client until this entire exchange has been completed, and may kick the client if any other packet is received during this stage.
 
 **Packets:**
-- `LoginC2S`: [example](./packets/LoginC2S-example.json5), [schema](./packets/LoginC2S-schema.json5)
-- `LoginResultS2C`: [example](./packets/LoginResultS2C-example.json5), [schema](./packets/LoginResultS2C-schema.json5)
-- `UserListS2C`: [example](./packets/UserListS2C-example.json5), [schema](./packets/UserListS2C-schema.json5)
+- `LoginC2S`: [example](./examples/packets/LoginC2S.jsonc), [schema](./schemas/packets/LoginC2S.jsonc)
+- `LoginResultS2C`: [example](./examples/packets/LoginResultS2C.jsonc), [schema](./schemas/packets/LoginResultS2C.jsonc)
+- `UserListS2C`: [example](./examples/packets/UserListS2C.jsonc), [schema](./schemas/packets/UserListS2C.jsonc)
 
 
 ## Kicking clients
-When the server kicks a client, it may optionally send a `Kick` packet immediately before closing the connection, which
+When the server kicks a client, it may optionally send a `KickS2C` packet immediately before closing the connection, which
 contains the reason why the client was kicked (so the client can display it to the user). This is not required though -
 the server may simply terminate the connection. After the connection is closed, the server should send the new user list
 to the other connected clients.
 
 **Packets:**
-- `KickS2C`: [example](./packets/KickS2C-example.json5), [schema](./packets/KickS2C-schema.json5)
+- `KickS2C`: [example](./examples/packets/KickS2C.jsonc), [schema](./schemas/packets/KickS2C.jsonc)
 
 
 ## Creating a game
@@ -76,13 +76,13 @@ Client A            Server         Client B
 6. Once all required clients have joined, the server sends a `StartGameS2C` packet to all clients in the game, notifying them that the game has started.
 
 **Packets:**
-- `CreateGameC2S`: [example](./packets/CreateGameC2S-example.json5), [schema](./packets/CreateGameC2S-schema.json5)
-- `CreateGameResultS2C`: [example](./packets/CreateGameResultS2C-example.json5), [schema](./packets/CreateGameResultS2C-schema.json5)
-- `InviteS2C`: [example](./packets/InviteS2C-example.json5), [schema](./packets/InviteS2C-schema.json5)
-- `InviteResponseC2S`: [example](./packets/InviteResponseC2S-example.json5), [schema](./packets/InviteResponseC2S-schema.json5)
-- `JoinGameS2C`: [example](./packets/JoinGameS2C-example.json5), [schema](./packets/JoinGameS2C-schema.json5)
-- `PlayerJoinedS2C`: [example](./packets/PlayerJoinedS2C-example.json5), [schema](./packets/PlayerJoinedS2C-schema.json5)
-- `StartGameS2C`: [example](./packets/StartGameS2C-example.json5), [schema](./packets/StartGameS2C-schema.json5)
+- `CreateGameC2S`: [example](./examples/packets/CreateGameC2S.jsonc), [schema](./schemas/packets/CreateGameC2S.jsonc)
+- `CreateGameResultS2C`: [example](./examples/packets/CreateGameResultS2C.jsonc), [schema](./schemas/packets/CreateGameResultS2C.jsonc)
+- `InviteS2C`: [example](./examples/packets/InviteS2C.jsonc), [schema](./schemas/packets/InviteS2C.jsonc)
+- `InviteResponseC2S`: [example](./examples/packets/InviteResponseC2S.jsonc), [schema](./schemas/packets/InviteResponseC2S.jsonc)
+- `JoinGameS2C`: [example](./examples/packets/JoinGameS2C.jsonc), [schema](./schemas/packets/JoinGameS2C.jsonc)
+- `PlayerJoinedS2C`: [example](./examples/packets/PlayerJoinedS2C.jsonc), [schema](./schemas/packets/PlayerJoinedS2C.jsonc)
+- `StartGameS2C`: [example](./examples/packets/StartGameS2C.jsonc), [schema](./schemas/packets/StartGameS2C.jsonc)
 
 
 ## Leaving a game
@@ -99,35 +99,35 @@ Client A          Server         Client B
 2. The server removes the client from the game and sends a `PlayerLeftS2C` packet to all other clients in the game, notifying them of the player that left.
 
 **Packets:**
-- `LeaveGameC2S`: [example](./packets/LeaveGameC2S-example.json5), [schema](./packets/LeaveGameC2S-schema.json5)
-- `PlayerLeftS2C`: [example](./packets/PlayerLeftS2C-example.json5), [schema](./packets/PlayerLeftS2C-schema.json5)
+- `LeaveGameC2S`: [example](./examples/packets/LeaveGameC2S.jsonc), [schema](./schemas/packets/LeaveGameC2S.jsonc)
+- `PlayerLeftS2C`: [example](./examples/packets/PlayerLeftS2C.jsonc), [schema](./schemas/packets/PlayerLeftS2C.jsonc)
 
 
 ## Committing a move
 ```
-Client A      Server     Client B
-|               |               |
-|  GetMovesC2S  |               |
-| >>>>>>>>>>>>> |               |
-|               |               |
-|  SendMovesS2C |               |
-| <<<<<<<<<<<<< |               |
-|               |               |
-|    MoveC2S    |               |
-| >>>>>>>>>>>>> |               |
-|               |               |
-| MoveResultS2C |    MoveS2C    |
-| <<<<<<<<<<<<< | >>>>>>>>>>>>> |
+Client A        Server     Client B
+|                 |               |
+| RequestMovesC2S |               |
+| >>>>>>>>>>>>>>> |               |
+|                 |               |
+|     MovesS2C    |               |
+| <<<<<<<<<<<<<<< |               |
+|                 |               |
+|     MoveC2S     |               |
+| >>>>>>>>>>>>>>> |               |
+|                 |               |
+|  MoveResultS2C  |    MoveS2C    |
+| <<<<<<<<<<<<<<< | >>>>>>>>>>>>> |
 ```
-1. The client sends a `GetMovesC2S` packet to the server, requesting the list of possible moves for a piece.
+1. The client sends a `RequestMovesC2S` packet to the server, requesting the list of possible moves for a piece.
 2. The server sends a `SendMovesS2C` packet back to the client, containing the list of possible moves for the piece.
 3. The client sends a `MoveC2S` packet to the server, containing the move to be made.
 4. The server validates the move and sends a `MoveResultS2C` packet back to the client, containing the result of the move, or an error message if the move was invalid.
 5. The server sends a `MoveS2C` packet to all clients in the game, notifying them of the move that was made.
 
 **Packets:**
-- `GetMovesC2S`: [example](./packets/GetMovesC2S-example.json5), [schema](./packets/GetMovesC2S-schema.json5)
-- `SendMovesS2C`: [example](./packets/SendMovesS2C-example.json5), [schema](./packets/SendMovesS2C-schema.json5)
-- `MoveC2S`: [example](./packets/MoveC2S-example.json5), [schema](./packets/MoveC2S-schema.json5)
-- `MoveResultS2C`: [example](./packets/MoveResultS2C-example.json5), [schema](./packets/MoveResultS2C-schema.json5)
-- `MoveS2C`: [example](./packets/MoveS2C-example.json5), [schema](./packets/MoveS2C-schema.json5)
+- `RequestMovesC2S`: [example](./examples/packets/RequestMovesC2S.jsonc), [schema](./schemas/packets/RequestMovesC2S.jsonc)
+- `MovesS2C`: [example](./examples/packets/MovesS2C.jsonc), [schema](./schemas/packets/MovesS2C.jsonc)
+- `MoveC2S`: [example](./examples/packets/MoveC2S.jsonc), [schema](./schemas/packets/MoveC2S.jsonc)
+- `MoveResultS2C`: [example](./examples/packets/MoveResultS2C.jsonc), [schema](./schemas/packets/MoveResultS2C.jsonc)
+- `MoveS2C`: [example](./examples/packets/MoveS2C.jsonc), [schema](./schemas/packets/MoveS2C.jsonc)

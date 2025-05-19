@@ -1,0 +1,21 @@
+{
+	"$id": "de.softwareschreiber.chess.server.protocol.0.1.0.components.GameInfo",
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"type": "object",
+	"properties": {
+		"$schema": {
+			"type": "string"
+		},
+		"cpuOpponent": {
+			"type": "boolean"
+		},
+		"requestedOpponent": {
+			"type": "string"
+		},
+		"maxSecondsPerMove": {
+			"type": "integer"
+		}
+	},
+	"required": ["cpuOpponent", "requestedOpponent", "maxSecondsPerMove"],
+	"additionalProperties": false
+}

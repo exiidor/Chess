@@ -1,0 +1,25 @@
+{
+	"$id": "de.softwareschreiber.chess.server.protocol.0.1.0.components.PacketType",
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"type": "string",
+	"enum": [
+		"LoginC2S",
+		"LoginResultS2C",
+		"UserListS2C",
+		"KickS2C",
+		"CreateGameC2S",
+		"CreateGameResultS2C",
+		"InviteS2C",
+		"InviteResponseC2S",
+		"JoinGameS2C",
+		"PlayerJoinedS2C",
+		"StartGameS2C",
+		"LeaveGameC2S",
+		"PlayerLeftS2C",
+		"RequestMovesC2S",
+		"MovesS2C",
+		"MoveC2S",
+		"MoveResultS2C",
+		"MoveS2C"
+	]
+}

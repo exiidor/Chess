@@ -1,0 +1,9 @@
+{
+	"$schema": "../../schemas/packets/CreateGameResultS2C.jsonc",
+	"type": "CreateGameResultS2C",
+	"data": {
+		"gameId": "123",
+		"success": true,
+		"error": null
+	}
+}

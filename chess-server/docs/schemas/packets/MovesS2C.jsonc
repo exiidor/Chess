@@ -1,0 +1,33 @@
+{
+	"$id": "de.softwareschreiber.chess.server.protocol.0.1.0.packets.MovesS2C",
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type": "object",
+	"properties": {
+		"$schema": {
+			"type": "string"
+		},
+		"type": {
+			"$ref": "../components/PacketType.jsonc",
+			"const": "MovesS2C"
+		},
+		"data": {
+			"type": "object",
+			"properties": {
+				"piece": {
+					"$ref": "../components/Position.jsonc"
+				},
+				"possibleMoves": {
+					"type": "array",
+					"items": {
+						"$ref": "../components/Move.jsonc"
+					},
+					"uniqueItems": true
+				}
+			},
+			"required": ["piece", "possibleMoves"],
+			"additionalProperties": false
+		}
+	},
+	"required": ["type", "data"],
+	"additionalProperties": false
+}

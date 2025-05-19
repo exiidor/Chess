@@ -1,0 +1,30 @@
+{
+	"$id": "de.softwareschreiber.chess.server.protocol.0.1.0.packets.KickS2C",
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"type": "object",
+	"properties": {
+		"$schema": {
+			"type": "string"
+		},
+		"type": {
+			"$ref": "../components/PacketType.jsonc",
+			"const": "KickS2C"
+		},
+		"data": {
+			"type": "object",
+			"properties": {
+				"initiator": {
+					"type": "string",
+					"description": "The entity that initiated the kick."
+				},
+				"reason": {
+					"type": ["string", "null"]
+				}
+			},
+			"required": ["initiator", "reason"],
+			"additionalProperties": false
+		}
+	},
+	"required": ["type", "data"],
+	"additionalProperties": false
+}

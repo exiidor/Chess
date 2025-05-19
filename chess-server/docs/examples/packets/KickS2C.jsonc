@@ -1,4 +1,5 @@
 {
+	"$schema": "../../schemas/packets/KickS2C.jsonc",
 	"type": "KickS2C",
 	"data": {
 		"initiator": "Server",

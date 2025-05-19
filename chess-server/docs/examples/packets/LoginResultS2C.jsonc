@@ -1,4 +1,5 @@
 {
+	"$schema": "../../schemas/packets/LoginResultS2C.jsonc",
 	"type": "LoginResultS2C",
 	"data": {
 		"success": true,

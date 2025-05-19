@@ -1,7 +1,8 @@
 {
+	"$schema": "../../schemas/components/PlayerInfo.jsonc",
 	"username": "John Doe",
 	"status": "online",
-	"rating": 1500,
+	"playing": true,
 	"gamesPlayed": 10,
 	"gamesWon": 5,
 	"gamesLost": 5

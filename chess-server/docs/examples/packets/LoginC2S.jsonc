@@ -1,4 +1,5 @@
 {
+	"$schema": "../../schemas/packets/LoginC2S.jsonc",
 	"type": "LoginC2S",
 	"data": {
 		"username": "John Doe",

@@ -1,7 +1,0 @@
-{
-	"type": "CreateGameResultS2C",
-	"data": {
-		"success": true,
-		"gameId": "123",
-	}
-}

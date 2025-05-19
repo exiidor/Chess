@@ -1,4 +1,5 @@
 {
+	"$schema": "../../schemas/packets/InviteResponseC2S.jsonc",
 	"type": "InviteResponseC2S",
 	"data": {
 		"accept": true

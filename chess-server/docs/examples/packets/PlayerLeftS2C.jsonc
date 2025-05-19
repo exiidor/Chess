@@ -1,0 +1,15 @@
+{
+	"$schema": "../../schemas/packets/PlayerLeftS2C.jsonc",
+	"type": "PlayerLeftS2C",
+	"data": {
+		"player": {
+			"username": "John Doe",
+			"status": "online",
+			"playing": true,
+			"gamesPlayed": 10,
+			"gamesWon": 5,
+			"gamesLost": 5
+		},
+		"reason": "My mom said I have to go to bed"
+	}
+}

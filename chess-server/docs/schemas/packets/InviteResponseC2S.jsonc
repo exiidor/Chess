@@ -1,0 +1,26 @@
+{
+	"$id": "de.softwareschreiber.chess.server.protocol.0.1.0.packets.InviteResponseC2S",
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"type": "object",
+	"properties": {
+		"$schema": {
+			"type": "string"
+		},
+		"type": {
+			"$ref": "../components/PacketType.jsonc",
+			"const": "InviteResponseC2S"
+		},
+		"data": {
+			"type": "object",
+			"properties": {
+				"accept": {
+					"type": "boolean"
+				}
+			},
+			"required": ["accept"],
+			"additionalItems": false
+		}
+	},
+	"required": ["type", "data"],
+	"additionalItems": false
+}

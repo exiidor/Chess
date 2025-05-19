@@ -1,0 +1,12 @@
+{
+	"$schema": "../../schemas/packets/InviteS2C.jsonc",
+	"type": "InviteS2C",
+	"data": {
+		"initiator": "John Doe",
+		"gameInfo": {
+			"cpuOpponent": false,
+			"requestedOpponent": "Jane Smith",
+			"maxSecondsPerMove": 30
+		}
+	}
+}

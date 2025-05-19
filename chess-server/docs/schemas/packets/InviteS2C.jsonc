@@ -1,0 +1,29 @@
+{
+	"$id": "de.softwareschreiber.chess.server.protocol.0.1.0.packets.InviteS2C",
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"type": "object",
+	"properties": {
+		"$schema": {
+			"type": "string"
+		},
+		"type": {
+			"$ref": "../components/PacketType.jsonc",
+			"const": "InviteS2C"
+		},
+		"data": {
+			"type": "object",
+			"properties": {
+				"initiator": {
+					"type": "string"
+				},
+				"gameInfo": {
+					"$ref": "../components/GameInfo.jsonc"
+				}
+			},
+			"required": ["initiator", "gameInfo"],
+			"additionalItems": false
+		}
+	},
+	"required": ["type", "data"],
+	"additionalItems": false
+}

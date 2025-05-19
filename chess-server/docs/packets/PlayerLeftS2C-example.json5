@@ -1,9 +1,0 @@
-{
-	"type": "PlayerLeftS2C",
-	"data": {
-		"player": {
-			// PlayerInfo component
-		},
-		"reason": "My mom said I have to go to bed"
-	}
-}

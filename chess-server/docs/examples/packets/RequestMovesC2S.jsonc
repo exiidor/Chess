@@ -1,0 +1,8 @@
+{
+	"$schema": "../../schemas/packets/RequestMovesC2S.jsonc",
+	"type": "RequestMovesC2S",
+	"data": {
+		"gameId": "123",
+		"pieceId": "black-pawn-1"
+	}
+}

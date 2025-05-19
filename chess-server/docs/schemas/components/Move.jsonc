@@ -1,0 +1,25 @@
+{
+	"$id": "de.softwareschreiber.chess.server.protocol.0.1.0.components.Move",
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"type": "object",
+	"properties": {
+		"moveType": {
+			"type": "string",
+			"enum": [
+				"normal",
+				"capture",
+				"enPassant",
+				"castling",
+				"promotion"
+			]
+		},
+		"from": {
+			"$ref": "./Position.jsonc"
+		},
+		"to": {
+			"$ref": "./Position.jsonc"
+		}
+	},
+	"required": ["moveType", "from", "to"],
+	"additionalItems": true
+}

@@ -1,0 +1,26 @@
+{
+	"$id": "de.softwareschreiber.chess.server.protocol.0.1.0.packets.LeaveGameC2S",
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"type": "object",
+	"properties": {
+		"$schema": {
+			"type": "string"
+		},
+		"type": {
+			"$ref": "../components/PacketType.jsonc",
+			"const": "LeaveGameC2S"
+		},
+		"data": {
+			"type": "object",
+			"properties": {
+				"reason": {
+					"type": ["string", "null"]
+				}
+			},
+			"required": ["reason"],
+			"additionalItems": false
+		}
+	},
+	"required": ["type", "data"],
+	"additionalItems": false
+}
