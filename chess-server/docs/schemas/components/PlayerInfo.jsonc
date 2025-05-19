@@ -29,6 +29,6 @@
 			"minimum": 0
 		}
 	},
-	"required": ["username", "status", "playing"],
+	"required": ["username", "status", "playing", "gamesPlayed", "gamesWon", "gamesLost"],
 	"additionalProperties": false
 }

@@ -1,24 +1,69 @@
 <script setup>
 	const wsClient = useWebSocket("ws://localhost:3010")
+	const lastReceivedPacket = ref(null)
+	const loggedIn = ref(false)
+	const userList = ref([])
 	const displayBoard = ref(false)
 	const board = ref("")
 
 	watch(wsClient.data, (newData) => {
-		if (newData.startsWith("new-game")) {
-			const result = JSON.parse(newData.substring(8))
-			board.value = result.board
-			displayBoard.value = true
+		let packet = lastReceivedPacket.value = JSON.parse(newData)
+
+		switch (packet.type) {
+			case "LoginResultS2C":
+				if (packet.data.success) {
+					loggedIn.value = true
+					displayBoard.value = false
+				} else {
+					alert("Login failed: " + packet.data.error)
+				}
+
+				break
+			case "UserListS2C":
+				userList.value = packet.data
+				break
+			default:
+				alert("Unknown packet type: ", packet.type)
 		}
 	})
 
+	function login(username, password) {
+		wsClient.send(JSON.stringify({
+			type: 'LoginC2S',
+			data: {
+				username,
+				password,
+				clientVersion: '1.0.0',
+			}
+		}))
+	}
+
 	function newGame() {
-		wsClient.send("new-game")
+		// TODO
 	}
 </script>
 
 
 <template>
-	<form @submit.prevent="newGame">
+	<form v-if="!loggedIn" @submit.prevent="login(username, password)">
+		<label>
+			Username:
+			<input v-model="username" required />
+		</label>
+		<label>
+			Password:
+			<input type="password" v-model="password" required />
+		</label>
+		<button type="submit">Login</button>
+	</form>
+
+	<ul v-if="loggedIn">
+		<li v-for="user in userList" :key="user.username">
+			{{ user.username }} ({{ user.status }})
+		</li>
+	</ul>
+
+	<form v-if="loggedIn" @submit.prevent="newGame">
 		<button type="submit">Start new Game</button>
 	</form>
 
@@ -40,7 +85,7 @@
 	</div>
 
 	JSON:
-	<pre>{{ board }}</pre>
+	<pre>{{ lastReceivedPacket }}</pre>
 </template>
 
 

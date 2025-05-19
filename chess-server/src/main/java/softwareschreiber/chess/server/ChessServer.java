@@ -1,23 +1,27 @@
 package softwareschreiber.chess.server;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.tinylog.Logger;
 
-import softwareschreiber.chess.cli.CliGame;
-import softwareschreiber.chess.engine.Board;
 import softwareschreiber.chess.engine.Game;
-import softwareschreiber.chess.engine.gamepieces.Piece;
-import softwareschreiber.chess.engine.gamepieces.PieceColor;
-import softwareschreiber.chess.server.packet.GameLoadPacket;
+import softwareschreiber.chess.server.packet.c2s.LoginC2S;
+import softwareschreiber.chess.server.packet.data.component.PlayerInfo;
+import softwareschreiber.chess.server.packet.data.s2c.LoginResultS2CData;
+import softwareschreiber.chess.server.packet.s2c.LoginResultS2C;
+import softwareschreiber.chess.server.packet.s2c.UserListS2C;
 
 public class ChessServer extends WebSocketServer {
-	private ObjectMapper mapper = new ObjectMapper();
+	private static final ObjectMapper mapper = new ObjectMapper();
+	private final Map<InetSocketAddress, PlayerInfo> clients = new HashMap<>();
 	private Game game;
 
 	ChessServer(int port) {
@@ -26,41 +30,75 @@ public class ChessServer extends WebSocketServer {
 
 	@Override
 	public void onOpen(WebSocket conn, ClientHandshake handshake) {
+		Logger.info("{} has established a connection", ipPlusPort(conn.getRemoteSocketAddress()));
 	}
 
 	@Override
 	public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-		broadcast("[Server] " + conn + " has left the room!");
+		InetSocketAddress remoteAddress = conn.getRemoteSocketAddress();
+
+		Logger.info("{} has left the room", ipPlusPort(remoteAddress));
+		clients.remove(remoteAddress);
+		broadcastClientList();
 	}
 
 	@Override
 	public void onMessage(WebSocket conn, String message) {
-		InetSocketAddress remoteAddress = conn.getRemoteSocketAddress();
-		broadcast("[Server] Received " + message + " from " + remoteAddress.getHostName() + ":" + remoteAddress.getPort());
+		Logger.debug("Received \"{}\" from {}", message, ipPlusPort(conn.getRemoteSocketAddress()));
+		JsonNode node;
 
-		if (message.equalsIgnoreCase(Commands.NEW_GAME.asText())) {
-			game = new CliGame(PieceColor.WHITE);
-			game.startGame();
-			Board board = game.getBoard();
+		try {
+			node = mapper.readTree(message);
+		} catch (JsonProcessingException e) {
+			Logger.error("Failed to parse \"{}\": {}", message, e);
+			return;
+		}
 
-			String[][] pieces = new String[board.getMaxX() + 1][board.getMaxY() + 1];
+		if (!node.has("type")) {
+			Logger.error("Invalid packet: \"{}\"", message);
+			return;
+		}
 
-			for (int x = 0; x <= board.getMaxX(); x++) {
-				for (int y = 0; y <= board.getMaxY(); y++) {
-					Piece piece = board.getPieceAt(x, y);
-					pieces[board.getMaxY() - y][x] = piece == null
-							? null
-							: Character.toString(piece.getSymbol());
-				}
-			}
+		String packetType = node.get("type").asText();
 
-			GameLoadPacket packet = new GameLoadPacket(pieces, game.getActiveColor().name().toLowerCase());
+		if (packetType.equalsIgnoreCase(PacketType.LoginC2S.jsonName())) {
+			LoginC2S loginPacket = null;
+			String errorMessage = null;
 
 			try {
-				conn.send("new-game" + mapper.writeValueAsString(packet));
+				loginPacket = mapper.treeToValue(node, LoginC2S.class);
 			} catch (JsonProcessingException e) {
-				e.printStackTrace();
+				Logger.error("Failed to parse login packet \"{}\": {}", message, e);
+				errorMessage = e.getMessage();
 			}
+
+			if (errorMessage == null) {
+				Logger.info("Client logged in: {}", loginPacket.data().username());
+
+				PlayerInfo playerInfo = new PlayerInfo(
+						loginPacket.data().username(),
+						"online",
+						false,
+						0,
+						0,
+						0,
+						0);
+				clients.put(conn.getRemoteSocketAddress(), playerInfo);
+			}
+
+			LoginResultS2C loginResultPacket = new LoginResultS2C(
+					PacketType.LoginResultS2C,
+					new LoginResultS2CData(errorMessage == null, errorMessage));
+
+			try {
+				conn.send(mapper.writeValueAsString(loginResultPacket));
+			} catch (JsonProcessingException e) {
+				Logger.error("Failed to send login result packet \"{}\": {}", e);
+			}
+
+			broadcastClientList();
+		} else {
+			Logger.warn("Unknown packet type: {}", packetType);
 		}
 	}
 
@@ -71,6 +109,22 @@ public class ChessServer extends WebSocketServer {
 
 	@Override
 	public void onStart() {
-		Logger.info("Server started on port: " + getPort());
+		Logger.info("Server started on port: {}", getPort());
+	}
+
+	private String ipPlusPort(InetSocketAddress address) {
+		return address.getHostName() + ":" + address.getPort();
+	}
+
+	private void broadcastClientList() {
+		UserListS2C userListPacket = new UserListS2C(
+				PacketType.UserListS2C,
+				clients.values());
+
+		try {
+			broadcast(mapper.writeValueAsString(userListPacket));
+		} catch (JsonProcessingException e) {
+			Logger.error("Failed to send user list packet \"{}\": {}", e);
+		}
 	}
 }
