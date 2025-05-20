@@ -4,7 +4,6 @@
 	"data": {
 		"gameId": "123",
 		"pieceId": "black-pawn-1",
-		"success": true,
 		"error": null
 	}
 }

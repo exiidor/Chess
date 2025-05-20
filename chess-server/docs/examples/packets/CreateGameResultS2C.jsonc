@@ -3,7 +3,6 @@
 	"type": "CreateGameResultS2C",
 	"data": {
 		"gameId": "123",
-		"success": true,
 		"error": null
 	}
 }

@@ -59,11 +59,11 @@
 
 		switch (packet.type) {
 			case "LoginResultS2C":
-				if (packet.data.success) {
+				if (packet.data.error) {
+					alert("Login failed: " + packet.data.error)
+				} else {
 					loggedIn.value = true
 					displayBoard.value = false
-				} else {
-					alert("Login failed: " + packet.data.error)
 				}
 
 				break

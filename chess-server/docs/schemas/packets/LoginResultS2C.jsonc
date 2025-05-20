@@ -13,14 +13,11 @@
 		"data": {
 			"type": "object",
 			"properties": {
-				"success": {
-					"type": "boolean"
-				},
 				"error": {
 					"type": ["string", "null"]
 				}
 			},
-			"required": ["success", "error"],
+			"required": ["error"],
 			"additionalProperties": false
 		}
 	},

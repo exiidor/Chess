@@ -64,7 +64,7 @@ public class ChessServer extends WebSocketServer {
 			return;
 		}
 
-		JsonNode packetTypeJsonNode = node.get("key");
+		JsonNode packetTypeJsonNode = node.get("type");
 
 		if (packetTypeJsonNode == null) {
 			Logger.error("Invalid packet: \"{}\"", message);
@@ -127,7 +127,7 @@ public class ChessServer extends WebSocketServer {
 
 		LoginResultS2C loginResultPacket = new LoginResultS2C(
 				PacketType.LoginResultS2C,
-				new LoginResultS2CData(errorMessage == null, errorMessage));
+				new LoginResultS2CData(errorMessage));
 
 		try {
 			conn.send(mapper.writeValueAsString(loginResultPacket));

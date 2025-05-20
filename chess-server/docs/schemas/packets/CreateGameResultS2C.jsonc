@@ -16,14 +16,11 @@
 				"gameId": {
 					"type": "string"
 				},
-				"success": {
-					"type": "boolean"
-				},
 				"error": {
 					"type": ["string", "null"]
 				}
 			},
-			"required": ["gameId", "success", "error"],
+			"required": ["gameId", "error"],
 			"additionalProperties": false
 		}
 	},

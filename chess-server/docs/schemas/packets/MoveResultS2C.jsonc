@@ -19,14 +19,11 @@
 				"pieceId": {
 					"type": "string"
 				},
-				"success": {
-					"type": "boolean"
-				},
 				"error": {
 					"type": ["string", "null"]
 				}
 			},
-			"required": ["gameId", "pieceId", "success", "error"],
+			"required": ["gameId", "pieceId", "error"],
 			"additionalItems": false
 		}
 	},
