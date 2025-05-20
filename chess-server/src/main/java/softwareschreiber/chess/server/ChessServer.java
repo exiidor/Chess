@@ -1,9 +1,7 @@
 package softwareschreiber.chess.server;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,7 +12,6 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.tinylog.Logger;
 
-import softwareschreiber.chess.engine.Game;
 import softwareschreiber.chess.server.packet.c2s.LoginC2S;
 import softwareschreiber.chess.server.packet.data.component.PlayerInfo;
 import softwareschreiber.chess.server.packet.data.s2c.LoginResultS2CData;
@@ -23,12 +20,9 @@ import softwareschreiber.chess.server.packet.s2c.UserListS2C;
 
 public class ChessServer extends WebSocketServer {
 	private static final ObjectMapper mapper = new ObjectMapper();
-	private final List<PlayerInfo> clients = new ArrayList<>();
 	private final Map<InetSocketAddress, PlayerInfo> clientsByAddress = new HashMap<>();
 	private final Map<String, PlayerInfo> clientsByUsername = new HashMap<>();
 	private final Map<String, String> passwordByUsername = new HashMap<>();
-	private Game game;
-	private static final String TYPE = "type";
 
 	ChessServer(int port) {
 		super(new InetSocketAddress(port));
@@ -70,19 +64,21 @@ public class ChessServer extends WebSocketServer {
 			return;
 		}
 
-		if (!node.has(TYPE)) {
+		JsonNode packetTypeJsonNode = node.get("key");
+
+		if (packetTypeJsonNode == null) {
 			Logger.error("Invalid packet: \"{}\"", message);
 			return;
 		}
 
-		PacketType type = PacketType.fromJsonName(node.get(TYPE).asText());
+		PacketType packetType = PacketType.fromJsonName(packetTypeJsonNode.asText());
 
-		switch (type) {
+		switch (packetType) {
 			case LoginC2S:
 				handleLoginPacket(conn, node);
 				break;
 			default:
-				Logger.warn("Unknown packet type: {}", type);
+				Logger.warn("Unknown packet type: {}", packetType);
 				break;
 		}
 	}

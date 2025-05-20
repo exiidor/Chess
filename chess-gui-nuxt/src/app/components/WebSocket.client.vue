@@ -47,6 +47,7 @@
 				clientVersion: "1.0.0",
 			}
 		}))
+		password.value = ""
 	}
 
 	function newGame() {
