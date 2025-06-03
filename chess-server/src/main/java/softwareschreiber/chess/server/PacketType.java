@@ -6,7 +6,8 @@ import java.util.Map;
 public enum PacketType {
 	LoginC2S,
 	LoginResultS2C,
-	UserListS2C;
+	UserListS2C,
+	KickS2C;
 
 	private static final Map<String, PacketType> byJsonName = new HashMap<>();
 

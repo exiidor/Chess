@@ -12,17 +12,21 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.tinylog.Logger;
 
+import softwareschreiber.chess.server.packet.Packet;
 import softwareschreiber.chess.server.packet.c2s.LoginC2S;
 import softwareschreiber.chess.server.packet.data.component.UserInfo;
+import softwareschreiber.chess.server.packet.data.s2c.KickS2CData;
 import softwareschreiber.chess.server.packet.data.s2c.LoginResultS2CData;
+import softwareschreiber.chess.server.packet.s2c.KickS2C;
 import softwareschreiber.chess.server.packet.s2c.LoginResultS2C;
 import softwareschreiber.chess.server.packet.s2c.UserListS2C;
 
 public class ChessServer extends WebSocketServer {
 	private static final ObjectMapper mapper = new ObjectMapper();
-	private final Map<InetSocketAddress, UserInfo> usersByAddress = new HashMap<>();
 	private final Map<String, UserInfo> usersByName = new HashMap<>();
+	private final Map<InetSocketAddress, UserInfo> usersByAddress = new HashMap<>();
 	private final Map<String, String> passwordsByUsername = new HashMap<>();
+	private final Map<String, WebSocket> connectionsByUsername = new HashMap<>();
 
 	ChessServer(int port) {
 		super(new InetSocketAddress(port));
@@ -41,9 +45,12 @@ public class ChessServer extends WebSocketServer {
 	@Override
 	public void onClose(WebSocket conn, int code, String reason, boolean remote) {
 		InetSocketAddress remoteAddress = conn.getRemoteSocketAddress();
+		UserInfo userInfo = usersByAddress.remove(remoteAddress);
 
 		Logger.info("{} has disconnected", ipPlusPort(remoteAddress));
-		usersByAddress.remove(remoteAddress).status(UserInfo.Status.OFFLINE);
+
+		userInfo.status(UserInfo.Status.OFFLINE);
+		connectionsByUsername.remove(userInfo.username());
 		broadcastUserList();
 	}
 
@@ -98,7 +105,7 @@ public class ChessServer extends WebSocketServer {
 			String username = loginPacket.data().username();
 			String password = loginPacket.data().password();
 
-			Logger.info("Client logged in: {}", username);
+			Logger.info("{} has logged in", username);
 			UserInfo userInfo = usersByName.get(username);
 
 			if (userInfo != null && userInfo.status() != UserInfo.Status.OFFLINE) {
@@ -122,6 +129,7 @@ public class ChessServer extends WebSocketServer {
 
 				usersByAddress.put(conn.getRemoteSocketAddress(), userInfo);
 				passwordsByUsername.put(userInfo.username(), password);
+				connectionsByUsername.put(userInfo.username(), conn);
 			}
 		}
 
@@ -132,7 +140,7 @@ public class ChessServer extends WebSocketServer {
 		try {
 			conn.send(mapper.writeValueAsString(loginResultPacket));
 		} catch (JsonProcessingException e) {
-			Logger.error("Failed to serialize login result packet \"{}\": {}", loginResultPacket, e);
+			failedToSerialize(loginResultPacket, e);
 		}
 
 		if (errorMessage == null) {
@@ -145,18 +153,35 @@ public class ChessServer extends WebSocketServer {
 	}
 
 	private void broadcastUserList() {
-		UserListS2C userListPacket = new UserListS2C(
+		UserListS2C packet = new UserListS2C(
 				PacketType.UserListS2C,
 				usersByName.values());
 
 		try {
 			for (WebSocket client : getConnections()) {
 				if (usersByAddress.containsKey(client.getRemoteSocketAddress())) {
-					client.send(mapper.writeValueAsString(userListPacket));
+					client.send(mapper.writeValueAsString(packet));
 				}
 			}
 		} catch (JsonProcessingException e) {
-			Logger.error("Failed to serialize user list packet \"{}\": {}", userListPacket, e);
+			failedToSerialize(packet, e);
 		}
+	}
+
+	void kick(String username) {
+		KickS2C packet = new KickS2C(PacketType.KickS2C, new KickS2CData("Admin", null));
+		WebSocket connection = connectionsByUsername.get(username);
+
+		try {
+			connection.send(mapper.writeValueAsString(packet));
+		} catch (JsonProcessingException e) {
+			failedToSerialize(packet, e);
+		}
+
+		connection.close();
+	}
+
+	private void failedToSerialize(Packet<?> packet, Exception exception) {
+		Logger.error("Failed to serialize {} packet \"{}\": {}", packet.getClass().getSimpleName(), packet, exception);
 	}
 }

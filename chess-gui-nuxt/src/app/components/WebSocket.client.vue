@@ -70,6 +70,9 @@
 			case "UserListS2C":
 				userList.value = packet.data
 				break
+			case "KickS2C":
+				alert("You have been kicked from the server by " + packet.data.initiator + " for reason: " + packet.data.reason)
+				break
 			default:
 				alert("Unknown packet type: " + packet.type)
 		}
@@ -136,7 +139,7 @@
 
 	<br>
 
-	<div v-if="connected && lastReceivedPacket">
+	<div v-if="connected || lastReceivedPacket">
 		Last Received Packet:
 		<pre>{{ lastReceivedPacket }}</pre>
 	</div>

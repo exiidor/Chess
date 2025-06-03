@@ -2,7 +2,6 @@ package softwareschreiber.chess.server;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.Objects;
 
 public class Main {
 	public static void main(String[] args) {
@@ -14,9 +13,14 @@ public class Main {
 			try {
 				String in = sysIn.readLine();
 
-				if (Objects.equals(in, "exit")) {
+				if (in == null) {
+					continue;
+				}
+
+				if (in.equals("exit")) {
 					server.stop(1000);
-					break;
+				} else if (in.startsWith("kick ")) {
+					server.kick(in.substring("kick ".length()));
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
