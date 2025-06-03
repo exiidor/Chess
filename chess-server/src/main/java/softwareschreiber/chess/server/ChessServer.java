@@ -1,12 +1,7 @@
 package softwareschreiber.chess.server;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -22,11 +17,9 @@ import softwareschreiber.chess.server.packet.s2c.LoginResultS2C;
 import softwareschreiber.chess.server.packet.s2c.UserListS2C;
 
 public class ChessServer extends WebSocketServer {
-	private static final ObjectMapper mapper = new ObjectMapper();
-	private final Map<String, UserInfo> usersByName = new HashMap<>();
-	private final Map<InetSocketAddress, UserInfo> usersByAddress = new HashMap<>();
-	private final Map<String, String> passwordsByUsername = new HashMap<>();
-	private final Map<String, WebSocket> connectionsByUsername = new HashMap<>();
+	private final UserStore userStore = new UserStore();
+	private final ConnectionManager connections = new ConnectionManager();
+	private final PacketMapper mapper = new PacketMapper();
 
 	ChessServer(int port) {
 		super(new InetSocketAddress(port));
@@ -45,12 +38,11 @@ public class ChessServer extends WebSocketServer {
 	@Override
 	public void onClose(WebSocket conn, int code, String reason, boolean remote) {
 		InetSocketAddress remoteAddress = conn.getRemoteSocketAddress();
-		UserInfo userInfo = usersByAddress.remove(remoteAddress);
+		UserInfo userInfo = connections.remove(remoteAddress);
 
 		Logger.info("{} has disconnected", ipPlusPort(remoteAddress));
 
 		userInfo.status(UserInfo.Status.OFFLINE);
-		connectionsByUsername.remove(userInfo.username());
 		broadcastUserList();
 	}
 
@@ -61,56 +53,37 @@ public class ChessServer extends WebSocketServer {
 
 	@Override
 	public void onMessage(WebSocket conn, String message) {
-		Logger.debug("Received \"{}\" from {}", message, ipPlusPort(conn.getRemoteSocketAddress()));
-		JsonNode node;
-
-		try {
-			node = mapper.readTree(message);
-		} catch (JsonProcessingException e) {
-			Logger.error("Failed to parse \"{}\": {}", message, e);
-			return;
-		}
-
-		JsonNode packetTypeJsonNode = node.get("type");
-
-		if (packetTypeJsonNode == null) {
-			Logger.error("Invalid packet: \"{}\"", message);
-			return;
-		}
-
-		PacketType packetType = PacketType.fromJsonName(packetTypeJsonNode.asText());
+		PacketType packetType = mapper.getType(message);
 
 		switch (packetType) {
 			case LoginC2S:
-				handleLoginPacket(conn, node);
+				handleLoginPacket(conn, message);
 				break;
 			default:
-				Logger.warn("Unknown packet type: {}", packetType);
+				Logger.warn("Unhandled C2S packet type: {}", packetType);
 				break;
 		}
 	}
 
-	private void handleLoginPacket(WebSocket conn, JsonNode node) {
+	private void handleLoginPacket(WebSocket conn, String json) {
 		LoginC2S loginPacket = null;
 		String errorMessage = null;
 
 		try {
-			loginPacket = mapper.treeToValue(node, LoginC2S.class);
-		} catch (JsonProcessingException e) {
-			Logger.error("Failed to parse login packet \"{}\": {}", node.toPrettyString(), e);
+			loginPacket = mapper.fromString(json, LoginC2S.class);
+		} catch (Exception e) {
+			Logger.error(e);
 			errorMessage = e.getMessage();
 		}
 
 		if (errorMessage == null) {
 			String username = loginPacket.data().username();
 			String password = loginPacket.data().password();
-
-			Logger.info("{} has logged in", username);
-			UserInfo userInfo = usersByName.get(username);
+			UserInfo userInfo = userStore.get(username);
 
 			if (userInfo != null && userInfo.status() != UserInfo.Status.OFFLINE) {
 				errorMessage = "Already logged in";
-			} else if (userInfo != null && !password.equals(passwordsByUsername.get(username))) {
+			} else if (userInfo != null && !userStore.isPasswordCorrect(username, password)) {
 				errorMessage = "Invalid password";
 			} else {
 				if (userInfo == null) {
@@ -122,14 +95,12 @@ public class ChessServer extends WebSocketServer {
 							0,
 							0,
 							0);
-					usersByName.put(username, userInfo);
+					userStore.put(userInfo, password);
 				} else {
 					userInfo.status(UserInfo.Status.ONLINE);
 				}
 
-				usersByAddress.put(conn.getRemoteSocketAddress(), userInfo);
-				passwordsByUsername.put(userInfo.username(), password);
-				connectionsByUsername.put(userInfo.username(), conn);
+				connections.add(userInfo, conn);
 			}
 		}
 
@@ -137,14 +108,15 @@ public class ChessServer extends WebSocketServer {
 				PacketType.LoginResultS2C,
 				new LoginResultS2CData(errorMessage));
 
-		try {
-			conn.send(mapper.writeValueAsString(loginResultPacket));
-		} catch (JsonProcessingException e) {
-			failedToSerialize(loginResultPacket, e);
-		}
+		conn.send(mapper.toString(loginResultPacket));
 
 		if (errorMessage == null) {
 			broadcastUserList();
+			Logger.info("{} has logged in", loginPacket.data().username());
+		} else {
+			Logger.info("{} has failed to log in: {}",
+					loginPacket == null ? "Unknown user" : loginPacket.data().username(),
+					errorMessage);
 		}
 	}
 
@@ -155,27 +127,24 @@ public class ChessServer extends WebSocketServer {
 	private void broadcastUserList() {
 		UserListS2C packet = new UserListS2C(
 				PacketType.UserListS2C,
-				usersByName.values());
+				userStore.values());
+		String json = mapper.toString(packet);
 
-		try {
-			for (WebSocket client : getConnections()) {
-				if (usersByAddress.containsKey(client.getRemoteSocketAddress())) {
-					client.send(mapper.writeValueAsString(packet));
-				}
+		for (WebSocket client : getConnections()) {
+			if (connections.isConnected(client.getRemoteSocketAddress())) {
+				client.send(json);
 			}
-		} catch (JsonProcessingException e) {
-			failedToSerialize(packet, e);
 		}
 	}
 
 	void kick(String username) {
 		KickS2C packet = new KickS2C(PacketType.KickS2C, new KickS2CData("Admin", null));
-		WebSocket connection = connectionsByUsername.get(username);
+		WebSocket connection = connections.get(username);
 
 		try {
-			connection.send(mapper.writeValueAsString(packet));
-		} catch (JsonProcessingException e) {
-			failedToSerialize(packet, e);
+			connection.send(mapper.toString(packet));
+		} catch (Exception e) {
+			Logger.error(e);
 		}
 
 		connection.close();

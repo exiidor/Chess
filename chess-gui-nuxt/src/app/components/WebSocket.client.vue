@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	const lastReceivedPacket = ref(null)
+	const lastReceivedPacket = ref("")
 	const connected = ref(false)
 	const username = ref("")
 	const password = ref("")
@@ -86,6 +86,10 @@
 		const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("")
 		return hashHex
 	}
+
+	function isBlank(str: string) {
+		return !str || /^\s*$/.test(str);
+	}
 </script>
 
 
@@ -139,7 +143,7 @@
 
 	<br>
 
-	<div v-if="connected || lastReceivedPacket">
+	<div v-if="connected && (lastReceivedPacket && !isBlank(lastReceivedPacket))">
 		Last Received Packet:
 		<pre>{{ lastReceivedPacket }}</pre>
 	</div>
