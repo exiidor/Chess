@@ -1,5 +1,5 @@
 {
-	"$schema": "../../schemas/components/PlayerInfo.jsonc",
+	"$schema": "../../schemas/components/UserInfo.jsonc",
 	"username": "John Doe",
 	"status": "online",
 	"playing": true,

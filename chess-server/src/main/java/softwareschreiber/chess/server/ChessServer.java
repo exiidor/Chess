@@ -13,16 +13,16 @@ import org.java_websocket.server.WebSocketServer;
 import org.tinylog.Logger;
 
 import softwareschreiber.chess.server.packet.c2s.LoginC2S;
-import softwareschreiber.chess.server.packet.data.component.PlayerInfo;
+import softwareschreiber.chess.server.packet.data.component.UserInfo;
 import softwareschreiber.chess.server.packet.data.s2c.LoginResultS2CData;
 import softwareschreiber.chess.server.packet.s2c.LoginResultS2C;
 import softwareschreiber.chess.server.packet.s2c.UserListS2C;
 
 public class ChessServer extends WebSocketServer {
 	private static final ObjectMapper mapper = new ObjectMapper();
-	private final Map<InetSocketAddress, PlayerInfo> clientsByAddress = new HashMap<>();
-	private final Map<String, PlayerInfo> clientsByUsername = new HashMap<>();
-	private final Map<String, String> passwordByUsername = new HashMap<>();
+	private final Map<InetSocketAddress, UserInfo> usersByAddress = new HashMap<>();
+	private final Map<String, UserInfo> usersByName = new HashMap<>();
+	private final Map<String, String> passwordsByUsername = new HashMap<>();
 
 	ChessServer(int port) {
 		super(new InetSocketAddress(port));
@@ -43,8 +43,8 @@ public class ChessServer extends WebSocketServer {
 		InetSocketAddress remoteAddress = conn.getRemoteSocketAddress();
 
 		Logger.info("{} has disconnected", ipPlusPort(remoteAddress));
-		clientsByAddress.remove(remoteAddress).status(PlayerInfo.Status.OFFLINE);
-		broadcastClientList();
+		usersByAddress.remove(remoteAddress).status(UserInfo.Status.OFFLINE);
+		broadcastUserList();
 	}
 
 	@Override
@@ -99,29 +99,29 @@ public class ChessServer extends WebSocketServer {
 			String password = loginPacket.data().password();
 
 			Logger.info("Client logged in: {}", username);
-			PlayerInfo playerInfo = clientsByUsername.get(username);
+			UserInfo userInfo = usersByName.get(username);
 
-			if (playerInfo != null && playerInfo.status() != PlayerInfo.Status.OFFLINE) {
+			if (userInfo != null && userInfo.status() != UserInfo.Status.OFFLINE) {
 				errorMessage = "Already logged in";
-			} else if (playerInfo != null && !password.equals(passwordByUsername.get(username))) {
+			} else if (userInfo != null && !password.equals(passwordsByUsername.get(username))) {
 				errorMessage = "Invalid password";
 			} else {
-				if (playerInfo == null) {
-					playerInfo = new PlayerInfo(
+				if (userInfo == null) {
+					userInfo = new UserInfo(
 							loginPacket.data().username(),
-							PlayerInfo.Status.ONLINE,
+							UserInfo.Status.ONLINE,
 							false,
 							0,
 							0,
 							0,
 							0);
-					clientsByUsername.put(username, playerInfo);
+					usersByName.put(username, userInfo);
 				} else {
-					playerInfo.status(PlayerInfo.Status.ONLINE);
+					userInfo.status(UserInfo.Status.ONLINE);
 				}
 
-				clientsByAddress.put(conn.getRemoteSocketAddress(), playerInfo);
-				passwordByUsername.put(playerInfo.username(), password);
+				usersByAddress.put(conn.getRemoteSocketAddress(), userInfo);
+				passwordsByUsername.put(userInfo.username(), password);
 			}
 		}
 
@@ -136,7 +136,7 @@ public class ChessServer extends WebSocketServer {
 		}
 
 		if (errorMessage == null) {
-			broadcastClientList();
+			broadcastUserList();
 		}
 	}
 
@@ -144,14 +144,14 @@ public class ChessServer extends WebSocketServer {
 		return address.getHostName() + ":" + address.getPort();
 	}
 
-	private void broadcastClientList() {
+	private void broadcastUserList() {
 		UserListS2C userListPacket = new UserListS2C(
 				PacketType.UserListS2C,
-				clientsByUsername.values());
+				usersByName.values());
 
 		try {
 			for (WebSocket client : getConnections()) {
-				if (clientsByAddress.containsKey(client.getRemoteSocketAddress())) {
+				if (usersByAddress.containsKey(client.getRemoteSocketAddress())) {
 					client.send(mapper.writeValueAsString(userListPacket));
 				}
 			}

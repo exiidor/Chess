@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import softwareschreiber.chess.server.PacketType;
 import softwareschreiber.chess.server.packet.Packet;
-import softwareschreiber.chess.server.packet.data.component.PlayerInfo;
+import softwareschreiber.chess.server.packet.data.component.UserInfo;
 
-public record UserListS2C(PacketType type, Collection<PlayerInfo> data) implements Packet<Collection<PlayerInfo>> {
+public record UserListS2C(PacketType type, Collection<UserInfo> data) implements Packet<Collection<UserInfo>> {
 }

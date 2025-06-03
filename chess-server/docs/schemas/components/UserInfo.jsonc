@@ -1,5 +1,5 @@
 {
-	"$id": "de.softwareschreiber.chess.server.protocol.0.1.0.components.PlayerInfo",
+	"$id": "de.softwareschreiber.chess.server.protocol.0.1.0.components.UserInfo",
 	"$schema": "http://json-schema.org/draft-07/schema",
 	"type": "object",
 	"properties": {

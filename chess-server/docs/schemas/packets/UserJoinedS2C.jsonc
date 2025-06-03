@@ -1,5 +1,5 @@
 {
-	"$id": "de.softwareschreiber.chess.server.protocol.0.1.0.packets.PlayerJoinedS2C",
+	"$id": "de.softwareschreiber.chess.server.protocol.0.1.0.packets.UserJoinedS2C",
 	"$schema": "http://json-schema.org/draft-07/schema",
 	"type": "object",
 	"properties": {
@@ -8,10 +8,10 @@
 		},
 		"type": {
 			"$ref": "../components/PacketType.jsonc",
-			"const": "PlayerJoinedS2C"
+			"const": "UserJoinedS2C"
 		},
 		"data": {
-			"$ref": "../components/PlayerInfo.jsonc"
+			"$ref": "../components/UserInfo.jsonc"
 		}
 	},
 	"required": ["type", "data"],

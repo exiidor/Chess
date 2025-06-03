@@ -1,6 +1,6 @@
 {
-	"$schema": "../../schemas/packets/PlayerJoinedS2C.jsonc",
-	"type": "PlayerJoinedS2C",
+	"$schema": "../../schemas/packets/UserJoinedS2C.jsonc",
+	"type": "UserJoinedS2C",
 	"data": {
 		"username": "John Doe",
 		"status": "online",

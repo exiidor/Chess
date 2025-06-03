@@ -1,5 +1,5 @@
 {
-	"$id": "de.softwareschreiber.chess.server.protocol.0.1.0.packets.PlayerLeftS2C",
+	"$id": "de.softwareschreiber.chess.server.protocol.0.1.0.packets.UserLeftS2C",
 	"$schema": "http://json-schema.org/draft-07/schema",
 	"type": "object",
 	"properties": {
@@ -8,19 +8,19 @@
 		},
 		"type": {
 			"$ref": "../components/PacketType.jsonc",
-			"const": "PlayerLeftS2C"
+			"const": "UserLeftS2C"
 		},
 		"data": {
 			"type": "object",
 			"properties": {
-				"player": {
-					"$ref": "../components/PlayerInfo.jsonc"
+				"user": {
+					"$ref": "../components/UserInfo.jsonc"
 				},
 				"reason": {
 					"type": "string"
 				}
 			},
-			"required": ["player", "reason"],
+			"required": ["user", "reason"],
 			"additionalItems": false
 		}
 	},

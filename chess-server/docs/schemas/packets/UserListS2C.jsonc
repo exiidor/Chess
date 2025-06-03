@@ -13,7 +13,7 @@
 		"data": {
 			"type": "array",
 			"items": {
-				"$ref": "../components/PlayerInfo.jsonc"
+				"$ref": "../components/UserInfo.jsonc"
 			},
 			"minItems": 1,
 			"uniqueItems": true

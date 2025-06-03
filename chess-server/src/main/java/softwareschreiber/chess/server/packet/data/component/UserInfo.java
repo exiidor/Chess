@@ -14,7 +14,7 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class PlayerInfo {
+public class UserInfo {
 	private String username;
 	private Status status;
 	private boolean playing;

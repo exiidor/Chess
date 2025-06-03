@@ -62,7 +62,7 @@ Client A            Server         Client B
 |                     | InviteResponseC2S |
 |                     | <<<<<<<<<<<<<<<<  |
 |                     |                   |
-|   PlayerJoinedS2C   |    JoinGameS2C    |
+|    UserJoinedS2C    |    JoinGameS2C    |
 | <<<<<<<<<<<<<<<<<<< | >>>>>>>>>>>>>>>>> |
 |                     |                   |
 |     StartGameS2C    |   StartGameS2C    |
@@ -72,7 +72,7 @@ Client A            Server         Client B
 2. The server validates the request and sends a `CreateGameResultS2C` packet back to the client, containing the result of the request. On success, the game is created and the client is added to the game, which gets transmitted as part of the result packet.
 3. The server sends an `InviteS2C` packet to all invited clients, notifying them of the new game and allowing them to join it.
 4. The invited clients respond with an `InviteResponseC2S` packet, indicating whether they accept or decline the invitation.
-5. All clients that accepted the invitation are added to the game and get sent a `JoinGameS2C` packet, and all clients already in the game are notified of the new player that joined.
+5. All clients that accepted the invitation are added to the game and get sent a `JoinGameS2C` packet, and all clients already in the game are notified of the new user that joined.
 6. Once all required clients have joined, the server sends a `StartGameS2C` packet to all clients in the game, notifying them that the game has started.
 
 **Packets:**
@@ -81,7 +81,7 @@ Client A            Server         Client B
 - `InviteS2C`: [example](./examples/packets/InviteS2C.jsonc), [schema](./schemas/packets/InviteS2C.jsonc)
 - `InviteResponseC2S`: [example](./examples/packets/InviteResponseC2S.jsonc), [schema](./schemas/packets/InviteResponseC2S.jsonc)
 - `JoinGameS2C`: [example](./examples/packets/JoinGameS2C.jsonc), [schema](./schemas/packets/JoinGameS2C.jsonc)
-- `PlayerJoinedS2C`: [example](./examples/packets/PlayerJoinedS2C.jsonc), [schema](./schemas/packets/PlayerJoinedS2C.jsonc)
+- `UserJoinedS2C`: [example](./examples/packets/UserJoinedS2C.jsonc), [schema](./schemas/packets/UserJoinedS2C.jsonc)
 - `StartGameS2C`: [example](./examples/packets/StartGameS2C.jsonc), [schema](./schemas/packets/StartGameS2C.jsonc)
 
 
@@ -92,15 +92,15 @@ Client A          Server         Client B
 |   LeaveGameC2S    |                   |
 | >>>>>>>>>>>>>>>>> |                   |
 |                   |                   |
-|                   |   PlayerLeftS2C   |
+|                   |    UserLeftS2C    |
 |                   | >>>>>>>>>>>>>>>>> |
 ```
 1. The client sends a `LeaveGameC2S` packet to the server, requesting to leave the game.
-2. The server removes the client from the game and sends a `PlayerLeftS2C` packet to all other clients in the game, notifying them of the player that left.
+2. The server removes the client from the game and sends a `UserLeftS2C` packet to all other clients in the game, notifying them of the user that left.
 
 **Packets:**
 - `LeaveGameC2S`: [example](./examples/packets/LeaveGameC2S.jsonc), [schema](./schemas/packets/LeaveGameC2S.jsonc)
-- `PlayerLeftS2C`: [example](./examples/packets/PlayerLeftS2C.jsonc), [schema](./schemas/packets/PlayerLeftS2C.jsonc)
+- `UserLeftS2C`: [example](./examples/packets/UserLeftS2C.jsonc), [schema](./schemas/packets/UserLeftS2C.jsonc)
 
 
 ## Committing a move
