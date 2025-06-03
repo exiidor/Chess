@@ -1,5 +1,8 @@
 package softwareschreiber.chess.engine.evaluation;
 
+/**
+ * Contains the evaluation charts for the pieces.
+ */
 public class EvaluationCharts {
 	public static final int[][] pawnTable = {
 			{ 50, 50, 50, 50, 50, 50, 50, 50 },

@@ -18,6 +18,11 @@ import softwareschreiber.chess.engine.player.HumanPlayer;
 import softwareschreiber.chess.engine.player.Player;
 import softwareschreiber.chess.engine.player.SimulationPlayer;
 
+/**
+ * Represents a chess game. Manages the game state, including
+ * the board, players, and game flow. Also handles game events such as
+ * checkmate and stalemate.
+ */
 public abstract class Game {
 	private final Board board;
 	private final List<Consumer<PieceColor>> gameEndListeners;
@@ -28,12 +33,61 @@ public abstract class Game {
 	private SimulationPlayer whiteSimulationPlayer;
 	private SimulationPlayer blackSimulationPlayer;
 
+	/**
+	 * Constructs a new instance with the specified starting color, one human and one computer player.
+	 *
+	 * @param startingColor The color of the player who starts the game.
+	 */
 	public Game(PieceColor startingColor) {
 		board = new Board(this);
 		gameEndListeners = new ArrayList<>();
 		activeColor = startingColor;
 		whitePlayer = new HumanPlayer(PieceColor.WHITE, this);
 		blackPlayer = new ComputerPlayer(PieceColor.BLACK);
+	}
+
+	/**
+	 * Constructs a new instance with white as the starting color, one human and one computer player.
+	 */
+	public Game() {
+		this(PieceColor.WHITE);
+	}
+
+	/**
+	 * Constructs a new instance with the specified player types. White is always first here.
+	 *
+	 * @param hasComputerOpponent If true, the black player is a computer player; otherwise, it's a human player.
+	 */
+	public Game(boolean hasComputerOpponent) {
+		board = new Board(this);
+		gameEndListeners = new ArrayList<>();
+		whitePlayer = new HumanPlayer(PieceColor.WHITE, this);
+		activeColor = PieceColor.WHITE;
+
+		if (hasComputerOpponent) {
+			blackPlayer = new ComputerPlayer(PieceColor.BLACK);
+		} else {
+			blackPlayer = new HumanPlayer(PieceColor.BLACK, this);
+		}
+	}
+
+	/**
+	 * Constructs a new instance with the specified player types and starting color.
+	 *
+	 * @param hasComputerOpponent If true, the black player is a computer player; otherwise, it's a human player.
+	 * @param startingColor The color of the player who starts the game.
+	 */
+	public Game(boolean hasComputerOpponent, PieceColor startingColor) {
+		board = new Board(this);
+		gameEndListeners = new ArrayList<>();
+		whitePlayer = new HumanPlayer(PieceColor.WHITE, this);
+		activeColor = startingColor;
+
+		if (hasComputerOpponent) {
+			blackPlayer = new ComputerPlayer(PieceColor.BLACK);
+		} else {
+			blackPlayer = new HumanPlayer(PieceColor.BLACK, this);
+		}
 	}
 
 	public Board getBoard() {
@@ -84,6 +138,9 @@ public abstract class Game {
 				: getBlackSimulationPlayer();
 	}
 
+	/**
+	 * Starts the game by initializing the board and setting up event listeners for moves.
+	 */
 	public void startGame() {
 		board.initializeStartingPositions();
 

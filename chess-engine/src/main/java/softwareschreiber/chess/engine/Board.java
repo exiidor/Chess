@@ -28,6 +28,11 @@ import softwareschreiber.chess.engine.move.PromotionMove;
 import softwareschreiber.chess.engine.player.Player;
 import softwareschreiber.chess.engine.player.SimulationPlayer;
 
+/**
+ * A chess board.
+ *
+ * @implNote The board is represented as a 2D array of {@link Piece}s.
+ */
 public class Board {
 	private final Game game;
 	private final Piece[][] board;
@@ -40,10 +45,22 @@ public class Board {
 	private final List<SubmittedUndoMoveDoneConsumer> submittedUndoMoveDoneListeners;
 	private final List<MoveUndoneConsumer> moveUndoneListeners;
 
+	/**
+	 * Creates a new board with the default dimensions of 8x8.
+	 *
+	 * @param game The game this board belongs to.
+	 */
 	public Board(Game game) {
 		this(game, 7, 7);
 	}
 
+	/**
+	 * Creates a new board with the given dimensions.
+	 *
+	 * @param game The game this board belongs to.
+	 * @param maxX The maximum x coordinate of the board, for dynamic board sizes.
+	 * @param maxY The maximum y coordinate of the board, for dynamic board sizes.
+	 */
 	public Board(Game game, int maxX, int maxY) {
 		this(game,
 				new Piece[maxY + 1][maxX + 1],
@@ -57,6 +74,9 @@ public class Board {
 				new ArrayList<>());
 	}
 
+	/**
+	 * Copy constructor.
+	 */
 	private Board(
 			Game game,
 			Piece[][] board,
@@ -100,6 +120,9 @@ public class Board {
 		moveUndoneListeners.add(listener);
 	}
 
+	/**
+	 * Initializes the starting positions of the pieces on the board.
+	 */
 	public void initializeStartingPositions() {
 		for (int i = 0; i <= 1; i++) {
 			boolean isWhite = i == 0;

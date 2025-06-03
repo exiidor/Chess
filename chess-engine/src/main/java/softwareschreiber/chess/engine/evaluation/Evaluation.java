@@ -15,16 +15,61 @@ import softwareschreiber.chess.engine.move.Move;
 import softwareschreiber.chess.engine.move.PromotionMove;
 import softwareschreiber.chess.engine.util.Pair;
 
+/**
+ * Estimates the chance of a given player winning based on the current board state
+ * and can compute the best next move.
+ */
 public class Evaluation {
+	private final int variant;
 	private Game game;
 	private Board board;
 
+	/**
+	 * @param game The current game instance.
+	 * @param board The current board instance.
+	 */
 	public Evaluation(Game game, Board board) {
 		this.game = game;
 		this.board = board;
+		variant = 1;
 	}
 
-	@Deprecated
+	/**
+	 * Evaluates the current board state based on the selected evaluation function.
+	 *
+	 * @return The evaluation score for the selected evaluation function.
+	 */
+	public int evaluate() {
+		switch (variant) {
+			case 1:
+				return defaultEvaluation();
+			case 2:
+				return absoluteMaterialEvaluation();
+			case 3:
+				return relativeMaterialEvaluation();
+			case 4:
+				return mobilityEvaluation();
+			case 5:
+				return randomEvaluation();
+			default:
+				throw new IllegalArgumentException("Evaluation function " + variant + " does not exist.");
+		}
+	}
+
+	/**
+	 * Evaluates the position using absolute material evaluation, mobility evaluation, relative mobility evaluation, and enemy in checkmate.
+	 *
+	 * @return The evaluation score for the position.
+	 */
+	private int defaultEvaluation() {
+		return absoluteMaterialEvaluation() * 2 + mobilityEvaluation() + relativeMobilityEvaluation() + enemyInCheckMate();
+	}
+
+	/**
+	 * Counts all pieces on the board and adds their values, subtracting the opponent's pieces.
+	 *
+	 * @return The total material value of the board.
+	 */
 	public int absoluteMaterialEvaluation() {
 		int score = 0;
 
@@ -39,6 +84,11 @@ public class Evaluation {
 		return score;
 	}
 
+	/**
+	 * Evaluates the position based on the relative material value of each piece, using the evaluation chart.
+	 *
+	 * @return The total relative material value of the board.
+	 */
 	public int relativeMaterialEvaluation() {
 		int score = 0;
 
@@ -53,6 +103,11 @@ public class Evaluation {
 		return score;
 	}
 
+	/**
+	 * Evaluates the position based on the mobility of each piece.
+	 *
+	 * @return The total mobility value of the board.
+	 */
 	public int mobilityEvaluation() {
 		int score = 0;
 
@@ -67,6 +122,13 @@ public class Evaluation {
 		return score;
 	}
 
+	/**
+	 * Evaluates the position based on the relative mobility of each piece.
+	 *
+	 * @implSpec Divides the number of valid moves by the maximum number of moves for each piece.
+	 *
+	 * @return The total relative mobility value of the board.
+	 */
 	public int relativeMobilityEvaluation() {
 		int score = 0;
 
@@ -81,6 +143,11 @@ public class Evaluation {
 		return score;
 	}
 
+	/**
+	 * Evaluates the position based on the absolute and relative material value of each piece.
+	 *
+	 * @return The total absolute multiplied by the relative material value of the board for each piece.
+	 */
 	public int absoluteAndRelativeMaterialEvaluation() {
 		double score = 0;
 
@@ -95,6 +162,13 @@ public class Evaluation {
 		return (int) Math.round(score);
 	}
 
+	/**
+	 * Evaluates the position based on the relative material value of each piece multiplied by
+	 * the piece's value and the number of valid moves, divided by the maximum number of moves,
+	 * as well as whether the piece is under attack.
+	 *
+	 * @return The evaluation score for the position.
+	 */
 	public int everythingEvaluation() {
 		double score = 0;
 
@@ -109,6 +183,12 @@ public class Evaluation {
 		return (int) Math.round(score);
 	}
 
+	/**
+	 * Evaluates the position based on whether the enemy king is in checkmate.
+	 *
+	 * @return A large positive value if the enemy king is in checkmate,
+	 * a large negative value if the player's king is in checkmate, or 0 otherwise.
+	 */
 	public int enemyInCheckMate() {
 		if (board.getKing(PieceColor.WHITE) == null || isInCheckMate(PieceColor.WHITE)) {
 			return -100_000;
@@ -123,10 +203,24 @@ public class Evaluation {
 		return board.checkForMate(color) == MateKind.CHECKMATE;
 	}
 
-	public int evaluate() {
-		return absoluteMaterialEvaluation() * 2 + mobilityEvaluation() + relativeMobilityEvaluation() + enemyInCheckMate();
+	/**
+	 * Generates a random evaluation score.
+	 *
+	 * @return A random evaluation score.
+	 */
+	private int randomEvaluation() {
+		return (int) (Math.random() * 1000);
 	}
 
+	/**
+	 * Minimax algorithm with alpha-beta pruning.
+	 *
+	 * @param depth The current depth in the game tree.
+	 * @param alpha The best score that the maximizer currently can guarantee at this level or above.
+	 * @param beta  The best score that the minimizer currently can guarantee at this level or above.
+	 * @param color The color of the player whose turn it is to move.
+	 * @return The evaluation score for the current board state.
+	 */
 	private int minMax(int depth, int alpha, int beta, PieceColor color) {
 		if (depth == 0
 				|| board.getKing(PieceColor.WHITE) == null
@@ -187,6 +281,13 @@ public class Evaluation {
 		}
 	}
 
+	/**
+	 * Finds the best move for the given color using a multi-threaded approach.
+	 *
+	 * @param depth The depth to search for the best move.
+	 * @param color The color of the player whose turn it is to move.
+	 * @return The best move found.
+	 */
 	public Move bestMove(int depth, PieceColor color) {
 		List<CompletableFuture<Pair<Integer, Move>>> futures = new ArrayList<>();
 		int max = Integer.MIN_VALUE;
@@ -227,7 +328,14 @@ public class Evaluation {
 		return bestMove;
 	}
 
-	// Sorts better moves first
+	/**
+	 * Compares two moves based on their type (capture, promotion, etc.).
+	 * This is for better pruning of the search tree.
+	 *
+	 * @param moveA The first move to compare.
+	 * @param moveB The second move to compare.
+	 * @return A negative integer, zero, or a positive integer as the first argument is less than, equal to, or greater than the second.
+	 */
 	private int compareMoves(Move moveA, Move moveB) {
 		boolean isACapture = moveA instanceof CaptureMove;
 		boolean isBCapture = moveB instanceof CaptureMove;
