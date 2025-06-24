@@ -7,7 +7,7 @@
 	const userList = ref<User[]>([])
 	const displayBoard = ref(false)
 	const board = ref(Array.from({ length: 8 }, () => Array(8).fill(null)))
-	const wsClient = useWebSocket("ws://localhost:3010", {
+	const wsClient = useWebSocket(useRuntimeConfig().public.chessServerAddress, {
 		immediate: false,
 		onConnected: () => {
 			connected.value = true

@@ -13,4 +13,9 @@ export default defineNuxtConfig({
 			websocket: true,
 		},
 	},
+	runtimeConfig: {
+		public: {
+			chessServerAddress: "ws://localhost:3010",
+		}
+	}
 })
