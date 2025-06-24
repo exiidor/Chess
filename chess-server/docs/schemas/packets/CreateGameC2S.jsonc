@@ -11,7 +11,15 @@
 			"const": "CreateGameC2S"
 		},
 		"data": {
-			"$ref": "../components/GameInfo.jsonc"
+			"$ref": "../components/GameInfo.jsonc",
+			"additionalProperties": true,
+			"properties": {
+				"ownColor": {
+					"type": "string",
+					"enum": ["white", "black"]
+				}
+			},
+			"required": ["ownColor"]
 		}
 	},
 	"required": ["type", "data"],

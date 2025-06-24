@@ -2,11 +2,11 @@ package softwareschreiber.chess.server.packet.s2c;
 
 import softwareschreiber.chess.server.PacketType;
 import softwareschreiber.chess.server.packet.Packet;
-import softwareschreiber.chess.server.packet.data.s2c.KickS2CData;
+import softwareschreiber.chess.server.packet.data.s2c.JoinGameS2CData;
 
-public record KickS2C(KickS2CData data) implements Packet<KickS2CData> {
+public record JoinGameS2C(JoinGameS2CData data) implements Packet<JoinGameS2CData> {
 	@Override
 	public PacketType type() {
-		return PacketType.KickS2C;
+		return PacketType.JoinGameS2C;
 	}
 }

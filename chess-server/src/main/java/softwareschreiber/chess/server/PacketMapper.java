@@ -2,12 +2,16 @@ package softwareschreiber.chess.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import softwareschreiber.chess.server.packet.Packet;
 
 public class PacketMapper {
-	private static final ObjectMapper mapper = new ObjectMapper();
+	private final ObjectMapper mapper = JsonMapper.builder()
+			.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+			.build();
 
 	public String toString(Packet<?> packet) {
 		try {

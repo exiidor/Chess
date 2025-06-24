@@ -51,7 +51,15 @@
 	}
 
 	function newGame() {
-		// TODO
+		wsClient.send(JSON.stringify({
+			type: "CreateGameC2S",
+			data: {
+				cpuOpponent: true,
+				requestedOpponent: prompt("Enter the username of the opponent:"),
+				ownColor: "white",
+				maxSecondsPerMove: 30,
+			}
+		}))
 	}
 
 	function handlePacket(packetString: string) {
@@ -72,6 +80,29 @@
 				break
 			case "KickS2C":
 				alert("You have been kicked from the server by " + packet.data.initiator + " for reason: " + packet.data.reason)
+				break
+			case "CreateGameResultS2C":
+				if (packet.data.error) {
+					alert("Failed to create game: " + packet.data.error)
+				} else {
+					alert("Game created successfully with ID: " + packet.data.gameId)
+				}
+				break
+			case "InviteS2C":
+				const accept = confirm("You have been invited to a game by " + packet.data.initiator + ". Do you want to accept?");
+				wsClient.send(JSON.stringify({
+					type: "InviteResponseC2S",
+					data: {
+						accept: accept,
+						gameId: packet.data.gameInfo.id,
+					}
+				}))
+				break
+			case "UserJoinedS2C":
+				alert(packet.data.username + " has joined the game.")
+				break
+			case "JoinGameS2C":
+				alert("You have joined the game with ID: " + packet.data.gameId)
 				break
 			default:
 				alert("Unknown packet type: " + packet.type)

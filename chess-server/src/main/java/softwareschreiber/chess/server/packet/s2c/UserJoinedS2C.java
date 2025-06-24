@@ -1,14 +1,12 @@
 package softwareschreiber.chess.server.packet.s2c;
 
-import java.util.Collection;
-
 import softwareschreiber.chess.server.PacketType;
 import softwareschreiber.chess.server.packet.Packet;
 import softwareschreiber.chess.server.packet.data.component.UserInfo;
 
-public record UserListS2C(Collection<UserInfo> data) implements Packet<Collection<UserInfo>> {
+public record UserJoinedS2C(UserInfo data) implements Packet<UserInfo> {
 	@Override
 	public PacketType type() {
-		return PacketType.UserListS2C;
+		return PacketType.UserJoinedS2C;
 	}
 }

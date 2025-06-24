@@ -8,21 +8,38 @@ import org.java_websocket.server.WebSocketServer;
 import org.tinylog.Logger;
 
 import softwareschreiber.chess.server.packet.Packet;
+import softwareschreiber.chess.server.packet.c2s.CreateGameC2S;
+import softwareschreiber.chess.server.packet.c2s.InviteResponseC2S;
 import softwareschreiber.chess.server.packet.c2s.LoginC2S;
+import softwareschreiber.chess.server.packet.data.component.GameInfo;
 import softwareschreiber.chess.server.packet.data.component.UserInfo;
+import softwareschreiber.chess.server.packet.data.component.UserInfo.Status;
+import softwareschreiber.chess.server.packet.data.s2c.CreateGameResultS2CData;
+import softwareschreiber.chess.server.packet.data.s2c.InviteS2CData;
+import softwareschreiber.chess.server.packet.data.s2c.JoinGameS2CData;
 import softwareschreiber.chess.server.packet.data.s2c.KickS2CData;
 import softwareschreiber.chess.server.packet.data.s2c.LoginResultS2CData;
+import softwareschreiber.chess.server.packet.s2c.CreateGameResultS2C;
+import softwareschreiber.chess.server.packet.s2c.InviteS2C;
+import softwareschreiber.chess.server.packet.s2c.JoinGameS2C;
 import softwareschreiber.chess.server.packet.s2c.KickS2C;
 import softwareschreiber.chess.server.packet.s2c.LoginResultS2C;
+import softwareschreiber.chess.server.packet.s2c.UserJoinedS2C;
 import softwareschreiber.chess.server.packet.s2c.UserListS2C;
 
 public class ChessServer extends WebSocketServer {
-	private final UserStore userStore = new UserStore();
-	private final ConnectionManager connections = new ConnectionManager();
-	private final PacketMapper mapper = new PacketMapper();
+	private final UserStore userStore;
+	private final ConnectionManager connections;
+	private final PacketMapper mapper;
+	private final GameManager gameManager;
 
 	ChessServer(int port) {
 		super(new InetSocketAddress(port));
+
+		userStore = new UserStore();
+		connections = new ConnectionManager();
+		mapper = new PacketMapper();
+		gameManager = new GameManager(userStore);
 	}
 
 	@Override
@@ -58,6 +75,12 @@ public class ChessServer extends WebSocketServer {
 		switch (packetType) {
 			case LoginC2S:
 				handleLoginPacket(conn, message);
+				break;
+			case CreateGameC2S:
+				handleCreateGamePacket(conn, message);
+				break;
+			case InviteResponseC2S:
+				handleInviteResponsePacket(conn, message);
 				break;
 			default:
 				Logger.warn("Unhandled C2S packet type: {}", packetType);
@@ -104,10 +127,7 @@ public class ChessServer extends WebSocketServer {
 			}
 		}
 
-		LoginResultS2C loginResultPacket = new LoginResultS2C(
-				PacketType.LoginResultS2C,
-				new LoginResultS2CData(errorMessage));
-
+		LoginResultS2C loginResultPacket = new LoginResultS2C(new LoginResultS2CData(errorMessage));
 		conn.send(mapper.toString(loginResultPacket));
 
 		if (errorMessage == null) {
@@ -120,14 +140,103 @@ public class ChessServer extends WebSocketServer {
 		}
 	}
 
+	private void handleCreateGamePacket(WebSocket conn, String json) {
+		CreateGameC2S createGamePacket = null;
+		String errorMessage = null;
+
+		try {
+			createGamePacket = mapper.fromString(json, CreateGameC2S.class);
+		} catch (Exception e) {
+			Logger.error(e);
+			errorMessage = e.getMessage();
+		}
+
+		GameInfo gameInfo = null;
+		UserInfo initiator = connections.getUser(conn.getRemoteSocketAddress());
+		UserInfo requestedOpponent = null;
+
+		if (errorMessage == null) {
+			requestedOpponent = userStore.get(createGamePacket.data().requestedOpponent());
+
+			if (requestedOpponent == null) {
+				errorMessage = "Requested opponent does not exist";
+			} else if (requestedOpponent.status() == UserInfo.Status.OFFLINE) {
+				errorMessage = "Requested opponent is not online";
+			} else if (initiator.username().equals(requestedOpponent.username())) {
+				errorMessage = "Cannot play against yourself";
+			} else if (gameManager.getGame(initiator.username()) != null) {
+				errorMessage = "You are already in a game";
+			} else if (gameManager.getGame(requestedOpponent.username()) != null) {
+				errorMessage = "Requested opponent is already in a game";
+			} else {
+				gameInfo = gameManager.createStub(createGamePacket.data(), initiator);
+			}
+		}
+
+		CreateGameResultS2C resultPacket = new CreateGameResultS2C(new CreateGameResultS2CData(
+				gameInfo == null ? null : gameInfo.id(), errorMessage));
+		conn.send(mapper.toString(resultPacket));
+
+		if (errorMessage != null) {
+			Logger.error("Failed to create game for {}: {}", initiator, errorMessage);
+		} else {
+			Logger.info("{} has created a game with ID {} against {}",
+					initiator.username(), gameInfo.id(), requestedOpponent.username());
+			InviteS2C invitePacket = new InviteS2C(new InviteS2CData(initiator.username(), gameInfo));
+			WebSocket opponentConnection = connections.get(requestedOpponent);
+			opponentConnection.send(mapper.toString(invitePacket));
+		}
+	}
+
+	private void handleInviteResponsePacket(WebSocket conn, String json) {
+		InviteResponseC2S inviteResponsePacket = null;
+
+		try {
+			inviteResponsePacket = mapper.fromString(json, InviteResponseC2S.class);
+		} catch (Exception e) {
+			Logger.error(e);
+			return;
+		}
+
+		boolean accepted = inviteResponsePacket.data().accept();
+		String gameId = inviteResponsePacket.data().gameId();
+
+		if (!accepted) {
+			Logger.info("{} has declined the game invite for game {}", conn.getRemoteSocketAddress(), gameId);
+			return;
+		} else {
+			GameInfo gameInfo = gameManager.getStub(gameId);
+			UserInfo invitedUser = connections.getUser(conn.getRemoteSocketAddress());
+
+			if (gameInfo == null) {
+				Logger.error("Game with ID {} not found for invite response from {}", gameId, invitedUser.username());
+				return;
+			} else {
+				Logger.info("{} has accepted the game invite for game {}", invitedUser.username(), gameId);
+				gameInfo.blackPlayer(invitedUser);
+
+				JoinGameS2C joinGamePacket = new JoinGameS2C(new JoinGameS2CData(gameId));
+				conn.send(mapper.toString(joinGamePacket));
+
+				UserInfo invitingUser = gameInfo.whitePlayer();
+				UserJoinedS2C userJoinedPacket = new UserJoinedS2C(invitedUser);
+				connections.get(invitingUser).send(mapper.toString(userJoinedPacket));
+
+				ServerGame game = gameManager.createGame(gameInfo);
+				invitingUser.status(Status.IN_GAME);
+				invitedUser.status(Status.IN_GAME);
+				broadcastUserList();
+				game.startGame();
+			}
+		}
+	}
+
 	private String ipPlusPort(InetSocketAddress address) {
 		return address.getHostName() + ":" + address.getPort();
 	}
 
 	private void broadcastUserList() {
-		UserListS2C packet = new UserListS2C(
-				PacketType.UserListS2C,
-				userStore.values());
+		UserListS2C packet = new UserListS2C(userStore.values());
 		String json = mapper.toString(packet);
 
 		for (WebSocket client : getConnections()) {
@@ -138,7 +247,7 @@ public class ChessServer extends WebSocketServer {
 	}
 
 	void kick(String username) {
-		KickS2C packet = new KickS2C(PacketType.KickS2C, new KickS2CData("Admin", null));
+		KickS2C packet = new KickS2C(new KickS2CData("Admin", null));
 		WebSocket connection = connections.get(username);
 
 		try {

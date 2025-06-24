@@ -15,9 +15,12 @@
 			"properties": {
 				"accept": {
 					"type": "boolean"
+				},
+				"gameId": {
+					"type": "string"
 				}
 			},
-			"required": ["accept"],
+			"required": ["accept", "gameId"],
 			"additionalItems": false
 		}
 	},

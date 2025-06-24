@@ -4,6 +4,7 @@
 	"data": {
 		"cpuOpponent": false,
 		"requestedOpponent": "Jane Smith",
+		"ownColor": "white",
 		"maxSecondsPerMove": 30
 	}
 }

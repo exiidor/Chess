@@ -16,6 +16,5 @@
 			"type": "integer"
 		}
 	},
-	"required": ["cpuOpponent", "requestedOpponent", "maxSecondsPerMove"],
-	"additionalProperties": false
+	"required": ["cpuOpponent", "requestedOpponent", "maxSecondsPerMove"]
 }
