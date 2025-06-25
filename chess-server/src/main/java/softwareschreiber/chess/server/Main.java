@@ -12,7 +12,7 @@ import softwareschreiber.chess.server.ssl.SslUtil;
 public class Main {
 	public static void main(String[] args) {
 		ChessServer server = new ChessServer(3010);
-		boolean useSsl = Boolean.getBoolean("USE_SSL");
+		boolean useSsl = Boolean.parseBoolean(System.getenv("USE_SSL"));
 
 		if (useSsl) {
 			SSLContext sslContext = SslUtil.getContext();
