@@ -1,7 +1,6 @@
 package softwareschreiber.chess.server.packet.data.component;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

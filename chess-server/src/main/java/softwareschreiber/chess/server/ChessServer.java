@@ -11,14 +11,17 @@ import softwareschreiber.chess.server.packet.Packet;
 import softwareschreiber.chess.server.packet.c2s.CreateGameC2S;
 import softwareschreiber.chess.server.packet.c2s.InviteResponseC2S;
 import softwareschreiber.chess.server.packet.c2s.LoginC2S;
+import softwareschreiber.chess.server.packet.data.component.BoardPojo;
 import softwareschreiber.chess.server.packet.data.component.GameInfo;
 import softwareschreiber.chess.server.packet.data.component.UserInfo;
 import softwareschreiber.chess.server.packet.data.component.UserInfo.Status;
+import softwareschreiber.chess.server.packet.data.s2c.BoardS2CData;
 import softwareschreiber.chess.server.packet.data.s2c.CreateGameResultS2CData;
 import softwareschreiber.chess.server.packet.data.s2c.InviteS2CData;
 import softwareschreiber.chess.server.packet.data.s2c.JoinGameS2CData;
 import softwareschreiber.chess.server.packet.data.s2c.KickS2CData;
 import softwareschreiber.chess.server.packet.data.s2c.LoginResultS2CData;
+import softwareschreiber.chess.server.packet.s2c.BoardS2C;
 import softwareschreiber.chess.server.packet.s2c.CreateGameResultS2C;
 import softwareschreiber.chess.server.packet.s2c.InviteS2C;
 import softwareschreiber.chess.server.packet.s2c.JoinGameS2C;
@@ -31,7 +34,7 @@ public class ChessServer extends WebSocketServer {
 	private final UserStore userStore;
 	private final ConnectionManager connections;
 	private final PacketMapper mapper;
-	private final GameManager gameManager;
+	private final GamesManager gameManager;
 
 	ChessServer(int port) {
 		super(new InetSocketAddress(port));
@@ -39,7 +42,7 @@ public class ChessServer extends WebSocketServer {
 		userStore = new UserStore();
 		connections = new ConnectionManager();
 		mapper = new PacketMapper();
-		gameManager = new GameManager(userStore);
+		gameManager = new GamesManager(userStore);
 	}
 
 	@Override
@@ -113,7 +116,7 @@ public class ChessServer extends WebSocketServer {
 					userInfo = new UserInfo(
 							loginPacket.data().username(),
 							UserInfo.Status.ONLINE,
-							false,
+							null,
 							0,
 							0,
 							0,
@@ -223,10 +226,13 @@ public class ChessServer extends WebSocketServer {
 				connections.get(invitingUser).send(mapper.toString(userJoinedPacket));
 
 				ServerGame game = gameManager.createGame(gameInfo);
-				invitingUser.status(Status.IN_GAME);
-				invitedUser.status(Status.IN_GAME);
+				invitingUser.status(Status.PLAYING);
+				invitedUser.status(Status.PLAYING);
+				invitingUser.gameId(gameId);
+				invitedUser.gameId(gameId);
 				broadcastUserList();
 				game.startGame();
+				broadcastBoard(game);
 			}
 		}
 	}
@@ -242,6 +248,28 @@ public class ChessServer extends WebSocketServer {
 		for (WebSocket client : getConnections()) {
 			if (connections.isConnected(client.getRemoteSocketAddress())) {
 				client.send(json);
+			}
+		}
+	}
+
+	private void broadcastBoard(ServerGame game) {
+		BoardS2C packet = new BoardS2C(new BoardS2CData(game.getInfo().id(), new BoardPojo(game.getBoard())));
+		String json = mapper.toString(packet);
+
+		for (WebSocket client : getConnections()) {
+			if (connections.isConnected(client.getRemoteSocketAddress())) {
+				UserInfo user = connections.getUser(client.getRemoteSocketAddress());
+
+				if (!game.getInfo().id().equals(user.gameId())) {
+					assert user.status() == Status.PLAYING || user.status() == Status.SPECTATING;
+					continue;
+				}
+
+				try {
+					client.send(json);
+				} catch (Exception e) {
+					failedToSerialize(packet, e);
+				}
 			}
 		}
 	}

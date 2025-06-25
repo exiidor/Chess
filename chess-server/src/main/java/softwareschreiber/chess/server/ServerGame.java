@@ -38,5 +38,4 @@ public class ServerGame extends Game {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'staleMate'");
 	}
-
 }

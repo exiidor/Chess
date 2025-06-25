@@ -8,13 +8,13 @@ import softwareschreiber.chess.server.packet.data.c2s.CreateGameC2SData;
 import softwareschreiber.chess.server.packet.data.component.GameInfo;
 import softwareschreiber.chess.server.packet.data.component.UserInfo;
 
-public class GameManager {
+public class GamesManager {
 	private final AtomicInteger idGenerator = new AtomicInteger(0);
 	private final Map<String, GameInfo> gameStubsById = new HashMap<>();
 	private final Map<String, ServerGame> gamesById = new HashMap<>();
 	private final UserStore userStore;
 
-	public GameManager(UserStore userStore) {
+	public GamesManager(UserStore userStore) {
 		this.userStore = userStore;
 	}
 

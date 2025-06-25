@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.jetbrains.annotations.Nullable;
 
 @Getter(onMethod = @__(@JsonProperty))
 @Setter
@@ -17,7 +18,7 @@ import lombok.experimental.Accessors;
 public class UserInfo {
 	private String username;
 	private Status status;
-	private boolean playing;
+	private @Nullable String gameId;
 	private int gamesPlayed;
 	private int gamesWon;
 	private int gamesLost;
@@ -26,6 +27,7 @@ public class UserInfo {
 	public enum Status {
 		OFFLINE,
 		ONLINE,
-		IN_GAME
+		PLAYING,
+		SPECTATING
 	}
 }

@@ -6,7 +6,7 @@
 	const loggedIn = ref(false)
 	const userList = ref<User[]>([])
 	const displayBoard = ref(false)
-	const board = ref(Array.from({ length: 8 }, () => Array(8).fill(null)))
+	const board = ref<Piece[]>([])
 	const wsClient = useWebSocket(useRuntimeConfig().public.chessServerAddress, {
 		immediate: false,
 		onConnected: () => {
@@ -28,6 +28,14 @@
 	interface User {
 		username: string
 		status: string
+	}
+
+	interface Piece {
+		type: string
+		color: string
+		symbol: string
+		x: number
+		y: number
 	}
 
 	function connect() {
@@ -104,6 +112,10 @@
 			case "JoinGameS2C":
 				alert("You have joined the game with ID: " + packet.data.gameId)
 				break
+			case "BoardS2C":
+				board.value = packet.data.board.pieces
+				displayBoard.value = true
+				break;
 			default:
 				alert("Unknown packet type: " + packet.type)
 		}
@@ -158,7 +170,7 @@
 	<div v-if="displayBoard">
 		<div class="board-container">
 			<div class="chessboard">
-				<div v-for="(piece, index) in board.flat()"
+				<div v-for="(piece, index) in board"
 						:key="index"
 						:class="[
 							'square',
@@ -166,7 +178,7 @@
 									? (Math.floor(index / 8) % 2 === 0 ? 'white' : 'black')
 									: (Math.floor(index / 8) % 2 === 0 ? 'black' : 'white')
 						]">
-					{{ piece }}
+					{{ piece?.symbol }}
 				</div>
 			</div>
 		</div>

@@ -5,10 +5,11 @@ import java.util.Map;
 
 import softwareschreiber.chess.server.packet.Packet;
 import softwareschreiber.chess.server.packet.c2s.CreateGameC2S;
-import softwareschreiber.chess.server.packet.s2c.InviteS2C;
 import softwareschreiber.chess.server.packet.c2s.InviteResponseC2S;
 import softwareschreiber.chess.server.packet.c2s.LoginC2S;
+import softwareschreiber.chess.server.packet.s2c.BoardS2C;
 import softwareschreiber.chess.server.packet.s2c.CreateGameResultS2C;
+import softwareschreiber.chess.server.packet.s2c.InviteS2C;
 import softwareschreiber.chess.server.packet.s2c.JoinGameS2C;
 import softwareschreiber.chess.server.packet.s2c.KickS2C;
 import softwareschreiber.chess.server.packet.s2c.LoginResultS2C;
@@ -25,7 +26,8 @@ public enum PacketType {
 	InviteS2C(InviteS2C.class),
 	InviteResponseC2S(InviteResponseC2S.class),
 	UserJoinedS2C(UserJoinedS2C.class),
-	JoinGameS2C(JoinGameS2C.class);
+	JoinGameS2C(JoinGameS2C.class),
+	BoardS2C(BoardS2C.class);
 
 	private static final Map<String, PacketType> byJsonName = new HashMap<>();
 	private final Class<? extends Packet<?>> packetClass;
