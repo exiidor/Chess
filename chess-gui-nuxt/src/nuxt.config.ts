@@ -13,6 +13,11 @@ export default defineNuxtConfig({
 			websocket: true,
 		},
 	},
+	vite: {
+		server: {
+			allowedHosts: true
+		}
+	},
 	runtimeConfig: {
 		public: {
 			chessServerAddress: "ws://localhost:3010",
