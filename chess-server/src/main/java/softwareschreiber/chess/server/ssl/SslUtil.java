@@ -9,7 +9,7 @@ import javax.net.ssl.SSLContext;
 
 public class SslUtil {
 	public static SSLContext getContext() {
-		SSLContext context = null;
+		SSLContext context;
 		String keystorePath = Objects.requireNonNull(System.getenv("KEYSTORE_PATH"));
 		String keystorePassword = Objects.requireNonNull(System.getenv("KEYSTORE_PASSWORD"));
 
@@ -26,8 +26,8 @@ public class SslUtil {
 			kmf.init(keyStore, keystorePassword.toCharArray());
 
 			// Initialize the SSL context
-			SSLContext sslContext = SSLContext.getInstance("TLS");
-			sslContext.init(kmf.getKeyManagers(), null, null);
+			context = SSLContext.getInstance("TLS");
+			context.init(kmf.getKeyManagers(), null, null);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
