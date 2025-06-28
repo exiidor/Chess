@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import javax.net.ssl.SSLContext;
 
 import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
+import org.tinylog.Logger;
 
 import softwareschreiber.chess.server.ssl.SslUtil;
 
@@ -18,7 +19,7 @@ public class Main {
 			SSLContext sslContext = SslUtil.getContext();
 
 			if (sslContext == null) {
-				System.err.println("Failed to initialize SSL context. Exiting.");
+				Logger.error("Failed to initialize SSL context. Exiting.");
 				return;
 			}
 
