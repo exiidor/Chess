@@ -8,6 +8,11 @@ export default defineNuxtConfig({
 	modules: [
 		'@vueuse/nuxt',
 	],
+	imports: {
+		dirs: [
+			'enums',
+		]
+	},
 	nitro: {
 		experimental: {
 			websocket: true,

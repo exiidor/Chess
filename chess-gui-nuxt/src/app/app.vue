@@ -4,9 +4,9 @@
 	const username = ref("")
 	const password = ref("")
 	const loggedIn = ref(false)
-	const userList = ref<User[]>([])
+	const users = ref<User[]>([])
 	const displayBoard = ref(false)
-	const board = ref<Piece[]>([])
+	const pieces = ref<ChessPiece[]>([])
 	const wsClient = useWebSocket(useRuntimeConfig().public.chessServerAddress, {
 		immediate: false,
 		onConnected: () => {
@@ -24,19 +24,6 @@
 			handlePacket(event.data)
 		}
 	})
-
-	interface User {
-		username: string
-		status: string
-	}
-
-	interface Piece {
-		type: string
-		color: string
-		symbol: string
-		x: number
-		y: number
-	}
 
 	function connect() {
 		wsClient.open()
@@ -58,12 +45,12 @@
 		password.value = ""
 	}
 
-	function newGame() {
+	function newGame(requestedOpponent?: User) {
 		wsClient.send(JSON.stringify({
 			type: "CreateGameC2S",
 			data: {
 				cpuOpponent: true,
-				requestedOpponent: prompt("Enter the username of the opponent:"),
+				requestedOpponent: requestedOpponent ? requestedOpponent.username : prompt("Enter the username of the opponent:"),
 				ownColor: "white",
 				maxSecondsPerMove: 30,
 			}
@@ -84,7 +71,7 @@
 
 				break
 			case "UserListS2C":
-				userList.value = packet.data
+				users.value = packet.data
 				break
 			case "KickS2C":
 				alert("You have been kicked from the server by " + packet.data.initiator + " for reason: " + packet.data.reason)
@@ -113,37 +100,30 @@
 				alert("You have joined the game with ID: " + packet.data.gameId)
 				break
 			case "BoardS2C":
-				board.value = packet.data.board.pieces
+				pieces.value = packet.data.board.pieces
 				displayBoard.value = true
 				break;
 			default:
 				alert("Unknown packet type: " + packet.type)
 		}
 	}
-
-	async function sha256(password: string): Promise<string> {
-		const encoder = new TextEncoder()
-		const data = encoder.encode(password)
-		const hashBuffer = await crypto.subtle.digest("SHA-256", data)
-		const hashArray = Array.from(new Uint8Array(hashBuffer))
-		const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("")
-		return hashHex
-	}
-
-	function isBlank(str: string) {
-		return !str || /^\s*$/.test(str);
-	}
 </script>
 
 
 <template>
-	<form v-if="!connected" @submit.prevent="connect()">
-		<button type="submit">Connect</button>
-	</form>
+	<div class="buttons">
+		<form v-if="!connected" @submit.prevent="connect()">
+			<button type="submit">Connect</button>
+		</form>
 
-	<form v-if="connected" @submit.prevent="disconnect()">
-		<button type="submit">Disconnect</button>
-	</form>
+		<form v-if="connected" @submit.prevent="disconnect()">
+			<button type="submit">Disconnect</button>
+		</form>
+
+		<form v-if="loggedIn" @submit.prevent="newGame()">
+			<button type="submit">Start new Game</button>
+		</form>
+	</div>
 
 	<form v-if="connected && !loggedIn" @submit.prevent="login()">
 		<label>
@@ -157,31 +137,14 @@
 		<button type="submit">Login</button>
 	</form>
 
-	<ul v-if="loggedIn">
-		<li v-for="user in userList" :key="user.username">
-			{{ user.username }} ({{ user.status }})
-		</li>
-	</ul>
+	<hr>
 
-	<form v-if="loggedIn" @submit.prevent="newGame()">
-		<button type="submit">Start new Game</button>
-	</form>
+	<UserList v-if="loggedIn" :users="users" @user-clicked="newGame" />
 
-	<div v-if="displayBoard">
-		<div class="board-container">
-			<div class="chessboard">
-				<div v-for="(piece, index) in board"
-						:key="index"
-						:class="[
-							'square',
-							index % 2 === 0
-									? (Math.floor(index / 8) % 2 === 0 ? 'white' : 'black')
-									: (Math.floor(index / 8) % 2 === 0 ? 'black' : 'white')
-						]">
-					{{ piece?.symbol }}
-				</div>
-			</div>
-		</div>
+	<hr v-if="loggedIn">
+
+	<div v-if="displayBoard" class="board-container">
+		<ChessBoard :pieces="pieces" />
 	</div>
 
 	<br>
@@ -199,50 +162,16 @@
 		display: inline-block;
 	}
 
-	.chessboard {
-		display: grid;
-		grid-template-columns: repeat(8, 80px);
-		grid-template-rows: repeat(8, 80px);
-		border: 2px solid #333;
+	.buttons {
+		display: block;
+		box-sizing: border-box;
 	}
 
-	.square {
-		width: 80px;
-		height: 80px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 60px;
-	}
-
-	.white {
-		background-color: #f0d9b5;
-	}
-
-	.black {
-		background-color: #b58863;
-	}
-
-	.rank-label, .file-label {
-		position: absolute;
-		color: #333;
-		font-size: 14px;
-		font-weight: bold;
-		pointer-events: none;
-	}
-
-	.rank-label {
-		left: -20px;
-		width: 20px;
-		text-align: right;
-		height: 80px;
-		line-height: 80px;
-	}
-
-	.file-label {
-		top: 480px;
-		width: 80px;
-		text-align: center;
-		height: 20px;
+	.buttons > * {
+		display: block;
+		box-sizing: border-box;
+		margin: 0 10px;
+		margin-left: 0px;
+		cursor: pointer;
 	}
 </style>
