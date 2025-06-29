@@ -58,12 +58,18 @@ public class ChessServer extends WebSocketServer {
 	@Override
 	public void onClose(WebSocket conn, int code, String reason, boolean remote) {
 		InetSocketAddress remoteAddress = conn.getRemoteSocketAddress();
-		UserInfo userInfo = connections.remove(remoteAddress);
 
-		Logger.info("{} has disconnected", ipPlusPort(remoteAddress));
+		if (connections.isConnected(remoteAddress)) {
+			UserInfo userInfo = connections.remove(remoteAddress);
 
-		userInfo.status(UserInfo.Status.OFFLINE);
-		broadcastUserList();
+			Logger.info("{} has disconnected", ipPlusPort(remoteAddress));
+
+			userInfo.status(UserInfo.Status.OFFLINE);
+			broadcastUserList();
+		} else {
+			// client wasn't available during server stop and closed the connection at a later time
+			Logger.info("{} has disconnected, but was not connected", ipPlusPort(remoteAddress));
+		}
 	}
 
 	@Override
