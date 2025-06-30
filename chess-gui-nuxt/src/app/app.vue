@@ -5,7 +5,7 @@
 	const password = ref("")
 	const loggedIn = ref(false)
 	const users = ref<User[]>([])
-	const displayBoard = ref(false)
+	const inGame = ref(false)
 	const pieces = ref<ChessPiece[]>([])
 	const wsClient = useWebSocket(useRuntimeConfig().public.chessServerAddress, {
 		immediate: false,
@@ -15,10 +15,10 @@
 		onDisconnected: () => {
 			connected.value = false
 			loggedIn.value = false
-			displayBoard.value = false
+			inGame.value = false
 		},
 		onError: (error) => {
-			alert("WebSocket error:" + error)
+			alert("WebSocket error: " + error)
 		},
 		onMessage: (_, event) => {
 			handlePacket(event.data)
@@ -35,7 +35,7 @@
 
 	async function login() {
 		wsClient.send(JSON.stringify({
-			type: "LoginC2S",
+			type: PacketType.LoginC2S,
 			data: {
 				username: username.value,
 				password: await sha256(password.value),
@@ -47,7 +47,7 @@
 
 	function newGame(requestedOpponent?: User) {
 		wsClient.send(JSON.stringify({
-			type: "CreateGameC2S",
+			type: PacketType.CreateGameC2S,
 			data: {
 				cpuOpponent: true,
 				requestedOpponent: requestedOpponent ? requestedOpponent.username : prompt("Enter the username of the opponent:"),
@@ -57,52 +57,62 @@
 		}))
 	}
 
-	function handlePacket(packetString: string) {
-		let packet = lastReceivedPacket.value = JSON.parse(packetString)
+	function leaveGame() {
+		wsClient.send(JSON.stringify({
+			type: PacketType.LeaveGameC2S,
+			data: {
+				reason: null
+			}
+		}))
+		inGame.value = false
+	}
 
-		switch (packet.type) {
-			case "LoginResultS2C":
+	function handlePacket(packetString: string) {
+		const packet = lastReceivedPacket.value = JSON.parse(packetString)
+		const packetType = packet.type as PacketType
+
+		switch (packetType) {
+			case PacketType.LoginResultS2C:
 				if (packet.data.error) {
 					alert("Login failed: " + packet.data.error)
 				} else {
 					loggedIn.value = true
-					displayBoard.value = false
 				}
 
 				break
-			case "UserListS2C":
+			case PacketType.UserListS2C:
 				users.value = packet.data
 				break
-			case "KickS2C":
+			case PacketType.KickS2C:
 				alert("You have been kicked from the server by " + packet.data.initiator + " for reason: " + packet.data.reason)
 				break
-			case "CreateGameResultS2C":
+			case PacketType.CreateGameResultS2C:
 				if (packet.data.error) {
 					alert("Failed to create game: " + packet.data.error)
-				} else {
-					alert("Game created successfully with ID: " + packet.data.gameId)
 				}
 				break
-			case "InviteS2C":
+			case PacketType.InviteS2C:
 				const accept = confirm("You have been invited to a game by " + packet.data.initiator + ". Do you want to accept?");
 				wsClient.send(JSON.stringify({
-					type: "InviteResponseC2S",
+					type: PacketType.InviteResponseC2S,
 					data: {
 						accept: accept,
 						gameId: packet.data.gameInfo.id,
 					}
 				}))
 				break
-			case "UserJoinedS2C":
+			case PacketType.UserJoinedS2C:
 				alert(packet.data.username + " has joined the game.")
 				break
-			case "JoinGameS2C":
-				alert("You have joined the game with ID: " + packet.data.gameId)
+			case PacketType.JoinGameS2C:
 				break
-			case "BoardS2C":
+			case PacketType.BoardS2C:
 				pieces.value = packet.data.board.pieces
-				displayBoard.value = true
-				break;
+				inGame.value = true
+				break
+			case PacketType.UserLeftS2C:
+				alert(packet.data.user.username + " has left the game.")
+				break
 			default:
 				alert("Unknown packet type: " + packet.type)
 		}
@@ -122,6 +132,10 @@
 
 		<form v-if="loggedIn" @submit.prevent="newGame()">
 			<button type="submit">Start new Game</button>
+		</form>
+
+		<form v-if="inGame" @submit.prevent="leaveGame()">
+			<button type="submit">Leave Game</button>
 		</form>
 	</div>
 
@@ -143,7 +157,7 @@
 
 	<hr v-if="loggedIn">
 
-	<div v-if="displayBoard" class="board-container">
+	<div v-if="inGame" class="board-container">
 		<ChessBoard :pieces="pieces" />
 	</div>
 

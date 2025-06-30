@@ -43,4 +43,9 @@ public class GamesManager {
 		gamesById.put(info.id(), game);
 		return game;
 	}
+
+	public void removeGame(GameInfo info) {
+		gameStubsById.remove(info.id());
+		gamesById.remove(info.id());
+	}
 }

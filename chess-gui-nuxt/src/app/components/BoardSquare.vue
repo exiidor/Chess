@@ -1,7 +1,7 @@
 <script setup lang="ts">
 	const props = defineProps({
 		piece: {
-			type: Object as PropType<ChessPiece>,
+			type: Object as PropType<ChessPiece | null>,
 			required: true
 		},
 		white: {
@@ -10,7 +10,7 @@
 		}
 	})
 	const emit = defineEmits<{
-		(event: 'square-clicked', piece: ChessPiece): void
+		(event: 'square-clicked', piece: ChessPiece | null): void
 	}>()
 	const selectionState = ref(SquareSelectionState.None)
 
@@ -33,8 +33,6 @@
 
 <style scoped>
 	.square {
-		width: 80px;
-		height: 80px;
 		display: flex;
 		align-items: center;
 		justify-content: center;

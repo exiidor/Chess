@@ -1,6 +1,8 @@
 package softwareschreiber.chess.server;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -10,6 +12,7 @@ import org.tinylog.Logger;
 import softwareschreiber.chess.server.packet.Packet;
 import softwareschreiber.chess.server.packet.c2s.CreateGameC2S;
 import softwareschreiber.chess.server.packet.c2s.InviteResponseC2S;
+import softwareschreiber.chess.server.packet.c2s.LeaveGameC2S;
 import softwareschreiber.chess.server.packet.c2s.LoginC2S;
 import softwareschreiber.chess.server.packet.data.component.BoardPojo;
 import softwareschreiber.chess.server.packet.data.component.GameInfo;
@@ -21,6 +24,7 @@ import softwareschreiber.chess.server.packet.data.s2c.InviteS2CData;
 import softwareschreiber.chess.server.packet.data.s2c.JoinGameS2CData;
 import softwareschreiber.chess.server.packet.data.s2c.KickS2CData;
 import softwareschreiber.chess.server.packet.data.s2c.LoginResultS2CData;
+import softwareschreiber.chess.server.packet.data.s2c.UserLeftS2CData;
 import softwareschreiber.chess.server.packet.s2c.BoardS2C;
 import softwareschreiber.chess.server.packet.s2c.CreateGameResultS2C;
 import softwareschreiber.chess.server.packet.s2c.InviteS2C;
@@ -28,6 +32,7 @@ import softwareschreiber.chess.server.packet.s2c.JoinGameS2C;
 import softwareschreiber.chess.server.packet.s2c.KickS2C;
 import softwareschreiber.chess.server.packet.s2c.LoginResultS2C;
 import softwareschreiber.chess.server.packet.s2c.UserJoinedS2C;
+import softwareschreiber.chess.server.packet.s2c.UserLeftS2C;
 import softwareschreiber.chess.server.packet.s2c.UserListS2C;
 
 public class ChessServer extends WebSocketServer {
@@ -90,6 +95,9 @@ public class ChessServer extends WebSocketServer {
 				break;
 			case InviteResponseC2S:
 				handleInviteResponsePacket(conn, message);
+				break;
+			case LeaveGameC2S:
+				handleLeaveGamePacket(conn, message);
 				break;
 			default:
 				Logger.warn("Unhandled C2S packet type: {}", packetType);
@@ -243,6 +251,53 @@ public class ChessServer extends WebSocketServer {
 		}
 	}
 
+	private void handleLeaveGamePacket(WebSocket conn, String json) {
+		LeaveGameC2S leaveGamePacket = null;
+
+		try {
+			leaveGamePacket = mapper.fromString(json, LeaveGameC2S.class);
+		} catch (Exception e) {
+			Logger.error(e);
+		}
+
+		UserInfo user = connections.getUser(conn.getRemoteSocketAddress());
+		ServerGame game = gameManager.getGame(user.gameId());
+
+		if (game == null) {
+			Logger.warn("{} tried to leave a game, but is not in one", user.username());
+			return;
+		}
+
+		GameInfo gameInfo = game.getInfo();
+		String reason = leaveGamePacket.data().reason();
+		Logger.info("{} has left the game {} for reason: {}", user.username(), gameInfo.id(), reason);
+
+		if (gameInfo.blackPlayer().status() != Status.PLAYING
+				&& gameInfo.whitePlayer().status() != Status.PLAYING) {
+			gameManager.removeGame(gameInfo);
+		}
+
+		user.status(Status.ONLINE);
+		user.gameId(null);
+
+		UserLeftS2C userLeftPacket = new UserLeftS2C(new UserLeftS2CData(user, reason));
+		List<UserInfo> players = getInGameUsers(game);
+
+		for (UserInfo player : players) {
+			if (player == user) {
+				continue;
+			}
+
+			try {
+				connections.get(player).send(mapper.toString(userLeftPacket));
+			} catch (Exception e) {
+				failedToSerialize(userLeftPacket, e);
+			}
+		}
+
+		broadcastUserList();
+	}
+
 	private String ipPlusPort(InetSocketAddress address) {
 		return address.getHostName() + ":" + address.getPort();
 	}
@@ -261,23 +316,37 @@ public class ChessServer extends WebSocketServer {
 	private void broadcastBoard(ServerGame game) {
 		BoardS2C packet = new BoardS2C(new BoardS2CData(game.getInfo().id(), new BoardPojo(game.getBoard())));
 		String json = mapper.toString(packet);
+		List<UserInfo> inGameUsers = getInGameUsers(game);
+
+		for (UserInfo user : inGameUsers) {
+			if (!game.getInfo().id().equals(user.gameId())) {
+				assert user.status() == Status.PLAYING || user.status() == Status.SPECTATING;
+				continue;
+			}
+
+			try {
+				connections.get(user).send(json);
+			} catch (Exception e) {
+				failedToSerialize(packet, e);
+			}
+		}
+	}
+
+	private List<UserInfo> getInGameUsers(ServerGame game) {
+		List<UserInfo> users = new ArrayList<>();
 
 		for (WebSocket client : getConnections()) {
 			if (connections.isConnected(client.getRemoteSocketAddress())) {
 				UserInfo user = connections.getUser(client.getRemoteSocketAddress());
 
-				if (!game.getInfo().id().equals(user.gameId())) {
+				if (game.getInfo().id().equals(user.gameId())) {
 					assert user.status() == Status.PLAYING || user.status() == Status.SPECTATING;
-					continue;
-				}
-
-				try {
-					client.send(json);
-				} catch (Exception e) {
-					failedToSerialize(packet, e);
+					users.add(user);
 				}
 			}
 		}
+
+		return users;
 	}
 
 	void kick(String username) {

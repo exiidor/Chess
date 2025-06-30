@@ -73,8 +73,8 @@ import BoardSquare from './BoardSquare.vue'
 <style scoped>
 	.chessboard {
 		display: grid;
-		grid-template-columns: repeat(8, 80px);
-		grid-template-rows: repeat(8, 80px);
+		grid-template-columns: repeat(8, 11.5vw);
+		grid-template-rows: repeat(8, 11.5vw);
 		border: 2px solid #333;
 	}
 
