@@ -9,12 +9,16 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import softwareschreiber.chess.engine.Board;
 import softwareschreiber.chess.engine.Position;
 
-/**
- * Represents a move in the chess game.
- */
-@JsonTypeInfo(use=Id.MINIMAL_CLASS, include=As.PROPERTY, property="type") // Include Java class simple-name as JSON property "type"
-public interface Move {
-	public Position sourcePos();
-	public Position targetPos();
-	public Move copyWith(Board board);
+public class NormalMove extends AbstractMove {
+	public NormalMove(Position from, Position to) {
+		super(from, to);
+	}
+
+	public NormalMove(int fromX, int fromY, int toX, int toY) {
+		this(new Position(fromX, fromY), new Position(toX, toY));
+	}
+
+	public Move copyWith(Board board) {
+		return this;
+	}
 }

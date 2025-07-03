@@ -11,6 +11,7 @@ import softwareschreiber.chess.engine.evaluation.EvaluationCharts;
 import softwareschreiber.chess.engine.move.CaptureMove;
 import softwareschreiber.chess.engine.move.CastlingMove;
 import softwareschreiber.chess.engine.move.Move;
+import softwareschreiber.chess.engine.move.NormalMove;
 
 public class King extends Piece {
 	public King(PieceColor color, Board board) {
@@ -19,7 +20,7 @@ public class King extends Piece {
 
 	public boolean isChecked() {
 		for (Move move : board.getEnemyMovesExceptKingMoves(this)) {
-			Position targetPos = move.getTargetPos();
+			Position targetPos = move.targetPos();
 
 			if (targetPos.equals(getPosition())) {
 				return true;
@@ -45,7 +46,7 @@ public class King extends Piece {
 	}
 
 	@Override
-	public int[][] evaluationChart() {
+	public int[][] getEvaluationChart() {
 		return EvaluationCharts.kingTable;
 	}
 
@@ -89,7 +90,7 @@ public class King extends Piece {
 			}
 
 			if (other == null && !board.isOutOfBounds(targetPos)) {
-				validMoves.add(new Move(getPosition(), targetPos));
+				validMoves.add(new NormalMove(getPosition(), targetPos));
 			}
 		}
 
@@ -109,7 +110,7 @@ public class King extends Piece {
 						&& board.getPieceAt(2, getY()) == null
 						&& board.getPieceAt(3, getY()) == null
 						&& !board.getEnemyMovesExceptKingMoves(this).stream()
-								.map(Move::getTargetPos)
+								.map(Move::targetPos)
 								.anyMatch(pos -> pos.equals(new Position(2, getY()))
 										|| pos.equals(new Position(3, getY())));
 
@@ -127,7 +128,7 @@ public class King extends Piece {
 						&& board.getPieceAt(5, getY()) == null
 						&& board.getPieceAt(6, getY()) == null
 						&& !board.getEnemyMovesExceptKingMoves(this).stream()
-								.map(Move::getTargetPos)
+								.map(Move::targetPos)
 								.anyMatch(pos -> pos.equals(new Position(5, getY()))
 										|| pos.equals(new Position(6, getY())));
 

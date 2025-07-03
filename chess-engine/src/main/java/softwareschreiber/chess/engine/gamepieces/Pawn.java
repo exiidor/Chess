@@ -33,7 +33,7 @@ public class Pawn extends Piece {
 	}
 
 	@Override
-	public int[][] evaluationChart() {
+	public int[][] getEvaluationChart() {
 		return EvaluationCharts.pawnTable;
 	}
 
@@ -61,7 +61,7 @@ public class Pawn extends Piece {
 		Position forwardByTwoPos = new Position(getX(), getY() + getDirection() * 2);
 
 		if (board.getPieceAt(forwardPos) == null) {
-			if (forwardPos.getY() == (isWhite() ? board.getMaxY() : board.getMinY())) {
+			if (forwardPos.y() == (isWhite() ? board.getMaxY() : board.getMinY())) {
 				moves.addAll(getAllPossiblePromotionMoves(getPosition(), forwardPos, null));
 			} else {
 				moves.add(new Move(getPosition(), forwardPos));

@@ -30,7 +30,7 @@ public class Rook extends Piece {
 	}
 
 	@Override
-	public int[][] evaluationChart() {
+	public int[][] getEvaluationChart() {
 		return EvaluationCharts.rookTable;
 	}
 

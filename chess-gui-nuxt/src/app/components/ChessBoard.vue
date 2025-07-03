@@ -18,6 +18,10 @@
 			type: String as PropType<Color>,
 			required: true
 		},
+		username: {
+			type: String,
+			required: true
+		},
 		movesForSelectedPiece: {
 			type: Array as PropType<Move[]>,
 			required: true,
@@ -30,22 +34,22 @@
 	}>()
 
 	const squares = ref<InstanceType<typeof BoardSquare>[][]>(Array.from({ length: 8 }, () => Array(8).fill(null)))
-	const squareByPiece = ref<Map<ChessPiece, InstanceType<typeof BoardSquare> | null>>(new Map())
+	const squareByPiece = ref<Map<ChessPiece, InstanceType<typeof BoardSquare>>>(new Map())
 	const selectedPiece = ref<ChessPiece | null>(null)
 	const targetSquares = ref<(InstanceType<typeof BoardSquare> | null)[]>([])
-	const movesToTargetedPieces = ref<Map<ChessPiece, Move[]>>(new Map())
+	const movesToTargetedSquares = ref<Map<InstanceType<typeof BoardSquare>, Move[]>>(new Map())
 
-	function onSquareClicked(piece: ChessPiece | null) {
-		const selectedSquare = squareOf(selectedPiece.value)!
-		const clickedSquare = squareOf(piece)
+	function onSquareClicked(clickedSquare: InstanceType<typeof BoardSquare>, clickedPiece: ChessPiece | null) {
+		const selectedSquare = selectedPiece.value ? squareOf(selectedPiece.value) : null;
 
 		if (selectedSquare) {
 			selectedSquare.selectionState = SquareState.Default
 		}
 
-		if (targetSquares.value.includes(selectedSquare) && selectedPiece.value != piece) {
+		if (targetSquares.value.includes(clickedSquare) && selectedSquare != clickedSquare) {
 			if (props.isOurTurn) {
-				const moves = movesToTargetedPieces.value.get(piece!)!
+				console.log("movesToTargetedSquares:", movesToTargetedSquares.value)
+				const moves = movesToTargetedSquares.value.get(clickedSquare)!
 				let move: Move
 
 				if (moves.length == 1) {
@@ -56,18 +60,7 @@
 
 				props.wsClientSendFunc(JSON.stringify({
 					type: PacketType.MoveC2S,
-					data: {
-						move: {
-							from: {
-								x: selectedPiece.value!.x,
-								y: selectedPiece.value!.y
-							},
-							to: {
-								x: move.targetPos.x,
-								y: move.targetPos.y
-							},
-						}
-					}
+					data: move
 				}))
 			}
 
@@ -77,40 +70,32 @@
 
 		clearTargetedPieces()
 
-		if (piece == null || piece == selectedPiece.value) {
+		if (clickedPiece == null || clickedPiece == selectedPiece.value) {
 			selectedPiece.value = null
 			return
 		}
 
-		squareOf(piece)!.selectionState = SquareState.Selected
-		selectedPiece.value = piece
-		fetchMoves(piece)
+		clickedSquare.selectionState = SquareState.Selected
+		selectedPiece.value = clickedPiece
+		fetchMoves(clickedPiece)
 	}
 
-	function squareOf(piece: ChessPiece | null): InstanceType<typeof BoardSquare> | null {
-		let square: InstanceType<typeof BoardSquare> | null = null
-
-		if (piece !== null) {
-			square = squareByPiece.value.get(piece) as InstanceType<typeof BoardSquare> | null
-		}
-
-		return square
+	function squareOf(piece: ChessPiece): InstanceType<typeof BoardSquare> {
+		return squareByPiece.value.get(piece) as InstanceType<typeof BoardSquare>
 	}
 
-	watch(() => props.movesForSelectedPiece, (_) => {
-		showPossibleMoves(selectedPiece.value!)
-	})
+	watch(() => props.movesForSelectedPiece, (_) => showPossibleMoves())
 
-	function showPossibleMoves(piece: ChessPiece) {
+	function showPossibleMoves() {
 		for (const move of props.movesForSelectedPiece) {
 			const targetPos = move.targetPos
 			const targetSquare = squares.value[targetPos.y]![targetPos.x]!
 
-			if (!movesToTargetedPieces.value.has(piece)) {
-				movesToTargetedPieces.value.set(piece, [])
+			if (!movesToTargetedSquares.value.has(targetSquare)) {
+				movesToTargetedSquares.value.set(targetSquare, [])
 			}
 
-			movesToTargetedPieces.value.get(piece)!.push(move);
+			movesToTargetedSquares.value.get(targetSquare)!.push(move);
 
 			if (move.type === MoveType.Capture || move.type === MoveType.EnPassant && (move as EnPassantMove).captured !== null) {
 				targetSquare.selectionState = SquareState.HighlightedCapture;
@@ -134,7 +119,7 @@
 		}
 
 		targetSquares.value = []
-		movesToTargetedPieces.value.clear();
+		movesToTargetedSquares.value.clear();
 	}
 </script>
 
@@ -153,7 +138,7 @@
 					squareByPiece.set(piece, square as InstanceType<typeof BoardSquare>)
 				}
 			}"
-			@click="onSquareClicked(piece)"
+			@click="onSquareClicked(squares[Math.floor(index / 8)]![index % 8]!, piece)"
 		/>
 	</div>
 </template>

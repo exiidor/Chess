@@ -49,6 +49,7 @@
 		padding-bottom: 4px;
 		padding-left: 7px;
 		padding-right: 7px;
+		width: 90%;
 
 		&:hover {
 			border-color: red;

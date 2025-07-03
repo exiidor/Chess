@@ -52,7 +52,7 @@ public class PacketMapper {
 		try {
 			return mapper.treeToValue(node, packetClass);
 		} catch (JsonProcessingException e) {
-			throw new RuntimeException("Failed to parse packet: " + type.jsonName(), e);
+			throw new RuntimeException("Failed to parse %s packet:\n%s".formatted(type.jsonName(), node.toPrettyString()), e);
 		}
 	}
 }

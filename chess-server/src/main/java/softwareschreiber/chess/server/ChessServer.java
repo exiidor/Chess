@@ -11,12 +11,15 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.tinylog.Logger;
 
+import softwareschreiber.chess.engine.Position;
+import softwareschreiber.chess.engine.gamepieces.Piece;
 import softwareschreiber.chess.engine.move.Move;
 import softwareschreiber.chess.server.packet.Packet;
 import softwareschreiber.chess.server.packet.c2s.CreateGameC2S;
 import softwareschreiber.chess.server.packet.c2s.InviteResponseC2S;
 import softwareschreiber.chess.server.packet.c2s.LeaveGameC2S;
 import softwareschreiber.chess.server.packet.c2s.LoginC2S;
+import softwareschreiber.chess.server.packet.c2s.MoveC2S;
 import softwareschreiber.chess.server.packet.c2s.RequestMovesC2S;
 import softwareschreiber.chess.server.packet.data.component.BoardPojo;
 import softwareschreiber.chess.server.packet.data.component.GameInfo;
@@ -106,6 +109,9 @@ public class ChessServer extends WebSocketServer {
 				break;
 			case RequestMovesC2S:
 				handleRequestMovesPacket(conn, message);
+				break;
+			case MoveC2S:
+				handleMovePacket(conn, message);
 				break;
 			default:
 				Logger.warn("Unhandled C2S packet type: {}", packetType);
@@ -328,8 +334,43 @@ public class ChessServer extends WebSocketServer {
 		int y = requestMovesPacket.data().y();
 		Set<? extends Move> moves = game.getBoard().getPieceAt(x, y).getSafeMoves();
 
-		MovesS2C responsePacket = MovesS2C.of(moves);
+		MovesS2C responsePacket = new MovesS2C(moves);
 		conn.send(mapper.toString(responsePacket));
+	}
+
+	private void handleMovePacket(WebSocket conn, String json) {
+		MoveC2S movePacket = null;
+
+		try {
+			movePacket = mapper.fromString(json, MoveC2S.class);
+		} catch (Exception e) {
+			Logger.error(e);
+			return;
+		}
+
+		UserInfo user = connections.getUser(conn.getRemoteSocketAddress());
+		ServerGame game = gameManager.getGame(user.gameId());
+
+		if (game == null) {
+			Logger.warn("{} tried to make a move, but is not in a game", user.username());
+			return;
+		}
+
+		Move move = movePacket.data();
+		Position sourcePos = movePacket.data().getSourcePos();
+		Piece piece = game.getBoard().getPieceAt(sourcePos);
+		assert piece.getSafeMoves().contains(move);
+
+		if (!game.isWhitesTurn() && piece.isWhite()) {
+			Logger.warn("{} tried to make a move, but it is not their turn", user.username());
+			return;
+		} else if (game.isWhitesTurn() && piece.isBlack()) {
+			Logger.warn("{} tried to make a move, but it is not their turn", user.username());
+			return;
+		}
+
+		game.getBoard().move(piece, move, game.getPlayer(game.getActiveColor()));
+		broadcastBoard(game);
 	}
 
 	private String ipPlusPort(InetSocketAddress address) {

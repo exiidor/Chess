@@ -25,6 +25,6 @@ public class PromotionMove extends CaptureMove {
 	public PromotionMove copyWith(Board board) {
 		Piece capturedCopy = getCaptured() == null ? null : board.getPieceAt(getCaptured().getPosition());
 
-		return new PromotionMove(getSourcePos(), getTargetPos(), capturedCopy, replacement.copyWith(board));
+		return new PromotionMove(sourcePos(), targetPos(), capturedCopy, replacement.copyWith(board));
 	}
 }

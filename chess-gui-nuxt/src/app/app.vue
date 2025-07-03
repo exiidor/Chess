@@ -126,21 +126,11 @@
 				alert(packet.data.user.username + " has left the game.")
 				break
 			case PacketType.MovesS2C:
-				const movesWrappers = packet.data as MoveWrapper[]
-
-				moves.value = movesWrappers.map(wrapper => {
-					wrapper.move.type = wrapper.type
-					return wrapper.move
-				})
+				moves.value = packet.data
 				break;
 			default:
 				alert("Unknown packet type: " + packet.type)
 		}
-	}
-
-	interface MoveWrapper {
-		type: MoveType
-		move: Move
 	}
 </script>
 
@@ -188,6 +178,7 @@
 			:pieces="pieces"
 			:is-our-turn="true"
 			:our-color="color"
+			:username="username"
 			:moves-for-selected-piece="moves"
 			@piece-selected="requestMovesForPiece"
 		/>
