@@ -29,26 +29,21 @@
 
 
 <template>
-	<ul>
-		<li v-for="user in users" :key="user.username" @click="onUserClicked(user)">
-			<span :user="user" :style="{color: userStatusColor(user.status.toLowerCase())}">
+	<table>
+		<tr v-for="user in users" :key="user.username" @click="onUserClicked(user)">
+			<td :user="user" :style="{color: userStatusColor(user.status.toLowerCase())}">
 				{{ user.username }}
-			</span>
-		</li>
-	</ul>
+			</td>
+		</tr>
+	</table>
 </template>
 
 
 <style scoped>
-	ul {
-		padding: 0;
-	}
-
-	li {
-		display: inline-block;
+	tr {
 		box-sizing: border-box;
 		border: 2px solid #000;
-		margin: 0 5px;
+		margin: 0px 5px;
 		background-color: lightgrey;
 		padding-top: 4px;
 		padding-bottom: 4px;

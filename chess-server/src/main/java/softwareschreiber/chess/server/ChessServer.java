@@ -2,18 +2,22 @@ package softwareschreiber.chess.server;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.tinylog.Logger;
 
+import softwareschreiber.chess.engine.move.Move;
 import softwareschreiber.chess.server.packet.Packet;
 import softwareschreiber.chess.server.packet.c2s.CreateGameC2S;
 import softwareschreiber.chess.server.packet.c2s.InviteResponseC2S;
 import softwareschreiber.chess.server.packet.c2s.LeaveGameC2S;
 import softwareschreiber.chess.server.packet.c2s.LoginC2S;
+import softwareschreiber.chess.server.packet.c2s.RequestMovesC2S;
 import softwareschreiber.chess.server.packet.data.component.BoardPojo;
 import softwareschreiber.chess.server.packet.data.component.GameInfo;
 import softwareschreiber.chess.server.packet.data.component.UserInfo;
@@ -31,6 +35,7 @@ import softwareschreiber.chess.server.packet.s2c.InviteS2C;
 import softwareschreiber.chess.server.packet.s2c.JoinGameS2C;
 import softwareschreiber.chess.server.packet.s2c.KickS2C;
 import softwareschreiber.chess.server.packet.s2c.LoginResultS2C;
+import softwareschreiber.chess.server.packet.s2c.MovesS2C;
 import softwareschreiber.chess.server.packet.s2c.UserJoinedS2C;
 import softwareschreiber.chess.server.packet.s2c.UserLeftS2C;
 import softwareschreiber.chess.server.packet.s2c.UserListS2C;
@@ -98,6 +103,9 @@ public class ChessServer extends WebSocketServer {
 				break;
 			case LeaveGameC2S:
 				handleLeaveGamePacket(conn, message);
+				break;
+			case RequestMovesC2S:
+				handleRequestMovesPacket(conn, message);
 				break;
 			default:
 				Logger.warn("Unhandled C2S packet type: {}", packetType);
@@ -296,6 +304,32 @@ public class ChessServer extends WebSocketServer {
 		}
 
 		broadcastUserList();
+	}
+
+	private void handleRequestMovesPacket(WebSocket conn, String json) {
+		RequestMovesC2S requestMovesPacket = null;
+
+		try {
+			requestMovesPacket = mapper.fromString(json, RequestMovesC2S.class);
+		} catch (Exception e) {
+			Logger.error(e);
+			return;
+		}
+
+		UserInfo user = connections.getUser(conn.getRemoteSocketAddress());
+		ServerGame game = gameManager.getGame(user.gameId());
+
+		if (game == null) {
+			Logger.warn("{} tried to request moves, but is not in a game", user.username());
+			return;
+		}
+
+		int x = requestMovesPacket.data().x();
+		int y = requestMovesPacket.data().y();
+		Set<? extends Move> moves = game.getBoard().getPieceAt(x, y).getSafeMoves();
+
+		MovesS2C responsePacket = MovesS2C.of(moves);
+		conn.send(mapper.toString(responsePacket));
 	}
 
 	private String ipPlusPort(InetSocketAddress address) {
