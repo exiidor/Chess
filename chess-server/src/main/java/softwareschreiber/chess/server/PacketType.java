@@ -8,12 +8,16 @@ import softwareschreiber.chess.server.packet.c2s.CreateGameC2S;
 import softwareschreiber.chess.server.packet.c2s.InviteResponseC2S;
 import softwareschreiber.chess.server.packet.c2s.LeaveGameC2S;
 import softwareschreiber.chess.server.packet.c2s.LoginC2S;
+import softwareschreiber.chess.server.packet.c2s.MoveC2S;
+import softwareschreiber.chess.server.packet.c2s.RequestMovesC2S;
 import softwareschreiber.chess.server.packet.s2c.BoardS2C;
 import softwareschreiber.chess.server.packet.s2c.CreateGameResultS2C;
 import softwareschreiber.chess.server.packet.s2c.InviteS2C;
 import softwareschreiber.chess.server.packet.s2c.JoinGameS2C;
 import softwareschreiber.chess.server.packet.s2c.KickS2C;
 import softwareschreiber.chess.server.packet.s2c.LoginResultS2C;
+import softwareschreiber.chess.server.packet.s2c.MoveS2C;
+import softwareschreiber.chess.server.packet.s2c.MovesS2C;
 import softwareschreiber.chess.server.packet.s2c.UserJoinedS2C;
 import softwareschreiber.chess.server.packet.s2c.UserLeftS2C;
 import softwareschreiber.chess.server.packet.s2c.UserListS2C;
@@ -31,7 +35,11 @@ public enum PacketType {
 	JoinGameS2C(JoinGameS2C.class),
 	BoardS2C(BoardS2C.class),
 	LeaveGameC2S(LeaveGameC2S.class),
-	UserLeftS2C(UserLeftS2C.class);
+	UserLeftS2C(UserLeftS2C.class),
+	RequestMovesC2S(RequestMovesC2S.class),
+	MovesS2C(MovesS2C.class),
+	MoveC2S(MoveC2S.class),
+	MoveS2C(MoveS2C.class);
 
 	private static final Map<String, PacketType> byJsonName = new HashMap<>();
 	private final Class<? extends Packet<?>> packetClass;

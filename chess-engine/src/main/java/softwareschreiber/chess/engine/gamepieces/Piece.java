@@ -50,16 +50,16 @@ public abstract class Piece {
 	}
 
 	public int getX() {
-		return board.getPosition(this).getX();
+		return board.getPosition(this).x();
 	}
 
 	public int getY() {
-		return board.getPosition(this).getY();
+		return board.getPosition(this).y();
 	}
 
 	public abstract int getValue();
 
-	public abstract int[][] evaluationChart();
+	public abstract int[][] getEvaluationChart();
 
 	/**
 	 * Returns the valid moves of the piece, even the ones that would put the king in check.

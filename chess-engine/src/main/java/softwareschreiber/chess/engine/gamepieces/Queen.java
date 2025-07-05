@@ -8,6 +8,7 @@ import softwareschreiber.chess.engine.Position;
 import softwareschreiber.chess.engine.evaluation.EvaluationCharts;
 import softwareschreiber.chess.engine.move.CaptureMove;
 import softwareschreiber.chess.engine.move.Move;
+import softwareschreiber.chess.engine.move.NormalMove;
 
 public class Queen extends Piece {
 	public Queen(PieceColor color, Board board) {
@@ -30,7 +31,7 @@ public class Queen extends Piece {
 	}
 
 	@Override
-	public int[][] evaluationChart() {
+	public int[][] getEvaluationChart() {
 		return EvaluationCharts.queenTable;
 	}
 
@@ -54,7 +55,7 @@ public class Queen extends Piece {
 				Piece other = board.getPieceAt(targetPos);
 
 				if (other == null) {
-					validMoves.add(new Move(getPosition(), targetPos));
+					validMoves.add(new NormalMove(getPosition(), targetPos));
 				} else if (other != null) {
 					if (other.isEnemyOf(this)) {
 						validMoves.add(new CaptureMove(getPosition(), targetPos, other));
@@ -76,7 +77,7 @@ public class Queen extends Piece {
 				Piece other = board.getPieceAt(targetPos);
 
 				if (other == null) {
-					validMoves.add(new Move(getPosition(), targetPos));
+					validMoves.add(new NormalMove(getPosition(), targetPos));
 				} else if (other != null) {
 					if (other.isEnemyOf(this)) {
 						validMoves.add(new CaptureMove(getPosition(), targetPos, other));
@@ -99,7 +100,7 @@ public class Queen extends Piece {
 					Piece other = board.getPieceAt(targetPos);
 
 					if (other == null) {
-						validMoves.add(new Move(getPosition(), targetPos));
+						validMoves.add(new NormalMove(getPosition(), targetPos));
 					} else if (other != null) {
 						if (other.isEnemyOf(this)) {
 							validMoves.add(new CaptureMove(getPosition(), targetPos, other));

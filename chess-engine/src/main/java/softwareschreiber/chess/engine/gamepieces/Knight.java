@@ -10,6 +10,7 @@ import softwareschreiber.chess.engine.Position;
 import softwareschreiber.chess.engine.evaluation.EvaluationCharts;
 import softwareschreiber.chess.engine.move.CaptureMove;
 import softwareschreiber.chess.engine.move.Move;
+import softwareschreiber.chess.engine.move.NormalMove;
 
 public class Knight extends Piece {
 	public Knight(PieceColor color, Board board) {
@@ -37,7 +38,7 @@ public class Knight extends Piece {
 	}
 
 	@Override
-	public int[][] evaluationChart() {
+	public int[][] getEvaluationChart() {
 		return EvaluationCharts.knightTable;
 	}
 
@@ -65,7 +66,7 @@ public class Knight extends Piece {
 			}
 
 			if (other == null && !board.isOutOfBounds(targetPos)) {
-				validMoves.add(new Move(getPosition(), targetPos));
+				validMoves.add(new NormalMove(getPosition(), targetPos));
 			}
 		}
 

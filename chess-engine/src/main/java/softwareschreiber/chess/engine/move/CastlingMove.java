@@ -4,14 +4,14 @@ import softwareschreiber.chess.engine.Board;
 import softwareschreiber.chess.engine.Position;
 import softwareschreiber.chess.engine.gamepieces.Piece;
 
-public class CastlingMove extends Move {
+public class CastlingMove extends AbstractMove {
 	private final Piece other;
 	private final Move otherMove;
 
 	public CastlingMove(Position position, Position targetPosition, Piece other, Position otherTargetPosition) {
 		super(position, targetPosition);
 		this.other = other;
-		this.otherMove = new Move(other.getPosition(), otherTargetPosition);
+		this.otherMove = new NormalMove(other.getPosition(), otherTargetPosition);
 	}
 
 	public Piece getOther() {

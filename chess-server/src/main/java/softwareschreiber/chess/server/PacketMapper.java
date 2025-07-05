@@ -7,17 +7,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import softwareschreiber.chess.server.packet.Packet;
+import softwareschreiber.chess.server.packet.serdes.PieceSerializer;
 
 public class PacketMapper {
 	private final ObjectMapper mapper = JsonMapper.builder()
 			.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+			.addModule(new PieceSerializer.Module())
 			.build();
 
 	public String toString(Packet<?> packet) {
 		try {
 			return mapper.writeValueAsString(packet);
 		} catch (Exception e) {
-			throw new RuntimeException("Failed to serialize packet: " + packet.getClass().getSimpleName(), e);
+			throw new RuntimeException("Failed to serialize %s packet: %s".formatted(packet.getClass().getSimpleName(), e));
 		}
 	}
 
@@ -52,7 +54,7 @@ public class PacketMapper {
 		try {
 			return mapper.treeToValue(node, packetClass);
 		} catch (JsonProcessingException e) {
-			throw new RuntimeException("Failed to parse packet: " + type.jsonName(), e);
+			throw new RuntimeException("Failed to parse %s packet:\n%s".formatted(type.jsonName(), node.toPrettyString()), e);
 		}
 	}
 }

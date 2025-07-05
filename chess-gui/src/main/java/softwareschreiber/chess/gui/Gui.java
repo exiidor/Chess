@@ -202,7 +202,7 @@ public class Gui {
 	}
 
 	private ChessPanel getSquareAt(Position position) {
-		return getSquareAt(position.getX(), position.getY());
+		return getSquareAt(position.x(), position.y());
 	}
 
 	private ChessPanel getSquareAt(int x, int y) {
@@ -309,7 +309,7 @@ public class Gui {
 	private void showPossibleMoves(Piece piece) {
 		for (Move move : piece.getSafeMoves()) {
 			Position position = move.getTargetPos();
-			ChessPanel square = squares[position.getY()][position.getX()];
+			ChessPanel square = squares[position.y()][position.x()];
 			highlightedSquareMoves.computeIfAbsent(square, unused -> new HashSet<>()).add(move);
 			boolean isPiecesTurn = game.isTimeForTurn(piece);
 

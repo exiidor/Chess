@@ -2,17 +2,18 @@
 	const props = defineProps({
 		piece: {
 			type: Object as PropType<ChessPiece | null>,
-			required: true
+			required: false,
+			default: null
 		},
-		white: {
-			type: Boolean,
+		color: {
+			type: String as PropType<Color>,
 			required: true
 		}
 	})
 	const emit = defineEmits<{
 		(event: 'square-clicked', piece: ChessPiece | null): void
 	}>()
-	const selectionState = ref(SquareSelectionState.None)
+	const selectionState = ref(SquareState.Default)
 
 	function onClick() {
 		emit('square-clicked', props.piece);
@@ -25,7 +26,7 @@
 
 
 <template>
-	<div :class="['square', white ? 'white' : 'black', SquareSelectionState[selectionState]?.toLowerCase()]" @click="onClick()">
+	<div :class="['square', color, SquareState[selectionState]?.toLowerCase()]" @click="onClick()">
 		{{ piece?.symbol }}
 	</div>
 </template>
@@ -50,5 +51,17 @@
 
 	.selected {
 		background-color: #6da4edaa;
+	}
+
+	.highlighted {
+		background-color: #6da4ed55;
+	}
+
+	.highlightedcapture {
+		background-color: #ff6d6daa;
+	}
+
+	.highlightedpromotion {
+		background-color: #ffd66daa;
 	}
 </style>

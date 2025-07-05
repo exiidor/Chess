@@ -6,7 +6,9 @@
 	const loggedIn = ref(false)
 	const users = ref<User[]>([])
 	const inGame = ref(false)
+	const color = ref<Color>(Color.White)
 	const pieces = ref<ChessPiece[]>([])
+	const moves = ref<Move[]>([])
 	const wsClient = useWebSocket(useRuntimeConfig().public.chessServerAddress, {
 		immediate: false,
 		onConnected: () => {
@@ -67,6 +69,16 @@
 		inGame.value = false
 	}
 
+	function requestMovesForPiece(piece: ChessPiece) {
+		wsClient.send(JSON.stringify({
+			type: PacketType.RequestMovesC2S,
+			data: {
+				x: piece.x,
+				y: piece.y
+			}
+		}))
+	}
+
 	function handlePacket(packetString: string) {
 		const packet = lastReceivedPacket.value = JSON.parse(packetString)
 		const packetType = packet.type as PacketType
@@ -113,6 +125,9 @@
 			case PacketType.UserLeftS2C:
 				alert(packet.data.user.username + " has left the game.")
 				break
+			case PacketType.MovesS2C:
+				moves.value = packet.data
+				break;
 			default:
 				alert("Unknown packet type: " + packet.type)
 		}
@@ -158,7 +173,14 @@
 	<hr v-if="loggedIn">
 
 	<div v-if="inGame" class="board-container">
-		<ChessBoard :pieces="pieces" />
+		<ChessBoard
+			:ws-client-send-func="wsClient.send"
+			:our-color="color"
+			:pieces="pieces"
+			:is-our-turn="true"
+			:moves-for-selected-piece="moves"
+			@piece-selected="requestMovesForPiece"
+		/>
 	</div>
 
 	<br>
@@ -187,5 +209,9 @@
 		margin: 0 10px;
 		margin-left: 0px;
 		cursor: pointer;
+	}
+
+	html {
+		background-color: antiquewhite;
 	}
 </style>

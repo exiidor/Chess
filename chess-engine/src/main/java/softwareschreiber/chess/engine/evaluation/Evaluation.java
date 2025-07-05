@@ -93,11 +93,11 @@ public class Evaluation {
 		int score = 0;
 
 		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
-			score += piece.evaluationChart()[board.getMaxY() - piece.getY()][piece.getX()];
+			score += piece.getEvaluationChart()[board.getMaxY() - piece.getY()][piece.getX()];
 		}
 
 		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
-			score -= piece.evaluationChart()[piece.getY()][piece.getX()];
+			score -= piece.getEvaluationChart()[piece.getY()][piece.getX()];
 		}
 
 		return score;
@@ -152,11 +152,11 @@ public class Evaluation {
 		double score = 0;
 
 		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
-			score += (piece.evaluationChart()[board.getMaxY() - piece.getY()][piece.getX()] / 100) * piece.getValue();
+			score += (piece.getEvaluationChart()[board.getMaxY() - piece.getY()][piece.getX()] / 100) * piece.getValue();
 		}
 
 		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
-			score -= (piece.evaluationChart()[piece.getY()][piece.getX()] / 100) * piece.getValue();
+			score -= (piece.getEvaluationChart()[piece.getY()][piece.getX()] / 100) * piece.getValue();
 		}
 
 		return (int) Math.round(score);
@@ -173,11 +173,11 @@ public class Evaluation {
 		double score = 0;
 
 		for (Piece piece : board.getPieces(PieceColor.WHITE)) {
-			score += (piece.evaluationChart()[board.getMaxY() - piece.getY()][piece.getX()] / 100) * piece.getValue() * piece.getValidMoves().size()/piece.getMaxMoves() * (piece.isUnderAttack() ? 0.2 : 1);
+			score += (piece.getEvaluationChart()[board.getMaxY() - piece.getY()][piece.getX()] / 100) * piece.getValue() * piece.getValidMoves().size()/piece.getMaxMoves() * (piece.isUnderAttack() ? 0.2 : 1);
 		}
 
 		for (Piece piece : board.getPieces(PieceColor.BLACK)) {
-			score -= (piece.evaluationChart()[piece.getY()][piece.getX()] / 100) * piece.getValue() * piece.getValidMoves().size()/piece.getMaxMoves() * (piece.isUnderAttack() ? 0.2 : 1);
+			score -= (piece.getEvaluationChart()[piece.getY()][piece.getX()] / 100) * piece.getValue() * piece.getValidMoves().size()/piece.getMaxMoves() * (piece.isUnderAttack() ? 0.2 : 1);
 		}
 
 		return (int) Math.round(score);

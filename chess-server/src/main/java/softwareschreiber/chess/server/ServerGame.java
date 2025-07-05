@@ -1,30 +1,24 @@
 package softwareschreiber.chess.server;
 
-import java.util.Set;
+import org.jetbrains.annotations.Nullable;
 
-import softwareschreiber.chess.engine.Board;
 import softwareschreiber.chess.engine.Game;
-import softwareschreiber.chess.engine.gamepieces.Pawn;
 import softwareschreiber.chess.engine.gamepieces.PieceColor;
-import softwareschreiber.chess.engine.move.PromotionMove;
+import softwareschreiber.chess.engine.player.Player;
 import softwareschreiber.chess.server.packet.data.component.GameInfo;
+import softwareschreiber.chess.server.packet.data.component.UserInfo;
 
 public class ServerGame extends Game {
 	private final GameInfo gameInfo;
 
 	public ServerGame(GameInfo gameInfo) {
-		super();
+		super((color, game) -> new ServerPlayer(color, (ServerGame) game),
+				(color, game) -> new ServerPlayer(color, (ServerGame) game));
 		this.gameInfo = gameInfo;
 	}
 
 	public GameInfo getInfo() {
 		return gameInfo;
-	}
-
-	@Override
-	public PromotionMove choosePromotionMove(Board board, Pawn pawn, Set<PromotionMove> moves) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'choosePromotionMove'");
 	}
 
 	@Override
@@ -37,5 +31,16 @@ public class ServerGame extends Game {
 	protected void staleMate() {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'staleMate'");
+	}
+
+	@Nullable
+	public Player getPlayer(UserInfo user) {
+		if (user.equals(gameInfo.whitePlayer())) {
+			return getWhitePlayer();
+		} else if (user.equals(gameInfo.blackPlayer())) {
+			return getBlackPlayer();
+		}
+
+		return null;
 	}
 }

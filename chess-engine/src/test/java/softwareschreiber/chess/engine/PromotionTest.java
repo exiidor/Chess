@@ -17,10 +17,10 @@ import softwareschreiber.chess.engine.player.Player;
 class PromotionTest {
 	@Test
 	void test() {
-		onlyOnePiece(new Board(new TestGame(WHITE)), WHITE);
-		onlyOnePiece(new Board(new TestGame(WHITE)), BLACK);
-		capturePromoting(new Board(new TestGame(WHITE)), WHITE);
-		capturePromoting(new Board(new TestGame(WHITE)), BLACK);
+		onlyOnePiece(new Board(new TestGame()), WHITE);
+		onlyOnePiece(new Board(new TestGame()), BLACK);
+		capturePromoting(new Board(new TestGame()), WHITE);
+		capturePromoting(new Board(new TestGame()), BLACK);
 	}
 
 	private void onlyOnePiece(Board board, PieceColor color) {

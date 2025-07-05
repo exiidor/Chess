@@ -10,6 +10,7 @@ import softwareschreiber.chess.engine.history.HistoryEntry;
 import softwareschreiber.chess.engine.move.CaptureMove;
 import softwareschreiber.chess.engine.move.EnPassantMove;
 import softwareschreiber.chess.engine.move.Move;
+import softwareschreiber.chess.engine.move.NormalMove;
 import softwareschreiber.chess.engine.move.PromotionMove;
 
 public class Pawn extends Piece {
@@ -33,7 +34,7 @@ public class Pawn extends Piece {
 	}
 
 	@Override
-	public int[][] evaluationChart() {
+	public int[][] getEvaluationChart() {
 		return EvaluationCharts.pawnTable;
 	}
 
@@ -61,14 +62,14 @@ public class Pawn extends Piece {
 		Position forwardByTwoPos = new Position(getX(), getY() + getDirection() * 2);
 
 		if (board.getPieceAt(forwardPos) == null) {
-			if (forwardPos.getY() == (isWhite() ? board.getMaxY() : board.getMinY())) {
+			if (forwardPos.y() == (isWhite() ? board.getMaxY() : board.getMinY())) {
 				moves.addAll(getAllPossiblePromotionMoves(getPosition(), forwardPos, null));
 			} else {
-				moves.add(new Move(getPosition(), forwardPos));
+				moves.add(new NormalMove(getPosition(), forwardPos));
 			}
 
 			if (canMoveTwo && board.getPieceAt(forwardByTwoPos) == null) {
-				moves.add(new Move(getPosition(), forwardByTwoPos));
+				moves.add(new NormalMove(getPosition(), forwardByTwoPos));
 			}
 		}
 
@@ -99,7 +100,7 @@ public class Pawn extends Piece {
 		Piece enemyPiece = historyItem.getPiece();
 		Move enemyMove = historyItem.getMove();
 
-		if (enemyPiece instanceof Pawn && Math.abs(enemyMove.getSourcePos().getY() - enemyMove.getTargetPos().getY()) == 2) {
+		if (enemyPiece instanceof Pawn && Math.abs(enemyMove.getSourcePos().y() - enemyMove.getTargetPos().y()) == 2) {
 			Position left = new Position(getX() - 1, getY());
 			Position right = new Position(getX() + 1, getY());
 			Piece leftPiece = board.getPieceAt(left);

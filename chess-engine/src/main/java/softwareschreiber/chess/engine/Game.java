@@ -2,19 +2,15 @@ package softwareschreiber.chess.engine;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import softwareschreiber.chess.engine.gamepieces.Bishop;
 import softwareschreiber.chess.engine.gamepieces.Knight;
-import softwareschreiber.chess.engine.gamepieces.Pawn;
 import softwareschreiber.chess.engine.gamepieces.Piece;
 import softwareschreiber.chess.engine.gamepieces.PieceColor;
 import softwareschreiber.chess.engine.gamepieces.Queen;
 import softwareschreiber.chess.engine.gamepieces.Rook;
-import softwareschreiber.chess.engine.move.PromotionMove;
-import softwareschreiber.chess.engine.player.ComputerPlayer;
-import softwareschreiber.chess.engine.player.HumanPlayer;
 import softwareschreiber.chess.engine.player.Player;
 import softwareschreiber.chess.engine.player.SimulationPlayer;
 
@@ -33,61 +29,12 @@ public abstract class Game {
 	private SimulationPlayer whiteSimulationPlayer;
 	private SimulationPlayer blackSimulationPlayer;
 
-	/**
-	 * Constructs a new instance with the specified starting color, one human and one computer player.
-	 *
-	 * @param startingColor The color of the player who starts the game.
-	 */
-	public Game(PieceColor startingColor) {
+	public Game(BiFunction<PieceColor, Game, Player> whitePlayerFactory, BiFunction<PieceColor, Game, Player> blackPlayerFactory) {
 		board = new Board(this);
 		gameEndListeners = new ArrayList<>();
-		activeColor = startingColor;
-		whitePlayer = new HumanPlayer(PieceColor.WHITE, this);
-		blackPlayer = new ComputerPlayer(PieceColor.BLACK);
-	}
-
-	/**
-	 * Constructs a new instance with white as the starting color, one human and one computer player.
-	 */
-	public Game() {
-		this(PieceColor.WHITE);
-	}
-
-	/**
-	 * Constructs a new instance with the specified player types. White is always first here.
-	 *
-	 * @param hasComputerOpponent If true, the black player is a computer player; otherwise, it's a human player.
-	 */
-	public Game(boolean hasComputerOpponent) {
-		board = new Board(this);
-		gameEndListeners = new ArrayList<>();
-		whitePlayer = new HumanPlayer(PieceColor.WHITE, this);
 		activeColor = PieceColor.WHITE;
-
-		if (hasComputerOpponent) {
-			blackPlayer = new ComputerPlayer(PieceColor.BLACK);
-		} else {
-			blackPlayer = new HumanPlayer(PieceColor.BLACK, this);
-		}
-	}
-
-	/**
-	 * Constructs a new instance with the specified player types and starting color.
-	 *
-	 * @param hasComputerOpponent If true, the black player is a computer player; otherwise, it's a human player.
-	 * @param startingColor The color of the player who starts the game.
-	 */
-	public Game(boolean hasComputerOpponent, PieceColor startingColor) {
-		board = new Board(this);
-		gameEndListeners = new ArrayList<>();
-		whitePlayer = new HumanPlayer(PieceColor.WHITE, this);
-		activeColor = startingColor;
-
-		if (hasComputerOpponent) {
-			blackPlayer = new ComputerPlayer(PieceColor.BLACK);
-		} else {
-			blackPlayer = new HumanPlayer(PieceColor.BLACK, this);
-		}
+		whitePlayer = whitePlayerFactory.apply(PieceColor.WHITE, this);
+		blackPlayer = blackPlayerFactory.apply(PieceColor.BLACK, this);
 	}
 
 	public Board getBoard() {
@@ -100,6 +47,12 @@ public abstract class Game {
 		} else {
 			activeColor = PieceColor.BLACK;
 		}
+	}
+
+	public Player getActivePlayer() {
+		return activeColor == PieceColor.WHITE
+				? getWhitePlayer()
+				: getBlackPlayer();
 	}
 
 	public Player getWhitePlayer() {
@@ -174,8 +127,6 @@ public abstract class Game {
 	public void addGameEndListener(Consumer<PieceColor> listener) {
 		gameEndListeners.add(listener);
 	}
-
-	public abstract PromotionMove choosePromotionMove(Board board, Pawn pawn, Set<PromotionMove> moves);
 
 	protected abstract void checkMate(PieceColor winningColor);
 

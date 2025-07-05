@@ -28,7 +28,13 @@ public class PiecePojo {
 		this.type = piece.getName();
 		this.color = piece.getColor();
 		this.symbol = piece.getSymbol();
-		this.x = piece.getX();
-		this.y = piece.getY();
+
+		if (piece.getPosition() != null) {
+			this.x = piece.getX();
+			this.y = piece.getY();
+		} else { // unplaced promotion move piece
+			this.x = -1;
+			this.y = -1;
+		}
 	}
 }

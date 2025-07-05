@@ -19,15 +19,15 @@ import softwareschreiber.chess.engine.player.Player;
 class CastlingTest {
 	@Test
 	void test() {
-		noObstruction(new Board(new TestGame(WHITE)), WHITE, true);
-		noObstruction(new Board(new TestGame(WHITE)), WHITE, false);
-		noObstruction(new Board(new TestGame(WHITE)), BLACK, true);
-		noObstruction(new Board(new TestGame(WHITE)), BLACK, false);
+		noObstruction(new Board(new TestGame()), WHITE, true);
+		noObstruction(new Board(new TestGame()), WHITE, false);
+		noObstruction(new Board(new TestGame()), BLACK, true);
+		noObstruction(new Board(new TestGame()), BLACK, false);
 
-		obstruction(new Board(new TestGame(WHITE)), WHITE, true);
-		obstruction(new Board(new TestGame(WHITE)), WHITE, false);
-		obstruction(new Board(new TestGame(WHITE)), BLACK, true);
-		obstruction(new Board(new TestGame(WHITE)), BLACK, false);
+		obstruction(new Board(new TestGame()), WHITE, true);
+		obstruction(new Board(new TestGame()), WHITE, false);
+		obstruction(new Board(new TestGame()), BLACK, true);
+		obstruction(new Board(new TestGame()), BLACK, false);
 	}
 
 	private void noObstruction(Board board, PieceColor color, boolean left) {

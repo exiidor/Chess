@@ -24,6 +24,7 @@ import softwareschreiber.chess.engine.history.HistoryEntry;
 import softwareschreiber.chess.engine.move.CaptureMove;
 import softwareschreiber.chess.engine.move.CastlingMove;
 import softwareschreiber.chess.engine.move.Move;
+import softwareschreiber.chess.engine.move.NormalMove;
 import softwareschreiber.chess.engine.move.PromotionMove;
 import softwareschreiber.chess.engine.player.Player;
 import softwareschreiber.chess.engine.player.SimulationPlayer;
@@ -146,7 +147,7 @@ public class Board {
 	}
 
 	public <T extends Piece> T addPiece(Position position, T piece) {
-		return addPiece(position.getX(), position.getY(), piece);
+		return addPiece(position.x(), position.y(), piece);
 	}
 
 	public <T extends Piece> T addPiece(int x, int y, T piece) {
@@ -202,8 +203,8 @@ public class Board {
 		assert getPieceAt(targetPosition) == null;
 
 		// Update position
-		board[currentPosition.getY()][currentPosition.getX()] = null;
-		board[targetPosition.getY()][targetPosition.getX()] = piece;
+		board[currentPosition.y()][currentPosition.x()] = null;
+		board[targetPosition.y()][targetPosition.x()] = piece;
 		positions.put(piece, targetPosition);
 		piece.onMoved(currentPosition, targetPosition);
 
@@ -220,7 +221,7 @@ public class Board {
 	public void removePiece(Piece piece) {
 		Position position = positions.get(piece);
 		pieces.remove(piece);
-		board[position.getY()][position.getX()] = null;
+		board[position.y()][position.x()] = null;
 	}
 
 	public void undo(boolean virtual) {
@@ -249,8 +250,8 @@ public class Board {
 		Position currentPosition = move.getTargetPos();
 		Position targetPosition = move.getSourcePos();
 
-		board[currentPosition.getY()][currentPosition.getX()] = null;
-		board[targetPosition.getY()][targetPosition.getX()] = piece;
+		board[currentPosition.y()][currentPosition.x()] = null;
+		board[targetPosition.y()][targetPosition.x()] = piece;
 		positions.put(piece, targetPosition);
 
 		if (move instanceof CastlingMove castlingMove) {
@@ -260,7 +261,7 @@ public class Board {
 			Pawn originalPawn = (Pawn) piece;
 			pieces.remove(replacement);
 			positions.remove(replacement);
-			board[currentPosition.getY()][currentPosition.getX()] = null;
+			board[currentPosition.y()][currentPosition.x()] = null;
 			addPiece(targetPosition, originalPawn);
 
 			if (promotionMove.getCaptured() != null) {
@@ -272,7 +273,7 @@ public class Board {
 		} else if (move instanceof CaptureMove captureMove) {
 			Position capturedPos = captureMove.getCaptured().getPosition();
 			addPiece(capturedPos, captureMove.getCaptured());
-			undoMoveInternal(captureMove.getCaptured(), new Move(capturedPos, capturedPos), virtual, false);
+			undoMoveInternal(captureMove.getCaptured(), new NormalMove(capturedPos, capturedPos), virtual, false);
 		}
 
 		if (!history.canGoBack()) {
@@ -320,7 +321,7 @@ public class Board {
 	}
 
 	public Piece getPieceAt(Position position) {
-		return getPieceAt(position.getX(), position.getY());
+		return getPieceAt(position.x(), position.y());
 	}
 
 	public Set<Piece> getPieces(PieceColor color) {
@@ -433,7 +434,7 @@ public class Board {
 	}
 
 	public boolean isOutOfBounds(Position position) {
-		return isOutOfBounds(position.getX(), position.getY());
+		return isOutOfBounds(position.x(), position.y());
 	}
 
 	public int evaluate() {

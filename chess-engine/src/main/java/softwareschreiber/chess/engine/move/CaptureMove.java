@@ -4,7 +4,7 @@ import softwareschreiber.chess.engine.Board;
 import softwareschreiber.chess.engine.Position;
 import softwareschreiber.chess.engine.gamepieces.Piece;
 
-public class CaptureMove extends Move {
+public class CaptureMove extends AbstractMove {
 	private final Piece other;
 
 	public CaptureMove(Position position, Position targetPosition, Piece captured) {

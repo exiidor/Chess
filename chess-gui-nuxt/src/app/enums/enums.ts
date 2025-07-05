@@ -12,10 +12,37 @@ export enum PacketType {
 	BoardS2C = "BoardS2C",
 	LeaveGameC2S = "LeaveGameC2S",
 	UserLeftS2C = "UserLeftS2C",
+	RequestMovesC2S = "RequestMovesC2S",
+	MovesS2C = "MovesS2C",
+	MoveC2S = "MoveC2S",
 }
 
-export enum SquareSelectionState {
-	None,
+export enum PieceType {
+	Pawn = "Pawn",
+	Rook = "Rook",
+	Knight = "Knight",
+	Bishop = "Bishop",
+	Queen = "Queen",
+	King = "King"
+}
+
+export enum MoveType {
+	Normal = "NormalMove",
+	Capture = "CaptureMove",
+	Promotion = "PromotionMove",
+	EnPassant = "EnPassantMove",
+	Castling = "CastlingMove"
+}
+
+export enum Color {
+	White = "white",
+	Black = "black"
+}
+
+export enum SquareState {
+	Default,
 	Selected,
-	Highlighted
+	Highlighted,
+	HighlightedCapture,
+	HighlightedPromotion
 }
