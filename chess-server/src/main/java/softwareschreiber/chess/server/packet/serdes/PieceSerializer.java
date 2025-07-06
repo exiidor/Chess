@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import softwareschreiber.chess.engine.gamepieces.Piece;
-import softwareschreiber.chess.server.packet.data.component.PiecePojo;
+import softwareschreiber.chess.server.packet.component.PiecePojo;
 
 public class PieceSerializer extends StdSerializer<Piece> {
 	public PieceSerializer() {

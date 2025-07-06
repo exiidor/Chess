@@ -1,12 +1,16 @@
 package softwareschreiber.chess.server.packet.s2c;
 
+import org.jetbrains.annotations.Nullable;
+
 import softwareschreiber.chess.server.PacketType;
 import softwareschreiber.chess.server.packet.Packet;
-import softwareschreiber.chess.server.packet.data.s2c.LoginResultS2CData;
+import softwareschreiber.chess.server.packet.s2c.LoginResultS2C.Data;
 
-public record LoginResultS2C(LoginResultS2CData data) implements Packet<LoginResultS2CData> {
+public record LoginResultS2C(Data data) implements Packet<Data> {
 	@Override
 	public PacketType type() {
 		return PacketType.LoginResultS2C;
 	}
+
+	public record Data(@Nullable String error) { }
 }

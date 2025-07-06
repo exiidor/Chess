@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.java_websocket.WebSocket;
 
-import softwareschreiber.chess.server.packet.data.component.UserInfo;
+import softwareschreiber.chess.server.packet.component.UserInfo;
 
 public class ConnectionManager {
 	private final Map<String, WebSocket> connectionsByUsername = new HashMap<>();

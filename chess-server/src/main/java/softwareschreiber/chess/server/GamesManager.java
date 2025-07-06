@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import softwareschreiber.chess.server.packet.data.c2s.CreateGameC2SData;
-import softwareschreiber.chess.server.packet.data.component.GameInfo;
-import softwareschreiber.chess.server.packet.data.component.UserInfo;
+import softwareschreiber.chess.server.packet.c2s.CreateGameC2S;
+import softwareschreiber.chess.server.packet.component.GameInfo;
+import softwareschreiber.chess.server.packet.component.UserInfo;
 
 public class GamesManager {
 	private final AtomicInteger idGenerator = new AtomicInteger(0);
@@ -27,7 +27,7 @@ public class GamesManager {
 		return gamesById.get(gameId);
 	}
 
-	public GameInfo createStub(CreateGameC2SData data, UserInfo initiator) {
+	public GameInfo createStub(CreateGameC2S.Data data, UserInfo initiator) {
 		GameInfo gameInfo = new GameInfo(
 				String.valueOf(idGenerator.incrementAndGet()),
 				initiator,

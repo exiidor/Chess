@@ -19,17 +19,10 @@ import softwareschreiber.chess.server.packet.c2s.LeaveGameC2S;
 import softwareschreiber.chess.server.packet.c2s.LoginC2S;
 import softwareschreiber.chess.server.packet.c2s.MoveC2S;
 import softwareschreiber.chess.server.packet.c2s.RequestMovesC2S;
-import softwareschreiber.chess.server.packet.data.component.BoardPojo;
-import softwareschreiber.chess.server.packet.data.component.GameInfo;
-import softwareschreiber.chess.server.packet.data.component.UserInfo;
-import softwareschreiber.chess.server.packet.data.component.UserInfo.Status;
-import softwareschreiber.chess.server.packet.data.s2c.BoardS2CData;
-import softwareschreiber.chess.server.packet.data.s2c.CreateGameResultS2CData;
-import softwareschreiber.chess.server.packet.data.s2c.InviteS2CData;
-import softwareschreiber.chess.server.packet.data.s2c.JoinGameS2CData;
-import softwareschreiber.chess.server.packet.data.s2c.KickS2CData;
-import softwareschreiber.chess.server.packet.data.s2c.LoginResultS2CData;
-import softwareschreiber.chess.server.packet.data.s2c.UserLeftS2CData;
+import softwareschreiber.chess.server.packet.component.BoardPojo;
+import softwareschreiber.chess.server.packet.component.GameInfo;
+import softwareschreiber.chess.server.packet.component.UserInfo;
+import softwareschreiber.chess.server.packet.component.UserInfo.Status;
 import softwareschreiber.chess.server.packet.s2c.BoardS2C;
 import softwareschreiber.chess.server.packet.s2c.CreateGameResultS2C;
 import softwareschreiber.chess.server.packet.s2c.InviteS2C;
@@ -156,7 +149,7 @@ public class ChessServer extends WebSocketServer {
 			}
 		}
 
-		LoginResultS2C loginResultPacket = new LoginResultS2C(new LoginResultS2CData(errorMessage));
+		LoginResultS2C loginResultPacket = new LoginResultS2C(new LoginResultS2C.Data(errorMessage));
 		conn.send(mapper.toString(loginResultPacket));
 
 		if (errorMessage == null) {
@@ -202,8 +195,9 @@ public class ChessServer extends WebSocketServer {
 			}
 		}
 
-		CreateGameResultS2C resultPacket = new CreateGameResultS2C(new CreateGameResultS2CData(
-				gameInfo == null ? null : gameInfo.id(), errorMessage));
+		CreateGameResultS2C resultPacket = new CreateGameResultS2C(new CreateGameResultS2C.Data(
+				gameInfo == null ? null : gameInfo.id(),
+				errorMessage));
 		conn.send(mapper.toString(resultPacket));
 
 		if (errorMessage != null) {
@@ -211,7 +205,7 @@ public class ChessServer extends WebSocketServer {
 		} else {
 			Logger.info("{} has created a game with ID {} against {}",
 					initiator.username(), gameInfo.id(), requestedOpponent.username());
-			InviteS2C invitePacket = new InviteS2C(new InviteS2CData(initiator.username(), gameInfo));
+			InviteS2C invitePacket = new InviteS2C(new InviteS2C.Data(initiator.username(), gameInfo));
 			WebSocket opponentConnection = connections.get(requestedOpponent);
 			opponentConnection.send(mapper.toString(invitePacket));
 		}
@@ -244,7 +238,7 @@ public class ChessServer extends WebSocketServer {
 				Logger.info("{} has accepted the game invite for game {}", invitedUser.username(), gameId);
 				gameInfo.blackPlayer(invitedUser);
 
-				JoinGameS2C joinGamePacket = new JoinGameS2C(new JoinGameS2CData(gameId));
+				JoinGameS2C joinGamePacket = new JoinGameS2C(new JoinGameS2C.Data(gameId));
 				conn.send(mapper.toString(joinGamePacket));
 
 				UserInfo invitingUser = gameInfo.whitePlayer();
@@ -292,7 +286,7 @@ public class ChessServer extends WebSocketServer {
 		user.status(Status.ONLINE);
 		user.gameId(null);
 
-		UserLeftS2C userLeftPacket = new UserLeftS2C(new UserLeftS2CData(user, reason));
+		UserLeftS2C userLeftPacket = new UserLeftS2C(new UserLeftS2C.Data(user, reason));
 		List<UserInfo> players = getInGameUsers(game);
 
 		for (UserInfo player : players) {
@@ -390,7 +384,9 @@ public class ChessServer extends WebSocketServer {
 	}
 
 	private void broadcastBoard(ServerGame game) {
-		BoardS2C packet = new BoardS2C(new BoardS2CData(game.getInfo().id(), new BoardPojo(game.getBoard())));
+		BoardS2C packet = new BoardS2C(new BoardS2C.Data(
+				game.getInfo().id(),
+				new BoardPojo(game.getBoard())));
 		String json = mapper.toString(packet);
 		List<UserInfo> inGameUsers = getInGameUsers(game);
 
@@ -426,7 +422,7 @@ public class ChessServer extends WebSocketServer {
 	}
 
 	void kick(String username) {
-		KickS2C packet = new KickS2C(new KickS2CData("Admin", null));
+		KickS2C packet = new KickS2C(new KickS2C.Data("Admin", null));
 		WebSocket connection = connections.get(username);
 
 		try {

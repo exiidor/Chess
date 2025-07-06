@@ -2,11 +2,14 @@ package softwareschreiber.chess.server.packet.s2c;
 
 import softwareschreiber.chess.server.PacketType;
 import softwareschreiber.chess.server.packet.Packet;
-import softwareschreiber.chess.server.packet.data.s2c.BoardS2CData;
+import softwareschreiber.chess.server.packet.component.BoardPojo;
+import softwareschreiber.chess.server.packet.s2c.BoardS2C.Data;
 
-public record BoardS2C(BoardS2CData data) implements Packet<BoardS2CData> {
+public record BoardS2C(Data data) implements Packet<Data> {
 	@Override
 	public PacketType type() {
 		return PacketType.BoardS2C;
 	}
+
+	public record Data(String gameId, BoardPojo board) { }
 }

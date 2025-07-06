@@ -5,8 +5,8 @@ import org.jetbrains.annotations.Nullable;
 import softwareschreiber.chess.engine.Game;
 import softwareschreiber.chess.engine.gamepieces.PieceColor;
 import softwareschreiber.chess.engine.player.Player;
-import softwareschreiber.chess.server.packet.data.component.GameInfo;
-import softwareschreiber.chess.server.packet.data.component.UserInfo;
+import softwareschreiber.chess.server.packet.component.GameInfo;
+import softwareschreiber.chess.server.packet.component.UserInfo;
 
 public class ServerGame extends Game {
 	private final GameInfo gameInfo;

@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import softwareschreiber.chess.server.packet.data.component.UserInfo;
+import softwareschreiber.chess.server.packet.component.UserInfo;
 
 public class UserStore {
 	private final Map<String, UserInfo> usersByName = new HashMap<>();

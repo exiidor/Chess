@@ -2,10 +2,12 @@ package softwareschreiber.chess.server.packet.c2s;
 
 import softwareschreiber.chess.server.PacketType;
 import softwareschreiber.chess.server.packet.Packet;
-import softwareschreiber.chess.server.packet.data.c2s.MoveC2SData;
+import softwareschreiber.chess.server.packet.c2s.MoveC2S.Data;
 
-public record MoveC2S(PacketType type, MoveC2SData data) implements Packet<MoveC2SData> {
-	public MoveC2S(MoveC2SData data) {
+public record MoveC2S(PacketType type, Data data) implements Packet<Data> {
+	public MoveC2S(Data data) {
 		this(PacketType.MoveC2S, data);
 	}
+
+	public record Data(int committedMoveIndex) { }
 }

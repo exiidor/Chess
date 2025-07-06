@@ -1,4 +1,4 @@
-package softwareschreiber.chess.server.packet.data.component;
+package softwareschreiber.chess.server.packet.component;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
