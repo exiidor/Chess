@@ -12,13 +12,13 @@ public class CliGame extends Game {
 
 	@Override
 	public void checkMate(PieceColor winningColor) {
-		System.out.println("Das Spiel ist vorbei " + winningColor + " hat gewonnen");
+		System.out.println(winningColor + " wins by checkmate!");
 		endGame();
 	}
 
 	@Override
 	public void staleMate() {
-		System.out.println("Es ist unentschieden");
+		System.out.println("Stalemate! The game is a draw.");
 		endGame();
 	}
 }

@@ -210,7 +210,7 @@ public class Gui {
 	}
 
 	private void updateTitle() {
-		String title = "Software-Schreiber Schach";
+		String title = "Softwareschreiber Chess";
 		String eval = String.valueOf(board.evaluate());
 
 		if (game.isGameOver()) {

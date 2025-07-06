@@ -410,7 +410,7 @@ public class Board {
 		King king = getKing(pieceColor);
 
 		if (king == null) {
-			System.err.println(pieceColor + " King not found in Board.checkForEnemyMates");
+			System.err.println(pieceColor + " King not found in Board.checkForMate()");
 			Thread.dumpStack();
 			return null;
 		}

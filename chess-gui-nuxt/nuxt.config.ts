@@ -6,7 +6,7 @@ export default defineNuxtConfig({
 			htmlAttrs: {
 				lang: "de",
 			},
-			title: "Softwareschreiber-Schach",
+			title: "Softwareschreiber Chess",
 		},
 	},
 	vite: {
