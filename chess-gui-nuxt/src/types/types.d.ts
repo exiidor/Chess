@@ -8,7 +8,7 @@ declare interface ChessPiece {
 
 declare interface User {
 	username: string
-	status: string
+	status: UserStatus
 }
 
 declare interface Position {

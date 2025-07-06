@@ -1,6 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-	srcDir: 'src/',
+	srcDir: "src/",
 	app: {
 		head: {
 			htmlAttrs: {
@@ -12,24 +12,27 @@ export default defineNuxtConfig({
 	vite: {
 		server: {
 			allowedHosts: true
-		}
+		},
 	},
 	runtimeConfig: {
 		public: {
 			chessServerAddress: "ws://localhost:3010",
-		}
+		},
 	},
 	modules: [
-		'@vueuse/nuxt',
+		"@nuxt/ui",
+		"@nuxt/fonts",
+		"@vueuse/nuxt",
 	],
+	css: ["~/assets/css/main.css"],
 	devtools: {
-		enabled: true
+		enabled: true,
 	},
 	imports: {
 		dirs: [
-			'enums',
-		]
+			"enums"
+		],
 	},
-	compatibilityDate: '2024-11-01',
+	compatibilityDate: "2024-11-01",
 	telemetry: false,
-})
+});

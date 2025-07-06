@@ -17,6 +17,13 @@ export enum PacketType {
 	MoveC2S = "MoveC2S",
 }
 
+export enum UserStatus {
+	Online = "ONLINE",
+	Playing = "PLAYING",
+	Spectating = "SPECTATING",
+	Offline = "OFFLINE"
+}
+
 export enum PieceType {
 	Pawn = "Pawn",
 	Rook = "Rook",
@@ -34,7 +41,7 @@ export enum MoveType {
 	Castling = "CastlingMove"
 }
 
-export enum Color {
+export enum PieceColor {
 	White = "white",
 	Black = "black"
 }

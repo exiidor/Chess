@@ -7,7 +7,7 @@
 			required: true
 		},
 		ourColor: {
-			type: String as PropType<Color>,
+			type: String as PropType<PieceColor>,
 			required: true
 		},
 		pieces: {
@@ -136,11 +136,12 @@
 <template>
 	<div class="chessboard">
 		<BoardSquare v-for="(piece, index) in pieces"
+			class="boardsquare"
 			:key="index"
 			:piece="piece"
 			:color="index % 2 === 0
-				? (Math.floor(index / 8) % 2 === 0 ? Color.White : Color.Black)
-				: (Math.floor(index / 8) % 2 === 0 ? Color.Black : Color.White)"
+				? (Math.floor(index / 8) % 2 === 0 ? PieceColor.White : PieceColor.Black)
+				: (Math.floor(index / 8) % 2 === 0 ? PieceColor.Black : PieceColor.White)"
 			:ref="(square) => {
 				squares[Math.floor(index / 8)]![index % 8] = square as InstanceType<typeof BoardSquare>
 				if (piece !== null) {
@@ -156,9 +157,19 @@
 <style scoped>
 	.chessboard {
 		display: grid;
-		grid-template-columns: repeat(8, 11.5vw);
-		grid-template-rows: repeat(8, 11.5vw);
-		border: 2px solid #333;
+  		grid-template-columns: repeat(8, 1fr);
+  		aspect-ratio: 1 / 1;
+  		/* width: 70vmin; */
+  		border: 2px solid #333;
+  		box-sizing: border-box;
+	}
+
+	.boardsquare {
+		width: 100%;
+  		height: 100%;
+  		aspect-ratio: 1 / 1;
+ 		box-sizing: border-box;
+		padding: 0;
 	}
 
 	.rank-label,
@@ -167,6 +178,7 @@
 		color: #333;
 		font-size: 14px;
 		font-weight: bold;
+		padding: 0;
 		pointer-events: none;
 	}
 

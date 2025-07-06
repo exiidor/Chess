@@ -6,7 +6,8 @@
 	const loggedIn = ref(false)
 	const users = ref<User[]>([])
 	const inGame = ref(false)
-	const color = ref<Color>(Color.White)
+	const showGameConfiguration = ref(false)
+	const color = ref<PieceColor>(PieceColor.White)
 	const pieces = ref<ChessPiece[]>([])
 	const moves = ref<Move[]>([])
 	const wsClient = useWebSocket(useRuntimeConfig().public.chessServerAddress, {
@@ -48,15 +49,7 @@
 	}
 
 	function newGame(requestedOpponent?: User) {
-		wsClient.send(JSON.stringify({
-			type: PacketType.CreateGameC2S,
-			data: {
-				cpuOpponent: true,
-				requestedOpponent: requestedOpponent ? requestedOpponent.username : prompt("Enter the username of the opponent:"),
-				ownColor: "white",
-				maxSecondsPerMove: 30,
-			}
-		}))
+		showGameConfiguration.value = true
 	}
 
 	function leaveGame() {
@@ -136,82 +129,126 @@
 
 
 <template>
-	<div class="buttons">
+	<UApp id="uapp">
 		<form v-if="!connected" @submit.prevent="connect()">
-			<button type="submit">Connect</button>
+			<UButton type="submit">Connect</UButton>
 		</form>
 
-		<form v-if="connected" @submit.prevent="disconnect()">
-			<button type="submit">Disconnect</button>
+		<form v-if="connected && !loggedIn" @submit.prevent="login()">
+			<label>
+				Username:
+				<input v-model="username" required />
+			</label>
+			<label>
+				Password:
+				<input type="password" v-model="password" required />
+			</label>
+			<button type="submit">Login</button>
 		</form>
 
-		<form v-if="loggedIn" @submit.prevent="newGame()">
-			<button type="submit">Start new Game</button>
-		</form>
+		<main v-if="loggedIn">
+			<div class="left">
+				<UButton v-if="connected" @click="disconnect()">Disconnect</UButton>
+				<UButton v-if="loggedIn" @click="newGame()">Start new Game</UButton>
+				<UButton v-if="inGame" @click="leaveGame()">Leave Game</UButton>
+			</div>
+			<div class="middle">
+				<div v-if="showGameConfiguration">
+					<GameConfiguration
+						:color="color"
+						:users="users"
+						@close="showGameConfiguration = false"
+					/>
+				</div>
+				<div v-if="inGame" class="board-container">
+					<ChessBoard
+						id="board"
+						:ws-client-send-func="wsClient.send"
+						:our-color="color"
+						:pieces="pieces"
+						:is-our-turn="true"
+						:moves-for-selected-piece="moves"
+						@piece-selected="requestMovesForPiece"
+					/>
+				</div>
 
-		<form v-if="inGame" @submit.prevent="leaveGame()">
-			<button type="submit">Leave Game</button>
-		</form>
-	</div>
-
-	<form v-if="connected && !loggedIn" @submit.prevent="login()">
-		<label>
-			Username:
-			<input v-model="username" required />
-		</label>
-		<label>
-			Password:
-			<input type="password" v-model="password" required />
-		</label>
-		<button type="submit">Login</button>
-	</form>
-
-	<hr>
-
-	<UserList v-if="loggedIn" :users="users" @user-clicked="newGame" />
-
-	<hr v-if="loggedIn">
-
-	<div v-if="inGame" class="board-container">
-		<ChessBoard
-			:ws-client-send-func="wsClient.send"
-			:our-color="color"
-			:pieces="pieces"
-			:is-our-turn="true"
-			:moves-for-selected-piece="moves"
-			@piece-selected="requestMovesForPiece"
-		/>
-	</div>
-
-	<br>
-
-	<div v-if="connected && (lastReceivedPacket && !isBlank(lastReceivedPacket))">
-		Last Received Packet:
-		<pre>{{ lastReceivedPacket }}</pre>
-	</div>
+				<!-- <div v-if="connected && (lastReceivedPacket && !isBlank(lastReceivedPacket))">
+					Last Received Packet:
+					<pre>{{ lastReceivedPacket }}</pre>
+				</div> -->
+			</div>
+			<div class="right">
+				<UserList :users="users" @user-clicked="newGame" id="userlist" />
+			</div>
+		</main>
+	</UApp>
 </template>
 
 
 <style scoped>
+	main {
+		width: 100%;
+		height: 100vh;
+		flex-direction: row;
+		gap: 10px;
+		display: flex;
+	}
+
+	.left {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		padding-left: 5px;
+		padding-top: 5px;
+	}
+
+	.middle {
+		flex: 1;
+	}
+
 	.board-container {
+		display: block;
+		height: 100%;
+		width: 100%;
 		position: relative;
-		display: inline-block;
 	}
 
-	.buttons {
-		display: block;
-		box-sizing: border-box;
+	#board {
+		max-width: 100vw;
+		max-height: 85vh;
+		height: 100%;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
 	}
 
-	.buttons > * {
-		display: block;
-		box-sizing: border-box;
-		margin: 0 10px;
-		margin-left: 0px;
-		cursor: pointer;
+	.right {
+		width: 200px;
 	}
 
-	html {
-		background-color: antiquewhite;
+	@media (max-width: 900px) {
+		main {
+			flex-direction: column;
+		}
+
+		.left {
+			flex-direction: row;
+			justify-content: flex-start;
+			align-items: center;
+			width: 100%;
+			gap: 10px;
+			margin-bottom: 10px;
+		}
+
+		.middle {
+			width: 100vw;
+			max-height: 50vh;
+		}
+
+		.right {
+			display: none;
+		}
 	}
+
 </style>

@@ -6,7 +6,7 @@
 			default: null
 		},
 		color: {
-			type: String as PropType<Color>,
+			type: String as PropType<PieceColor>,
 			required: true
 		}
 	})
@@ -37,8 +37,9 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 60px;
+		font-size: 7vmin; /* Not over 7 here! Otherwise the squares don't share the same aspect ratio */
 		user-select: none;
+		font-family: 'ChessFont', sans-serif;
 	}
 
 	.white {
