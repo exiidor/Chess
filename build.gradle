@@ -21,7 +21,7 @@ allprojects {
 		java {
 			removeUnusedImports()
 			importOrder('java.', 'javax.', '', 'softwareschreiber.')
-			indentWithTabs()
+			leadingSpacesToTabs()
 			trimTrailingWhitespace()
 		}
 	}
