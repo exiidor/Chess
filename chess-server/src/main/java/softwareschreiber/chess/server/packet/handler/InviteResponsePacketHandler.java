@@ -7,7 +7,7 @@ import softwareschreiber.chess.server.ChessServer;
 import softwareschreiber.chess.server.ConnectionManager;
 import softwareschreiber.chess.server.GamesManager;
 import softwareschreiber.chess.server.PacketMapper;
-import softwareschreiber.chess.server.PacketType;
+import softwareschreiber.chess.server.packet.PacketType;
 import softwareschreiber.chess.server.packet.c2s.InviteResponseC2S;
 import softwareschreiber.chess.server.packet.component.GameInfo;
 import softwareschreiber.chess.server.packet.component.UserInfo;

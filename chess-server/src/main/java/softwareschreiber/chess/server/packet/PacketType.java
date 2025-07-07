@@ -1,9 +1,8 @@
-package softwareschreiber.chess.server;
+package softwareschreiber.chess.server.packet;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import softwareschreiber.chess.server.packet.Packet;
 import softwareschreiber.chess.server.packet.c2s.CreateGameC2S;
 import softwareschreiber.chess.server.packet.c2s.InviteResponseC2S;
 import softwareschreiber.chess.server.packet.c2s.LeaveGameC2S;

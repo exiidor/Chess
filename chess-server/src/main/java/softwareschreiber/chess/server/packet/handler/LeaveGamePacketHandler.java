@@ -4,7 +4,7 @@ import org.java_websocket.WebSocket;
 import org.tinylog.Logger;
 
 import softwareschreiber.chess.server.ChessServer;
-import softwareschreiber.chess.server.PacketType;
+import softwareschreiber.chess.server.packet.PacketType;
 import softwareschreiber.chess.server.packet.c2s.LeaveGameC2S;
 
 public class LeaveGamePacketHandler implements PacketHandler<LeaveGameC2S> {

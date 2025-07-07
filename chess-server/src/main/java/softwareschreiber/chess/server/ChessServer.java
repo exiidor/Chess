@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import org.tinylog.Logger;
 
 import softwareschreiber.chess.server.packet.Packet;
+import softwareschreiber.chess.server.packet.PacketType;
 import softwareschreiber.chess.server.packet.component.BoardPojo;
 import softwareschreiber.chess.server.packet.component.GameInfo;
 import softwareschreiber.chess.server.packet.component.UserInfo;

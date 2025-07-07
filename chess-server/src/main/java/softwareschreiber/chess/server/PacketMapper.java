@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import softwareschreiber.chess.server.packet.Packet;
+import softwareschreiber.chess.server.packet.PacketType;
 import softwareschreiber.chess.server.packet.serdes.PieceSerializer;
 
 public class PacketMapper {

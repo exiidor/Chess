@@ -1,7 +1,7 @@
 package softwareschreiber.chess.server.packet.s2c;
 
-import softwareschreiber.chess.server.PacketType;
 import softwareschreiber.chess.server.packet.Packet;
+import softwareschreiber.chess.server.packet.PacketType;
 import softwareschreiber.chess.server.packet.component.BoardPojo;
 import softwareschreiber.chess.server.packet.s2c.BoardS2C.Data;
 

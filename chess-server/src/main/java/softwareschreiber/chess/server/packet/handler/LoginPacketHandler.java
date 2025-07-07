@@ -5,8 +5,8 @@ import org.tinylog.Logger;
 
 import softwareschreiber.chess.server.ChessServer;
 import softwareschreiber.chess.server.PacketMapper;
-import softwareschreiber.chess.server.PacketType;
 import softwareschreiber.chess.server.UserStore;
+import softwareschreiber.chess.server.packet.PacketType;
 import softwareschreiber.chess.server.packet.c2s.LoginC2S;
 import softwareschreiber.chess.server.packet.component.UserInfo;
 import softwareschreiber.chess.server.packet.s2c.LoginResultS2C;

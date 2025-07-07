@@ -6,9 +6,9 @@ import org.tinylog.Logger;
 import softwareschreiber.chess.engine.gamepieces.Piece;
 import softwareschreiber.chess.engine.move.Move;
 import softwareschreiber.chess.server.ChessServer;
-import softwareschreiber.chess.server.PacketType;
 import softwareschreiber.chess.server.ServerGame;
 import softwareschreiber.chess.server.ServerPlayer;
+import softwareschreiber.chess.server.packet.PacketType;
 import softwareschreiber.chess.server.packet.c2s.MoveC2S;
 import softwareschreiber.chess.server.packet.component.UserInfo;
 
