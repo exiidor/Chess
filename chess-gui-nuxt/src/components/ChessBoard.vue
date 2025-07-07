@@ -137,7 +137,7 @@
 
 
 <template>
-	<div class="chessboard" :style="isOurTurn ? 'border: 0.4em solid #228C22; box-shadow: 0 0 10px #228C22, 0 0 20px #228C22;' : 'border: 0.4em solid #8e1600; box-shadow: 0 0 10px #8e1600, 0 0 20px #8e1600;'">
+	<div class="chessboard" :class="isOurTurn ? 'chessboard--our-turn' : 'chessboard--not-our-turn'">
 		<BoardSquare v-for="(piece, index) in pieces"
 			class="boardsquare"
 			:key="index"
@@ -165,6 +165,16 @@
   		aspect-ratio: 1 / 1;
   		/* width: 70vmin; */
   		box-sizing: border-box;
+	}
+
+	.chessboard--our-turn {
+		border: 0.4em solid #228C22;
+		box-shadow: 0 0 10px #228C22, 0 0 20px #228C22;
+	}
+
+	.chessboard--not-our-turn {
+		border: 0.4em solid #8e1600;
+		box-shadow: 0 0 10px #8e1600, 0 0 20px #8e1600;
 	}
 
 	.boardsquare {

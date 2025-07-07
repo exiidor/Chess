@@ -171,7 +171,7 @@
 
 
 <template>
-	<UApp id="uapp">
+	<UApp>
 		<div v-if="!connected" class="flex flex-row min-h-screen justify-center items-center">
 			<UButton @click="connect()">
 				Connect
