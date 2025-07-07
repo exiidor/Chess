@@ -1,14 +1,27 @@
-package softwareschreiber.chess.server.ssl;
+package softwareschreiber.chess.server.util;
 
 import java.io.FileInputStream;
+import java.net.InetSocketAddress;
 import java.security.KeyStore;
 import java.util.Objects;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 
-public class SslUtil {
-	public static SSLContext getContext() {
+import org.tinylog.Logger;
+
+import softwareschreiber.chess.server.packet.Packet;
+
+public class Util {
+	public static String ipPlusPort(InetSocketAddress address) {
+		return address.getHostName() + ":" + address.getPort();
+	}
+
+	public static void failedToSerialize(Packet<?> packet, Exception exception) {
+		Logger.error("Failed to serialize {} packet \"{}\": {}", packet.type().name(), packet, exception);
+	}
+
+	public static SSLContext getSslContext() {
 		SSLContext context;
 		String keystorePath = Objects.requireNonNull(System.getenv("KEYSTORE_PATH"));
 		String keystorePassword = Objects.requireNonNull(System.getenv("KEYSTORE_PASSWORD"));

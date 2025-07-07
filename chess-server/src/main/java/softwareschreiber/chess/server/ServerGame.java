@@ -1,7 +1,10 @@
 package softwareschreiber.chess.server;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiFunction;
 
+import org.java_websocket.WebSocket;
 import org.jetbrains.annotations.Nullable;
 
 import softwareschreiber.chess.engine.Game;
@@ -50,7 +53,7 @@ public class ServerGame extends Game {
 			String json = server.mapper.toString(packet);
 			UserInfo activeUser = getUser(getActiveColor());
 
-			for (UserInfo user : server.getInGameUsers(this)) {
+			for (UserInfo user : getUsers()) {
 				if (user == activeUser) {
 					continue;
 				}
@@ -94,7 +97,7 @@ public class ServerGame extends Game {
 				winningUser));
 		String json = server.mapper.toString(packet);
 
-		for (UserInfo user : server.getInGameUsers(this)) {
+		for (UserInfo user : getUsers()) {
 			server.connections.get(user).send(json);
 		}
 
@@ -120,7 +123,7 @@ public class ServerGame extends Game {
 				null));
 		String json = server.mapper.toString(packet);
 
-		for (UserInfo user : server.getInGameUsers(this)) {
+		for (UserInfo user : getUsers()) {
 			server.connections.get(user).send(json);
 		}
 
@@ -157,5 +160,25 @@ public class ServerGame extends Game {
 		return color == PieceColor.WHITE
 				? gameInfo.whitePlayer()
 				: gameInfo.blackPlayer();
+	}
+
+	/**
+	 * Returns a list of users that are currently playing or spectating this game.
+	 */
+	public List<UserInfo> getUsers() {
+		List<UserInfo> users = new ArrayList<>();
+
+		for (WebSocket client : server.getConnections()) {
+			if (server.connections.isConnected(client.getRemoteSocketAddress())) {
+				UserInfo user = server.connections.getUser(client.getRemoteSocketAddress());
+
+				if (gameInfo.id().equals(user.gameId())) {
+					assert user.status() == Status.PLAYING || user.status() == Status.SPECTATING;
+					users.add(user);
+				}
+			}
+		}
+
+		return users;
 	}
 }

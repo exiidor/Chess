@@ -1,7 +1,9 @@
 package softwareschreiber.chess.server;
 
+import static softwareschreiber.chess.server.util.Util.failedToSerialize;
+import static softwareschreiber.chess.server.util.Util.ipPlusPort;
+
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.java_websocket.WebSocket;
@@ -10,7 +12,6 @@ import org.java_websocket.server.WebSocketServer;
 import org.jetbrains.annotations.Nullable;
 import org.tinylog.Logger;
 
-import softwareschreiber.chess.server.packet.Packet;
 import softwareschreiber.chess.server.packet.PacketType;
 import softwareschreiber.chess.server.packet.component.BoardPojo;
 import softwareschreiber.chess.server.packet.component.GameInfo;
@@ -173,7 +174,7 @@ public class ChessServer extends WebSocketServer {
 		}
 
 		UserLeftS2C userLeftPacket = new UserLeftS2C(new UserLeftS2C.Data(user, reason));
-		List<UserInfo> players = getInGameUsers(game);
+		List<UserInfo> players = game.getUsers();
 
 		for (UserInfo player : players) {
 			if (player == user) {
@@ -188,10 +189,6 @@ public class ChessServer extends WebSocketServer {
 		}
 
 		broadcastUserList();
-	}
-
-	public String ipPlusPort(InetSocketAddress address) {
-		return address.getHostName() + ":" + address.getPort();
 	}
 
 	public void broadcastUserList() {
@@ -230,7 +227,7 @@ public class ChessServer extends WebSocketServer {
 				game.getInfo().id(),
 				new BoardPojo(game.getBoard())));
 		String json = mapper.toString(packet);
-		List<UserInfo> inGameUsers = getInGameUsers(game);
+		List<UserInfo> inGameUsers = game.getUsers();
 
 		for (UserInfo user : inGameUsers) {
 			try {
@@ -252,23 +249,6 @@ public class ChessServer extends WebSocketServer {
 		}
 	}
 
-	public List<UserInfo> getInGameUsers(ServerGame game) {
-		List<UserInfo> users = new ArrayList<>();
-
-		for (WebSocket client : getConnections()) {
-			if (connections.isConnected(client.getRemoteSocketAddress())) {
-				UserInfo user = connections.getUser(client.getRemoteSocketAddress());
-
-				if (game.getInfo().id().equals(user.gameId())) {
-					assert user.status() == Status.PLAYING || user.status() == Status.SPECTATING;
-					users.add(user);
-				}
-			}
-		}
-
-		return users;
-	}
-
 	void kick(String username) {
 		KickS2C packet = new KickS2C(new KickS2C.Data("Admin", null));
 		WebSocket connection = connections.get(username);
@@ -280,9 +260,5 @@ public class ChessServer extends WebSocketServer {
 		}
 
 		connection.close();
-	}
-
-	public void failedToSerialize(Packet<?> packet, Exception exception) {
-		Logger.error("Failed to serialize {} packet \"{}\": {}", packet.getClass().getSimpleName(), packet, exception);
 	}
 }

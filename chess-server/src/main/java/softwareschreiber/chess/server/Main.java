@@ -8,7 +8,7 @@ import javax.net.ssl.SSLContext;
 import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 import org.tinylog.Logger;
 
-import softwareschreiber.chess.server.ssl.SslUtil;
+import softwareschreiber.chess.server.util.Util;
 
 public class Main {
 	public static void main(String[] args) {
@@ -16,7 +16,7 @@ public class Main {
 		boolean useSsl = Boolean.parseBoolean(System.getenv("USE_SSL"));
 
 		if (useSsl) {
-			SSLContext sslContext = SslUtil.getContext();
+			SSLContext sslContext = Util.getSslContext();
 
 			if (sslContext == null) {
 				Logger.error("Failed to initialize SSL context. Exiting.");

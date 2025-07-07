@@ -1,6 +1,6 @@
 package softwareschreiber.chess.server.packet.handler;
 
-import java.util.List;
+import static softwareschreiber.chess.server.util.Util.failedToSerialize;
 
 import org.java_websocket.WebSocket;
 import org.tinylog.Logger;
@@ -62,13 +62,12 @@ public class SpectateGamePacketHandler implements PacketHandler<SpectateGameC2S>
 		Logger.info("{} has joined game {} as a spectator", user.username(), gameId);
 
 		UserJoinedS2C userJoinedPacket = new UserJoinedS2C(user);
-		List<UserInfo> inGameUsers = server.getInGameUsers(game);
 
-		for (UserInfo inGameUser : inGameUsers) {
+		for (UserInfo inGameUser : game.getUsers()) {
 			try {
 				connections.get(inGameUser).send(mapper.toString(userJoinedPacket));
 			} catch (Exception e) {
-				server.failedToSerialize(userJoinedPacket, e);
+				failedToSerialize(userJoinedPacket, e);
 			}
 		}
 

@@ -1,5 +1,7 @@
 package softwareschreiber.chess.server.packet.handler;
 
+import static softwareschreiber.chess.server.util.Util.ipPlusPort;
+
 import org.java_websocket.WebSocket;
 import org.tinylog.Logger;
 
@@ -70,10 +72,10 @@ public class LoginPacketHandler implements PacketHandler<LoginC2S> {
 		if (errorMessage == null) {
 			server.broadcastUserList();
 			server.sendGames(conn);
-			Logger.info("{} has logged in as {}", server.ipPlusPort(conn.getRemoteSocketAddress()), loginPacket.data().username());
+			Logger.info("{} has logged in as {}", ipPlusPort(conn.getRemoteSocketAddress()), loginPacket.data().username());
 		} else {
 			Logger.info("{} has failed to log in{}: {}",
-					server.ipPlusPort(conn.getRemoteSocketAddress()),
+					ipPlusPort(conn.getRemoteSocketAddress()),
 					loginPacket == null ? null : " as " + loginPacket.data().username(),
 					errorMessage);
 		}
