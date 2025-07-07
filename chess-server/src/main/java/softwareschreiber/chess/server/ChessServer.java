@@ -161,10 +161,11 @@ public class ChessServer extends WebSocketServer {
 		if (errorMessage == null) {
 			broadcastUserList();
 			sendGames(conn);
-			Logger.info("{} has logged in", loginPacket.data().username());
+			Logger.info("{} has logged in as {}", ipPlusPort(conn.getRemoteSocketAddress()), loginPacket.data().username());
 		} else {
-			Logger.info("{} has failed to log in: {}",
-					loginPacket == null ? "Unknown user" : loginPacket.data().username(),
+			Logger.info("{} has failed to log in{}: {}",
+					ipPlusPort(conn.getRemoteSocketAddress()),
+					loginPacket == null ? null : " as " + loginPacket.data().username(),
 					errorMessage);
 		}
 	}
