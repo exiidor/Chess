@@ -45,6 +45,7 @@
 				requestedOpponent: requestedOpponent.value,
 				ownColor: color.value,
 				maxSecondsPerMove: maxSecondsPerMove.value,
+				spectatingEnabled: spectatingEnabled.value
 			}
 		}))
 

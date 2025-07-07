@@ -6,8 +6,8 @@
 			type: Function as PropType<(data: string) => void>,
 			required: true
 		},
-		ourColor: {
-			type: String as PropType<PieceColor>,
+		playerColor: {
+			type: String as PropType<PieceColor | null>,
 			required: true
 		},
 		pieces: {
@@ -27,6 +27,7 @@
 
 	const emit = defineEmits<{
 		(event: 'piece-selected', piece: ChessPiece): void
+		(event: 'piece-moved'): void
 	}>()
 
 	const squares = ref<InstanceType<typeof BoardSquare>[][]>(Array.from({ length: 8 }, () => Array(8).fill(null)))
@@ -61,6 +62,8 @@
 						committedMoveIndex: props.movesForSelectedPiece.indexOf(move),
 					}
 				}))
+
+				emit('piece-moved')
 			}
 
 			clearTargetedSquares()
@@ -134,11 +137,12 @@
 
 
 <template>
-	<div class="chessboard">
+	<div class="chessboard" :style="isOurTurn ? 'border: 0.4em solid #228C22; box-shadow: 0 0 10px #228C22, 0 0 20px #228C22;' : 'border: 0.4em solid #8e1600; box-shadow: 0 0 10px #8e1600, 0 0 20px #8e1600;'">
 		<BoardSquare v-for="(piece, index) in pieces"
 			class="boardsquare"
 			:key="index"
 			:piece="piece"
+			:player-color="props.playerColor"
 			:color="index % 2 === 0
 				? (Math.floor(index / 8) % 2 === 0 ? PieceColor.White : PieceColor.Black)
 				: (Math.floor(index / 8) % 2 === 0 ? PieceColor.Black : PieceColor.White)"
@@ -160,7 +164,6 @@
   		grid-template-columns: repeat(8, 1fr);
   		aspect-ratio: 1 / 1;
   		/* width: 70vmin; */
-  		border: 2px solid #333;
   		box-sizing: border-box;
 	}
 

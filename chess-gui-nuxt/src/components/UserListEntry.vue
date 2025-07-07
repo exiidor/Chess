@@ -14,14 +14,14 @@
 		emit('user-clicked', user);
 	}
 
-	function userStatusColor(status: UserStatus): "primary" | "info" | "neutral" | "secondary" | undefined {
+	function userStatusColor(status: UserStatus): "primary" | "info" | "neutral" | "secondary" | "warning" | undefined {
 		switch (status) {
 			case UserStatus.Online:
 				return "primary";
 			case UserStatus.Playing:
 				return "secondary";
 			case UserStatus.Spectating:
-				return "info";
+				return "warning";
 			case UserStatus.Offline:
 				return "neutral";
 			default:

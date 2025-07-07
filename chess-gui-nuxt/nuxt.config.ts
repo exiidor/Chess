@@ -11,7 +11,7 @@ export default defineNuxtConfig({
 	},
 	vite: {
 		server: {
-			allowedHosts: true
+			allowedHosts: true,
 		},
 	},
 	runtimeConfig: {
@@ -23,6 +23,7 @@ export default defineNuxtConfig({
 		"@nuxt/ui",
 		"@nuxt/fonts",
 		"@vueuse/nuxt",
+		"@nuxtjs/color-mode"
 	],
 	css: ["~/assets/css/main.css"],
 	devtools: {

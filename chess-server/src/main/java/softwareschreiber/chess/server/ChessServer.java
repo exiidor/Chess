@@ -8,6 +8,7 @@ import java.util.Set;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import org.jetbrains.annotations.Nullable;
 import org.tinylog.Logger;
 
 import softwareschreiber.chess.engine.gamepieces.Piece;
@@ -19,12 +20,15 @@ import softwareschreiber.chess.server.packet.c2s.LeaveGameC2S;
 import softwareschreiber.chess.server.packet.c2s.LoginC2S;
 import softwareschreiber.chess.server.packet.c2s.MoveC2S;
 import softwareschreiber.chess.server.packet.c2s.RequestMovesC2S;
+import softwareschreiber.chess.server.packet.c2s.SpectateGameC2S;
 import softwareschreiber.chess.server.packet.component.BoardPojo;
 import softwareschreiber.chess.server.packet.component.GameInfo;
 import softwareschreiber.chess.server.packet.component.UserInfo;
 import softwareschreiber.chess.server.packet.component.UserInfo.Status;
 import softwareschreiber.chess.server.packet.s2c.BoardS2C;
 import softwareschreiber.chess.server.packet.s2c.CreateGameResultS2C;
+import softwareschreiber.chess.server.packet.s2c.GameS2C;
+import softwareschreiber.chess.server.packet.s2c.GamesS2C;
 import softwareschreiber.chess.server.packet.s2c.InviteS2C;
 import softwareschreiber.chess.server.packet.s2c.JoinGameS2C;
 import softwareschreiber.chess.server.packet.s2c.KickS2C;
@@ -64,10 +68,10 @@ public class ChessServer extends WebSocketServer {
 		InetSocketAddress remoteAddress = conn.getRemoteSocketAddress();
 
 		if (connections.isConnected(remoteAddress)) {
-			UserInfo userInfo = connections.remove(remoteAddress);
-
 			Logger.info("{} has disconnected", ipPlusPort(remoteAddress));
 
+			leaveGame(conn, "Client disconnected");
+			UserInfo userInfo = connections.remove(remoteAddress);
 			userInfo.status(UserInfo.Status.OFFLINE);
 			broadcastUserList();
 		} else {
@@ -103,6 +107,9 @@ public class ChessServer extends WebSocketServer {
 				break;
 			case MoveC2S:
 				handleMovePacket(conn, message);
+				break;
+			case SpectateGameC2S:
+				handleSpectateGamePacket(conn, message);
 				break;
 			default:
 				Logger.warn("Unhandled C2S packet type: {}", packetType);
@@ -153,6 +160,7 @@ public class ChessServer extends WebSocketServer {
 
 		if (errorMessage == null) {
 			broadcastUserList();
+			sendGames(conn);
 			Logger.info("{} has logged in", loginPacket.data().username());
 		} else {
 			Logger.info("{} has failed to log in: {}",
@@ -235,46 +243,61 @@ public class ChessServer extends WebSocketServer {
 		if (!accepted) {
 			Logger.info("{} has declined the game invite for game {}", conn.getRemoteSocketAddress(), gameId);
 			return;
-		} else {
-			GameInfo gameInfo = gameManager.getStub(gameId);
-			UserInfo invitedUser = connections.getUser(conn.getRemoteSocketAddress());
-
-			if (gameInfo == null) {
-				Logger.error("Game with ID {} not found for invite response from {}", gameId, invitedUser.username());
-				return;
-			} else {
-				Logger.info("{} has accepted the game invite for game {}", invitedUser.username(), gameId);
-				gameInfo.blackPlayer(invitedUser);
-
-				JoinGameS2C joinGamePacket = new JoinGameS2C(new JoinGameS2C.Data(gameId));
-				conn.send(mapper.toString(joinGamePacket));
-
-				UserInfo invitingUser = gameInfo.whitePlayer();
-				UserJoinedS2C userJoinedPacket = new UserJoinedS2C(invitedUser);
-				connections.get(invitingUser).send(mapper.toString(userJoinedPacket));
-
-				startGame(gameInfo);
-			}
 		}
+
+		GameInfo gameInfo = gameManager.getStub(gameId);
+		UserInfo invitedUser = connections.getUser(conn.getRemoteSocketAddress());
+
+		if (gameInfo == null) {
+			Logger.error("Game with ID {} not found for invite response from {}", gameId, invitedUser.username());
+			return;
+		}
+
+		leaveGame(conn, json);
+		Logger.info("{} has accepted the game invite for game {}", invitedUser.username(), gameId);
+		UserInfo invitingUser;
+
+		if (invitedUser == gameInfo.whitePlayer()) {
+			invitingUser = gameInfo.blackPlayer();
+			gameInfo.whitePlayer(invitedUser);
+		} else if (invitedUser == gameInfo.blackPlayer()) {
+			invitingUser = gameInfo.whitePlayer();
+			gameInfo.blackPlayer(invitedUser);
+		} else {
+			Logger.error("User {} is not part of the game {}", invitedUser.username(), gameId);
+			return;
+		}
+
+		JoinGameS2C joinGamePacket = new JoinGameS2C(new JoinGameS2C.Data(gameId));
+		conn.send(mapper.toString(joinGamePacket));
+
+		UserJoinedS2C userJoinedPacket = new UserJoinedS2C(invitedUser);
+		connections.get(invitingUser).send(mapper.toString(userJoinedPacket));
+
+		startGame(gameInfo);
 	}
 
 	private void startGame(GameInfo gameInfo) {
 		ServerGame game = gameManager.createGame(gameInfo);
 		UserInfo whiteUser = gameInfo.whitePlayer();
 		UserInfo blackUser = gameInfo.blackPlayer();
+		String gamePacketJson = mapper.toString(new GameS2C(gameInfo));
 
 		if (whiteUser != null) {
 			whiteUser.status(Status.PLAYING);
 			whiteUser.gameId(gameInfo.id());
+			connections.get(whiteUser).send(gamePacketJson);
 		}
 
 		if (blackUser != null) {
 			blackUser.status(Status.PLAYING);
 			blackUser.gameId(gameInfo.id());
+			connections.get(blackUser).send(gamePacketJson);
 		}
 
 		broadcastUserList();
 		game.startGame();
+		broadcastGames();
 		broadcastBoard(game);
 	}
 
@@ -287,27 +310,32 @@ public class ChessServer extends WebSocketServer {
 			Logger.error(e);
 		}
 
+		leaveGame(conn, leaveGamePacket.data().reason());
+	}
+
+	private void leaveGame(WebSocket conn, @Nullable String reason) {
 		UserInfo user = connections.getUser(conn.getRemoteSocketAddress());
+		gameManager.removeGame(gameManager.getStub(user.gameId()));
 		ServerGame game = gameManager.getGame(user.gameId());
 
 		if (game == null) {
-			Logger.warn("{} tried to leave a game, but is not in one", user.username());
 			return;
 		}
 
 		GameInfo gameInfo = game.getInfo();
-		String reason = leaveGamePacket.data().reason();
 		Logger.info("{} has left the game {} for reason: {}", user.username(), gameInfo.id(), reason);
+
+		user.status(Status.ONLINE);
+		user.gameId(null);
+
 		UserInfo blackUser = gameInfo.blackPlayer();
 		UserInfo whiteUser = gameInfo.whitePlayer();
 
 		if ((whiteUser == null || whiteUser.status() != Status.PLAYING)
 				&& (blackUser == null || blackUser.status() != Status.PLAYING)) {
 			gameManager.removeGame(gameInfo);
+			broadcastGames();
 		}
-
-		user.status(Status.ONLINE);
-		user.gameId(null);
 
 		UserLeftS2C userLeftPacket = new UserLeftS2C(new UserLeftS2C.Data(user, reason));
 		List<UserInfo> players = getInGameUsers(game);
@@ -356,10 +384,10 @@ public class ChessServer extends WebSocketServer {
 	}
 
 	private void handleMovePacket(WebSocket conn, String json) {
-		MoveC2S movePacket = null;
+		MoveC2S moveC2S = null;
 
 		try {
-			movePacket = mapper.fromString(json, MoveC2S.class);
+			moveC2S = mapper.fromString(json, MoveC2S.class);
 		} catch (Exception e) {
 			Logger.error(e);
 			return;
@@ -374,7 +402,7 @@ public class ChessServer extends WebSocketServer {
 		}
 
 		ServerPlayer player = (ServerPlayer) game.getPlayer(user);
-		Move move = player.getLastTransmittedMoves().get(movePacket.data().committedMoveIndex());
+		Move move = player.getLastTransmittedMoves().get(moveC2S.data().committedMoveIndex());
 		Piece piece = game.getBoard().getPieceAt(move.getSourcePos());
 
 		if (game.getActivePlayer() != player) {
@@ -388,6 +416,55 @@ public class ChessServer extends WebSocketServer {
 		}
 
 		game.getBoard().move(piece, move, game.getPlayer(game.getActiveColor()));
+	}
+
+	private void handleSpectateGamePacket(WebSocket conn, String json) {
+		SpectateGameC2S spectateGamePacket = null;
+
+		try {
+			spectateGamePacket = mapper.fromString(json, SpectateGameC2S.class);
+		} catch (Exception e) {
+			Logger.error(e);
+			return;
+		}
+
+		String gameId = spectateGamePacket.data().gameId();
+		ServerGame game = gameManager.getGame(gameId);
+
+		if (game == null) {
+			Logger.warn("{} tried to spectate game {}, but it does not exist", conn.getRemoteSocketAddress(), gameId);
+			return;
+		}
+
+		if (!game.getInfo().spectatingEnabled()) {
+			Logger.warn("{} tried to spectate game {}, but spectating is not enabled", conn.getRemoteSocketAddress(), gameId);
+			return;
+		}
+
+		UserInfo user = connections.getUser(conn.getRemoteSocketAddress());
+		JoinGameS2C joinGamePacket = new JoinGameS2C(new JoinGameS2C.Data(gameId));
+		conn.send(mapper.toString(joinGamePacket));
+
+		Logger.info("{} has joined game {} as a spectator", user.username(), gameId);
+
+		UserJoinedS2C userJoinedPacket = new UserJoinedS2C(user);
+		List<UserInfo> inGameUsers = getInGameUsers(game);
+
+		for (UserInfo inGameUser : inGameUsers) {
+			try {
+				connections.get(inGameUser).send(mapper.toString(userJoinedPacket));
+			} catch (Exception e) {
+				failedToSerialize(userJoinedPacket, e);
+			}
+		}
+
+		user.status(Status.SPECTATING);
+		user.gameId(gameId);
+		GameS2C gamePacket = new GameS2C(game.getInfo());
+
+		conn.send(mapper.toString(gamePacket));
+		sendBoard(conn, game);
+		broadcastUserList();
 	}
 
 	private String ipPlusPort(InetSocketAddress address) {
@@ -405,6 +482,26 @@ public class ChessServer extends WebSocketServer {
 		}
 	}
 
+	public void broadcastGames() {
+		GamesS2C packet = new GamesS2C(gameManager.getGames().stream().map(ServerGame::getInfo).toList());
+		String json = mapper.toString(packet);
+
+		for (WebSocket client : getConnections()) {
+			if (connections.isConnected(client.getRemoteSocketAddress())) {
+				client.send(json);
+			}
+		}
+	}
+
+	private void sendGames(WebSocket client) {
+		GamesS2C packet = new GamesS2C(gameManager.getGames().stream().map(ServerGame::getInfo).toList());
+		String json = mapper.toString(packet);
+
+		if (connections.isConnected(client.getRemoteSocketAddress())) {
+			client.send(json);
+		}
+	}
+
 	public void broadcastBoard(ServerGame game) {
 		BoardS2C packet = new BoardS2C(new BoardS2C.Data(
 				game.getInfo().id(),
@@ -413,16 +510,22 @@ public class ChessServer extends WebSocketServer {
 		List<UserInfo> inGameUsers = getInGameUsers(game);
 
 		for (UserInfo user : inGameUsers) {
-			if (!game.getInfo().id().equals(user.gameId())) {
-				assert user.status() == Status.PLAYING || user.status() == Status.SPECTATING;
-				continue;
-			}
-
 			try {
 				connections.get(user).send(json);
 			} catch (Exception e) {
 				failedToSerialize(packet, e);
 			}
+		}
+	}
+
+	private void sendBoard(WebSocket clien, ServerGame game) {
+		BoardS2C packet = new BoardS2C(new BoardS2C.Data(
+				game.getInfo().id(),
+				new BoardPojo(game.getBoard())));
+		String json = mapper.toString(packet);
+
+		if (connections.isConnected(clien.getRemoteSocketAddress())) {
+			clien.send(json);
 		}
 	}
 

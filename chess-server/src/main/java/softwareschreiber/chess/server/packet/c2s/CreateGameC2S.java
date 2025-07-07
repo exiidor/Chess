@@ -12,5 +12,11 @@ public record CreateGameC2S(PacketType type, Data data) implements Packet<Data> 
 		this(PacketType.CreateGameC2S, data);
 	}
 
-	public record Data(boolean cpuOpponent, @Nullable String requestedOpponent, PieceColor ownColor, int maxSecondsPerMove) { }
+	public record Data(
+			boolean cpuOpponent,
+			@Nullable String requestedOpponent,
+			PieceColor ownColor,
+			int maxSecondsPerMove,
+			boolean spectatingEnabled) {
+	}
 }

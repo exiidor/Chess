@@ -5,14 +5,22 @@
 	const loggedIn = ref(false)
 	const users = ref<User[]>([])
 	const user = computed<User | undefined>(() => users.value.find(u => u.username == username.value));
+	const games = ref<GameInfo[]>([])
 	const inGame = ref(false)
+	const gameData = ref<GameInfo | null>(null)
 	const showGameConfiguration = ref(false)
 	const invite = ref<InviteS2CData | null>(null)
 	const acceptInviteDialog = useConfirmDialog(ref(false));
-	const color = ref<PieceColor>(PieceColor.White)
+	const color = ref<PieceColor | null>(null)
+	const ourTurn = ref(true)
 	const pieces = ref<ChessPiece[]>([])
 	const moves = ref<Move[]>([])
 	const toast = useToast()
+	const colorMode = useColorMode()
+	const colorModes = ref([
+		{ label: 'Light', value: 'light' },
+		{ label: 'Dark', value: 'dark' },
+	])
 	const wsClient = useWebSocket(useRuntimeConfig().public.chessServerAddress, {
 		immediate: false,
 		onConnected: () => {
@@ -44,7 +52,7 @@
 		username.value = inputUsername
 	}
 
-	function newGame(requestedOpponent?: User) {
+	function newGame() {
 		showGameConfiguration.value = true
 	}
 
@@ -79,11 +87,13 @@
 				} else {
 					loggedIn.value = true
 				}
-
 				break
 			case PacketType.UserListS2C:
 				users.value = packet.data
 				break
+			case PacketType.GamesS2C:
+				games.value = packet.data
+				break;
 			case PacketType.KickS2C:
 				toast.add({
 					title: "Kicked from server",
@@ -115,10 +125,22 @@
 				break
 			case PacketType.JoinGameS2C:
 				break
-			case PacketType.BoardS2C:
-				pieces.value = packet.data.board.pieces
+			case PacketType.GameS2C:
+				gameData.value = packet.data as GameInfo
+
+				if (gameData.value.whitePlayer?.username === user.value!.username) {
+					color.value = PieceColor.White
+				} else if (gameData.value.blackPlayer?.username === user.value?.username) {
+					color.value = PieceColor.Black
+				} else {
+					color.value = null
+				}
 				inGame.value = true
 				showGameConfiguration.value = false
+				ourTurn.value = color.value === PieceColor.White
+				break;
+			case PacketType.BoardS2C:
+				pieces.value = packet.data.board.pieces
 				break
 			case PacketType.UserLeftS2C:
 				toast.add({
@@ -130,10 +152,13 @@
 			case PacketType.MovesS2C:
 				moves.value = packet.data
 				break;
+			case PacketType.MoveS2C:
+				ourTurn.value = packet.data.color.toLowerCase() !== color.value
+				break;
 			case PacketType.GameEndedS2C:
 				toast.add({
 					title: "Game Ended",
-					description: "The game has ended with a " + packet.data.mateKind.toLowerCase() + " by " + packet.data.winner.username + ".",
+					description: "The game has ended with a " + packet.data.mateKind.toLowerCase() + " by " + (packet.data.winner ? packet.data.winner.username : "CPU") + ".",
 					color: "info"
 				})
 				inGame.value = false
@@ -159,20 +184,32 @@
 
 		<main v-if="loggedIn">
 			<div class="left">
-				<UButton v-if="connected" @click="disconnect()">Disconnect</UButton>
-				<UButton v-if="loggedIn && !showGameConfiguration" @click="newGame()">Start new Game</UButton>
-				<UButton v-if="inGame" @click="leaveGame()">Leave Game</UButton>
+				<UButton v-if="connected && !showGameConfiguration && !inGame" @click="disconnect()">
+					Disconnect
+				</UButton>
+				<UButton v-if="loggedIn && !showGameConfiguration && !inGame" @click="newGame()">
+					Start new Game
+				</UButton>
+				<UButton v-if="inGame" @click="leaveGame()">
+					Leave Game
+				</UButton>
 				<UModal v-if="connected && (lastReceivedPacket && !isBlank(lastReceivedPacket))" title="Last Received Packet">
-					<UButton
-						label="Show Last Received Packet"
-						color="neutral"
-						variant="outline"
-					/>
+					<UButton color="neutral" variant="outline">
+						Show Last Received Packet
+					</UButton>
 
 					<template #body>
 						<pre>{{ lastReceivedPacket }}</pre>
 					</template>
 				</UModal>
+				<UButton
+					:icon="colorMode.value == 'dark' ? 'i-lucide-moon' : 'i-lucide-sun'"
+					color="neutral"
+					variant="outline"
+					@click="colorMode.value = colorMode.value === 'dark' ? 'light' : 'dark'"
+				>
+					Toggle Color Mode
+				</UButton>
 			</div>
 			<div class="middle">
 				<div v-if="showGameConfiguration" class="flex justify-center items-center">
@@ -185,15 +222,39 @@
 						@close="showGameConfiguration = false"
 					/>
 				</div>
-				<div v-if="inGame" class="board-container">
+				<div v-if="!showGameConfiguration && !inGame" class="m-5">
+					<h2 class="text-center text-2xl font-bold mb-4">Currently Active Games</h2>
+					<div class="flex gap-2">
+						<UCard v-for="game in games" :key="game.id" class="mb-2">
+							<div>Game ID: {{ game.id }}</div>
+							<div>White Player: {{ game.whitePlayer ? game.whitePlayer.username : "CPU" }}</div>
+							<div>Black Player: {{ game.blackPlayer ? game.blackPlayer.username : "CPU" }}</div>
+							<div>Max Seconds per Move: {{ game.maxSecondsPerMove }}</div>
+							<UButton
+								v-if="game.spectatingEnabled"
+								label="Spectate Game"
+								class="mt-2"
+								@click="wsClient.send(JSON.stringify({
+									type: PacketType.SpectateGameC2S,
+									data: {
+										gameId: game.id
+									}
+								}))"
+							/>
+						</UCard>
+					</div>
+					<div v-if="games.length === 0" class="text-center text-gray-500 m-auto">No games available.</div>
+				</div>
+				<div v-if="inGame" class="board-container" :style="color === PieceColor.Black ? 'transform: rotate(0deg);' : 'transform: rotate(180deg);'">
 					<ChessBoard
 						id="board"
 						:ws-send-func="wsClient.send"
-						:our-color="color"
+						:playerColor="color"
 						:pieces="pieces"
-						:is-our-turn="true"
+						:is-our-turn="ourTurn"
 						:moves-for-selected-piece="moves"
 						@piece-selected="requestMovesForPiece"
+						@piece-moved="ourTurn = false"
 					/>
 				</div>
 			</div>
@@ -218,12 +279,30 @@
 		display: flex;
 	}
 
+	.dark .left {
+		background-color: #000025;
+		border-right: 2px solid #1c1f2b;
+	}
+
+	.light .left {
+		background-color: #D5C4B9;
+		border-right: 2px solid #D3D3D3;
+	}
+
 	.left {
 		display: flex;
 		flex-direction: column;
 		gap: 5px;
-		padding-left: 5px;
-		padding-top: 5px;
+		padding: 5px;
+		border-right: 2px solid #D3D3D3;
+	}
+
+	.dark main {
+		background-color: #000035;
+	}
+
+	.light main {
+		background-color: #EDE2DB;
 	}
 
 	.middle {
@@ -249,9 +328,20 @@
 		transform: translate(-50%, -50%);
 	}
 
+	.dark .right{
+		background-color: #000025;
+		border-left: 2px solid #1c1f2b;
+	}
+
+	.light .right {
+		background-color: #D5C4B9;
+		border-left: 2px solid #D3D3D3;
+	}
+
 	.right {
 		width: 200px;
 		min-height: 200px;
+		border-left: 2px solid #b6b5b5;
 	}
 
 	@media (max-width: 900px) {
@@ -266,18 +356,18 @@
 			width: 100%;
 			gap: 10px;
 			margin-bottom: 10px;
+			border-right: none;
 		}
 
 		.middle {
 			width: 100%;
-			/* max-height: 50vh; */
 		}
 
 		.right {
 			width: 100%;
 			max-height: 30vh;
 			overflow-y: auto;
+			border-left: none;
 		}
 	}
-
 </style>

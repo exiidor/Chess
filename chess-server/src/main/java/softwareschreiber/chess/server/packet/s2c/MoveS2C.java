@@ -1,5 +1,6 @@
 package softwareschreiber.chess.server.packet.s2c;
 
+import softwareschreiber.chess.engine.gamepieces.PieceColor;
 import softwareschreiber.chess.engine.move.Move;
 import softwareschreiber.chess.server.PacketType;
 import softwareschreiber.chess.server.packet.Packet;
@@ -11,5 +12,5 @@ public record MoveS2C(Data data) implements Packet<Data> {
 		return PacketType.MoveS2C;
 	}
 
-	public record Data(String initiator, Move move) { }
+	public record Data(PieceColor color, Move move) { }
 }

@@ -1,3 +1,11 @@
+declare interface GameInfo {
+	id: string
+	whitePlayer: User | null
+	blackPlayer: User | null
+	maxSecondsPerMove: number
+	spectatingEnabled: boolean
+}
+
 declare interface ChessPiece {
 	type: PieceType
 	color: string

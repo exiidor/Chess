@@ -1,6 +1,8 @@
 package softwareschreiber.chess.server;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -13,7 +15,7 @@ public class GamesManager {
 	private final AtomicInteger idGenerator = new AtomicInteger(0);
 	private final Map<String, GameInfo> gameStubsById = new HashMap<>();
 	private final Map<String, GameInfo> gameStubsByCreator = new HashMap<>();
-	private final Map<String, ServerGame> gamesById = new HashMap<>();
+	private final Map<String, ServerGame> gamesById = new LinkedHashMap<>();
 	private final ChessServer server;
 	private final UserStore userStore;
 
@@ -33,6 +35,10 @@ public class GamesManager {
 
 	public ServerGame getGame(String gameId) {
 		return gamesById.get(gameId);
+	}
+
+	public List<ServerGame> getGames() {
+		return List.copyOf(gamesById.values());
 	}
 
 	public GameInfo createOrUpdateStub(CreateGameC2S.Data data, UserInfo initiator) {
@@ -55,7 +61,8 @@ public class GamesManager {
 					String.valueOf(idGenerator.incrementAndGet()),
 					whitePlayer,
 					blackPlayer,
-					data.maxSecondsPerMove());
+					data.maxSecondsPerMove(),
+					data.spectatingEnabled());
 			gameStubsById.put(gameInfo.id(), gameInfo);
 			gameStubsByCreator.put(initiator.username(), gameInfo);
 		}
@@ -71,6 +78,10 @@ public class GamesManager {
 	}
 
 	public void removeGame(GameInfo info) {
+		if (info == null) {
+			return;
+		}
+
 		gameStubsById.remove(info.id());
 		gamesById.remove(info.id());
 

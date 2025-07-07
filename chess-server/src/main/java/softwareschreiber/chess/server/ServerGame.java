@@ -16,6 +16,7 @@ import softwareschreiber.chess.server.packet.component.GameInfo;
 import softwareschreiber.chess.server.packet.component.UserInfo;
 import softwareschreiber.chess.server.packet.component.UserInfo.Status;
 import softwareschreiber.chess.server.packet.s2c.GameEndedS2C;
+import softwareschreiber.chess.server.packet.s2c.MoveS2C;
 
 public class ServerGame extends Game {
 	private final ChessServer server;
@@ -45,6 +46,18 @@ public class ServerGame extends Game {
 		this.gameInfo = gameInfo;
 
 		getBoard().addSubmittedMoveDoneListener((piece, move) -> {
+			MoveS2C packet = new MoveS2C(new MoveS2C.Data(piece.getColor(), move));
+			String json = server.mapper.toString(packet);
+			UserInfo activeUser = getUser(getActiveColor());
+
+			for (UserInfo user : server.getInGameUsers(this)) {
+				if (user == activeUser) {
+					continue;
+				}
+
+				server.connections.get(user).send(json);
+			}
+
 			server.broadcastBoard(this);
 		});
 	}
@@ -56,15 +69,20 @@ public class ServerGame extends Game {
 	@Override
 	public void startGame() {
 		super.startGame();
-		getBoard().addSubmittedMoveDoneListener(((piece, move) -> {
-			if (getActivePlayer() instanceof ComputerPlayer computerPlayer) {
-				Move chosenMove = computerPlayer.chooseMove(getBoard());
-				Position sourcePos = chosenMove.getSourcePos();
-				Piece pieceToMove = getBoard().getPieceAt(sourcePos);
+		computerMoveIfNecessary();
 
-				getBoard().move(pieceToMove, chosenMove, computerPlayer);
-			}
+		getBoard().addSubmittedMoveDoneListener(((piece, move) -> {
+			computerMoveIfNecessary();
 		}));
+	}
+
+	private void computerMoveIfNecessary() {
+		if (!isGameOver() && getActivePlayer() instanceof ComputerPlayer computerPlayer) {
+			Move chosenMove = computerPlayer.chooseMove(getBoard());
+			Position sourcePos = chosenMove.getSourcePos();
+			Piece pieceToMove = getBoard().getPieceAt(sourcePos);
+			getBoard().move(pieceToMove, chosenMove, computerPlayer);
+		}
 	}
 
 	@Override
@@ -91,6 +109,7 @@ public class ServerGame extends Game {
 		}
 
 		server.gameManager.removeGame(gameInfo);
+		server.broadcastGames();
 		server.broadcastUserList();
 	}
 
@@ -119,6 +138,7 @@ public class ServerGame extends Game {
 		}
 
 		server.gameManager.removeGame(gameInfo);
+		server.broadcastGames();
 		server.broadcastUserList();
 	}
 

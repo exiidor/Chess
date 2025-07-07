@@ -2,6 +2,7 @@ export enum PacketType {
 	LoginC2S = "LoginC2S",
 	LoginResultS2C = "LoginResultS2C",
 	UserListS2C = "UserListS2C",
+	GamesS2C = "GamesS2C",
 	KickS2C = "KickS2C",
 	CreateGameC2S = "CreateGameC2S",
 	CreateGameResultS2C = "CreateGameResultS2C",
@@ -9,12 +10,15 @@ export enum PacketType {
 	InviteResponseC2S = "InviteResponseC2S",
 	UserJoinedS2C = "UserJoinedS2C",
 	JoinGameS2C = "JoinGameS2C",
+	GameS2C = "GameS2C",
 	BoardS2C = "BoardS2C",
 	LeaveGameC2S = "LeaveGameC2S",
 	UserLeftS2C = "UserLeftS2C",
 	RequestMovesC2S = "RequestMovesC2S",
 	MovesS2C = "MovesS2C",
 	MoveC2S = "MoveC2S",
+	MoveS2C = "MoveS2C",
+	SpectateGameC2S = "SpectateGameC2S",
 	GameEndedS2C = "GameEndedS2C",
 }
 
