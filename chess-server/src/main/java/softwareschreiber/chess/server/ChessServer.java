@@ -378,7 +378,10 @@ public class ChessServer extends WebSocketServer {
 		int y = requestMovesPacket.data().y();
 		Set<? extends Move> moves = game.getBoard().getPieceAt(x, y).getSafeMoves();
 		ServerPlayer player = (ServerPlayer) game.getPlayer(user);
-		player.setLastTransmittedMoves(moves);
+
+		if (player != null) { // null if the player is a spectator
+			player.setLastTransmittedMoves(moves);
+		}
 
 		MovesS2C responsePacket = new MovesS2C(moves);
 		conn.send(mapper.toString(responsePacket));
