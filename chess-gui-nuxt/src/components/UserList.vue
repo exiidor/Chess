@@ -6,14 +6,6 @@
 		}
 	})
 
-	const emit = defineEmits<{
-		(event: 'user-clicked', user: User): void
-	}>()
-
-	function onUserClicked(user: User) {
-		emit('user-clicked', user);
-	}
-
 	function getRelevantStatuses(): (UserStatus.Online | UserStatus.Offline)[] {
 		return [UserStatus.Online, UserStatus.Offline];
 	}
@@ -36,7 +28,6 @@
 		<UserSubList v-for="status in getRelevantStatuses()"
 			:heading="status"
 			:users="getUsers(status)"
-			@user-clicked="onUserClicked"
 		/>
 	</div>
 </template>
@@ -50,27 +41,5 @@
 		padding-bottom: 4px;
 		padding-left: 7px;
 		padding-right: 7px;
-	}
-
-	ul {
-		padding: 0;
-	}
-
-	li {
-		box-sizing: border-box;
-		display: flex;
-		padding: 4px;
-		border: 1px solid transparent;
-
-		&:hover {
-			cursor: pointer;
-			border-color: #959595;
-			border-radius: 4px;
-		}
-	}
-
-	.username {
-		padding-top: auto;
-		padding-bottom: auto;
 	}
 </style>

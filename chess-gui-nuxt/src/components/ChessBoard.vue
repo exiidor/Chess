@@ -2,7 +2,7 @@
 	import BoardSquare from './BoardSquare.vue'
 
 	const props = defineProps({
-		wsClientSendFunc: {
+		wsSendFunc: {
 			type: Function as PropType<(data: string) => void>,
 			required: true
 		},
@@ -55,7 +55,7 @@
 					move = moves.find(move => (move as PromotionMove).replacement.type === PieceType.Queen)!
 				}
 
-				props.wsClientSendFunc(JSON.stringify({
+				props.wsSendFunc(JSON.stringify({
 					type: PacketType.MoveC2S,
 					data: {
 						committedMoveIndex: props.movesForSelectedPiece.indexOf(move),

@@ -19,10 +19,13 @@ public class UserInfo {
 	private String username;
 	private Status status;
 	private @Nullable String gameId;
-	private int gamesPlayed;
 	private int gamesWon;
 	private int gamesLost;
 	private int gamesDrawn;
+
+	public int gamesPlayed() {
+		return gamesWon + gamesLost + gamesDrawn;
+	}
 
 	public enum Status {
 		OFFLINE,

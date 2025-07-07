@@ -15,6 +15,7 @@ export enum PacketType {
 	RequestMovesC2S = "RequestMovesC2S",
 	MovesS2C = "MovesS2C",
 	MoveC2S = "MoveC2S",
+	GameEndedS2C = "GameEndedS2C",
 }
 
 export enum UserStatus {

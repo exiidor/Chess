@@ -35,10 +35,10 @@ import softwareschreiber.chess.server.packet.s2c.UserLeftS2C;
 import softwareschreiber.chess.server.packet.s2c.UserListS2C;
 
 public class ChessServer extends WebSocketServer {
-	private final UserStore userStore;
-	private final ConnectionManager connections;
-	private final PacketMapper mapper;
-	private final GamesManager gameManager;
+	public final UserStore userStore;
+	public final ConnectionManager connections;
+	public final PacketMapper mapper;
+	public final GamesManager gameManager;
 
 	ChessServer(int port) {
 		super(new InetSocketAddress(port));
@@ -46,7 +46,7 @@ public class ChessServer extends WebSocketServer {
 		userStore = new UserStore();
 		connections = new ConnectionManager();
 		mapper = new PacketMapper();
-		gameManager = new GamesManager(userStore);
+		gameManager = new GamesManager(this, userStore);
 	}
 
 	@Override
@@ -138,7 +138,6 @@ public class ChessServer extends WebSocketServer {
 							null,
 							0,
 							0,
-							0,
 							0);
 					userStore.put(userInfo, password);
 				} else {
@@ -177,22 +176,25 @@ public class ChessServer extends WebSocketServer {
 		UserInfo initiator = connections.getUser(conn.getRemoteSocketAddress());
 		UserInfo requestedOpponent = null;
 
-		if (errorMessage == null) {
-			requestedOpponent = userStore.get(createGamePacket.data().requestedOpponent());
+		if (errorMessage == null && !createGamePacket.data().cpuOpponent()) {
+			String requestedOpponentName = createGamePacket.data().requestedOpponent();
+			requestedOpponent = userStore.get(requestedOpponentName);
 
 			if (requestedOpponent == null) {
-				errorMessage = "Requested opponent does not exist";
+				errorMessage = "Requested opponent " + requestedOpponentName + " does not exist";
 			} else if (requestedOpponent.status() == UserInfo.Status.OFFLINE) {
-				errorMessage = "Requested opponent is not online";
+				errorMessage = "Requested opponent " + requestedOpponentName + " is not online";
 			} else if (initiator.username().equals(requestedOpponent.username())) {
 				errorMessage = "Cannot play against yourself";
 			} else if (gameManager.getGame(initiator.username()) != null) {
 				errorMessage = "You are already in a game";
 			} else if (gameManager.getGame(requestedOpponent.username()) != null) {
-				errorMessage = "Requested opponent is already in a game";
-			} else {
-				gameInfo = gameManager.createStub(createGamePacket.data(), initiator);
+				errorMessage = "Requested opponent " + requestedOpponentName + " is already in a game";
 			}
+		}
+
+		if (errorMessage == null) {
+			gameInfo = gameManager.createOrUpdateStub(createGamePacket.data(), initiator);
 		}
 
 		CreateGameResultS2C resultPacket = new CreateGameResultS2C(new CreateGameResultS2C.Data(
@@ -201,13 +203,19 @@ public class ChessServer extends WebSocketServer {
 		conn.send(mapper.toString(resultPacket));
 
 		if (errorMessage != null) {
-			Logger.error("Failed to create game for {}: {}", initiator, errorMessage);
+			Logger.error("Failed to create game for {}: {}", initiator.username(), errorMessage);
 		} else {
 			Logger.info("{} has created a game with ID {} against {}",
-					initiator.username(), gameInfo.id(), requestedOpponent.username());
-			InviteS2C invitePacket = new InviteS2C(new InviteS2C.Data(initiator.username(), gameInfo));
-			WebSocket opponentConnection = connections.get(requestedOpponent);
-			opponentConnection.send(mapper.toString(invitePacket));
+					initiator.username(),
+					gameInfo.id(),
+					requestedOpponent == null ? "CPU" : requestedOpponent.username());
+			if (createGamePacket.data().cpuOpponent()) {
+				startGame(gameInfo);
+			} else {
+				InviteS2C invitePacket = new InviteS2C(new InviteS2C.Data(initiator.username(), gameInfo));
+				WebSocket opponentConnection = connections.get(requestedOpponent);
+				opponentConnection.send(mapper.toString(invitePacket));
+			}
 		}
 	}
 
@@ -245,16 +253,29 @@ public class ChessServer extends WebSocketServer {
 				UserJoinedS2C userJoinedPacket = new UserJoinedS2C(invitedUser);
 				connections.get(invitingUser).send(mapper.toString(userJoinedPacket));
 
-				ServerGame game = gameManager.createGame(gameInfo);
-				invitingUser.status(Status.PLAYING);
-				invitedUser.status(Status.PLAYING);
-				invitingUser.gameId(gameId);
-				invitedUser.gameId(gameId);
-				broadcastUserList();
-				game.startGame();
-				broadcastBoard(game);
+				startGame(gameInfo);
 			}
 		}
+	}
+
+	private void startGame(GameInfo gameInfo) {
+		ServerGame game = gameManager.createGame(gameInfo);
+		UserInfo whiteUser = gameInfo.whitePlayer();
+		UserInfo blackUser = gameInfo.blackPlayer();
+
+		if (whiteUser != null) {
+			whiteUser.status(Status.PLAYING);
+			whiteUser.gameId(gameInfo.id());
+		}
+
+		if (blackUser != null) {
+			blackUser.status(Status.PLAYING);
+			blackUser.gameId(gameInfo.id());
+		}
+
+		broadcastUserList();
+		game.startGame();
+		broadcastBoard(game);
 	}
 
 	private void handleLeaveGamePacket(WebSocket conn, String json) {
@@ -277,9 +298,11 @@ public class ChessServer extends WebSocketServer {
 		GameInfo gameInfo = game.getInfo();
 		String reason = leaveGamePacket.data().reason();
 		Logger.info("{} has left the game {} for reason: {}", user.username(), gameInfo.id(), reason);
+		UserInfo blackUser = gameInfo.blackPlayer();
+		UserInfo whiteUser = gameInfo.whitePlayer();
 
-		if (gameInfo.blackPlayer().status() != Status.PLAYING
-				&& gameInfo.whitePlayer().status() != Status.PLAYING) {
+		if ((whiteUser == null || whiteUser.status() != Status.PLAYING)
+				&& (blackUser == null || blackUser.status() != Status.PLAYING)) {
 			gameManager.removeGame(gameInfo);
 		}
 
@@ -372,7 +395,7 @@ public class ChessServer extends WebSocketServer {
 		return address.getHostName() + ":" + address.getPort();
 	}
 
-	private void broadcastUserList() {
+	public void broadcastUserList() {
 		UserListS2C packet = new UserListS2C(userStore.values());
 		String json = mapper.toString(packet);
 
@@ -383,7 +406,7 @@ public class ChessServer extends WebSocketServer {
 		}
 	}
 
-	private void broadcastBoard(ServerGame game) {
+	public void broadcastBoard(ServerGame game) {
 		BoardS2C packet = new BoardS2C(new BoardS2C.Data(
 				game.getInfo().id(),
 				new BoardPojo(game.getBoard())));
@@ -404,7 +427,7 @@ public class ChessServer extends WebSocketServer {
 		}
 	}
 
-	private List<UserInfo> getInGameUsers(ServerGame game) {
+	public List<UserInfo> getInGameUsers(ServerGame game) {
 		List<UserInfo> users = new ArrayList<>();
 
 		for (WebSocket client : getConnections()) {

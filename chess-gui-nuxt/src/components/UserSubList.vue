@@ -9,15 +9,6 @@
 			required: true
 		}
 	})
-
-	const emit = defineEmits<{
-		(event: 'user-clicked', user: User): void
-	}>()
-
-	function onUserClicked(user: User) {
-		emit('user-clicked', user);
-	}
-
 </script>
 
 
@@ -25,8 +16,8 @@
 	<div class="user-list-wrapper">
 		{{ heading }} ({{ users.length }})
 		<ul>
-			<li v-for="user in users" :key="user.username" @click="onUserClicked(user)">
-				<UserListEntry :user="user" @user-clicked="onUserClicked" />
+			<li v-for="user in users" :key="user.username">
+				<UserListEntry :user="user" />
 			</li>
 		</ul>
 	</div>
@@ -41,9 +32,5 @@
 		padding-bottom: 4px;
 		padding-left: 7px;
 		padding-right: 7px;
-	}
-
-	ul {
-		padding: 0;
 	}
 </style>
