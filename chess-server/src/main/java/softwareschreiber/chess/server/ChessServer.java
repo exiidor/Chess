@@ -134,12 +134,14 @@ public class ChessServer extends WebSocketServer {
 		if (whiteUser != null) {
 			whiteUser.status(Status.PLAYING);
 			whiteUser.gameId(gameInfo.id());
+			gameManager.removeStubFromUser(whiteUser.username());
 			connections.get(whiteUser).send(gamePacketJson);
 		}
 
 		if (blackUser != null) {
 			blackUser.status(Status.PLAYING);
 			blackUser.gameId(gameInfo.id());
+			gameManager.removeStubFromUser(blackUser.username());
 			connections.get(blackUser).send(gamePacketJson);
 		}
 
@@ -151,7 +153,7 @@ public class ChessServer extends WebSocketServer {
 
 	public void leaveGame(WebSocket conn, @Nullable String reason) {
 		UserInfo user = connections.getUser(conn.getRemoteSocketAddress());
-		gameManager.removeGame(gameManager.getStub(user.gameId()));
+		gameManager.removeStubFromUser(user.gameId());
 		ServerGame game = gameManager.getGame(user.gameId());
 
 		if (game == null) {
@@ -169,7 +171,7 @@ public class ChessServer extends WebSocketServer {
 
 		if ((whiteUser == null || whiteUser.status() != Status.PLAYING)
 				&& (blackUser == null || blackUser.status() != Status.PLAYING)) {
-			gameManager.removeGame(gameInfo);
+			gameManager.removeGame(game);
 			broadcastGames();
 		}
 

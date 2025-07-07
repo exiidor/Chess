@@ -103,15 +103,13 @@ public class ServerGame extends Game {
 
 		if (winningUser != null) {
 			winningUser.gamesWon(winningUser.gamesWon() + 1);
-			winningUser.status(Status.ONLINE);
 		}
 
 		if (losingUser != null) {
 			losingUser.gamesLost(losingUser.gamesLost() + 1);
-			losingUser.status(Status.ONLINE);
 		}
 
-		server.gameManager.removeGame(gameInfo);
+		server.gameManager.removeGame(this);
 		server.broadcastGames();
 		server.broadcastUserList();
 	}
@@ -132,15 +130,13 @@ public class ServerGame extends Game {
 
 		if (whiteUser != null) {
 			whiteUser.gamesDrawn(whiteUser.gamesDrawn() + 1);
-			whiteUser.status(Status.ONLINE);
 		}
 
 		if (blackUser != null) {
 			blackUser.gamesDrawn(blackUser.gamesDrawn() + 1);
-			blackUser.status(Status.ONLINE);
 		}
 
-		server.gameManager.removeGame(gameInfo);
+		server.gameManager.removeGame(this);
 		server.broadcastGames();
 		server.broadcastUserList();
 	}

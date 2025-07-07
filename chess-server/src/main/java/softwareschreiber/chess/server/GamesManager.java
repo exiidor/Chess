@@ -77,19 +77,31 @@ public class GamesManager {
 		return game;
 	}
 
-	public void removeGame(GameInfo info) {
-		if (info == null) {
-			return;
-		}
+	public void removeStubFromUser(String creatorUsername) {
+		GameInfo info = gameStubsByCreator.get(creatorUsername);
 
+		if (info != null) {
+			removeStub(info);
+		}
+	}
+
+	public void removeStub(GameInfo info) {
 		gameStubsById.remove(info.id());
-		gamesById.remove(info.id());
 
 		for (Map.Entry<String, GameInfo> entry : gameStubsByCreator.entrySet()) {
 			if (entry.getValue().id().equals(info.id())) {
 				gameStubsByCreator.remove(entry.getKey());
 				break;
 			}
+		}
+	}
+
+	public void removeGame(ServerGame game) {
+		gamesById.remove(game.getInfo().id());
+
+		for (UserInfo user : game.getUsers()) {
+			user.gameId(null);
+			user.status(UserInfo.Status.ONLINE);
 		}
 	}
 }
