@@ -23,15 +23,12 @@ public class ServerPlayer extends HumanPlayer {
 
 	@Override
 	public Move chooseMove(Board board) {
-		// TODO: Inform client to choose a move
-
-		throw new UnsupportedOperationException("Unimplemented method 'chooseMove'");
+		throw new IllegalStateException();
 	}
 
 	@Override
 	public PromotionMove choosePromotionMove(Board board, Pawn pawn, Set<PromotionMove> moves) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'choosePromotionMove'");
+		throw new IllegalStateException();
 	}
 
 	public List<? extends Move> getLastTransmittedMoves() {

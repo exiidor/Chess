@@ -39,8 +39,3 @@ You can play chess against a bot around a 1000 Elo rating or choose to play agai
 - Game history
 - Player information
 - Responsive design for mobile and desktop
-
-
-## Planned Improvements
-- Player chat functionality
-- Themes for the chessboard

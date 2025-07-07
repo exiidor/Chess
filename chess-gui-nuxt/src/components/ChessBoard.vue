@@ -2,12 +2,12 @@
 	import BoardSquare from './BoardSquare.vue'
 
 	const props = defineProps({
-		wsClientSendFunc: {
+		wsSendFunc: {
 			type: Function as PropType<(data: string) => void>,
 			required: true
 		},
-		ourColor: {
-			type: String as PropType<Color>,
+		playerColor: {
+			type: String as PropType<PieceColor | null>,
 			required: true
 		},
 		pieces: {
@@ -27,6 +27,7 @@
 
 	const emit = defineEmits<{
 		(event: 'piece-selected', piece: ChessPiece): void
+		(event: 'piece-moved'): void
 	}>()
 
 	const squares = ref<InstanceType<typeof BoardSquare>[][]>(Array.from({ length: 8 }, () => Array(8).fill(null)))
@@ -55,12 +56,14 @@
 					move = moves.find(move => (move as PromotionMove).replacement.type === PieceType.Queen)!
 				}
 
-				props.wsClientSendFunc(JSON.stringify({
+				props.wsSendFunc(JSON.stringify({
 					type: PacketType.MoveC2S,
 					data: {
 						committedMoveIndex: props.movesForSelectedPiece.indexOf(move),
 					}
 				}))
+
+				emit('piece-moved')
 			}
 
 			clearTargetedSquares()
@@ -134,13 +137,15 @@
 
 
 <template>
-	<div class="chessboard">
+	<div class="chessboard" :style="isOurTurn ? 'border: 0.4em solid #228C22; box-shadow: 0 0 10px #228C22, 0 0 20px #228C22;' : 'border: 0.4em solid #8e1600; box-shadow: 0 0 10px #8e1600, 0 0 20px #8e1600;'">
 		<BoardSquare v-for="(piece, index) in pieces"
+			class="boardsquare"
 			:key="index"
 			:piece="piece"
+			:player-color="props.playerColor"
 			:color="index % 2 === 0
-				? (Math.floor(index / 8) % 2 === 0 ? Color.White : Color.Black)
-				: (Math.floor(index / 8) % 2 === 0 ? Color.Black : Color.White)"
+				? (Math.floor(index / 8) % 2 === 0 ? PieceColor.White : PieceColor.Black)
+				: (Math.floor(index / 8) % 2 === 0 ? PieceColor.Black : PieceColor.White)"
 			:ref="(square) => {
 				squares[Math.floor(index / 8)]![index % 8] = square as InstanceType<typeof BoardSquare>
 				if (piece !== null) {
@@ -156,9 +161,18 @@
 <style scoped>
 	.chessboard {
 		display: grid;
-		grid-template-columns: repeat(8, 11.5vw);
-		grid-template-rows: repeat(8, 11.5vw);
-		border: 2px solid #333;
+  		grid-template-columns: repeat(8, 1fr);
+  		aspect-ratio: 1 / 1;
+  		/* width: 70vmin; */
+  		box-sizing: border-box;
+	}
+
+	.boardsquare {
+		width: 100%;
+  		height: 100%;
+  		aspect-ratio: 1 / 1;
+ 		box-sizing: border-box;
+		padding: 0;
 	}
 
 	.rank-label,
@@ -167,6 +181,7 @@
 		color: #333;
 		font-size: 14px;
 		font-weight: bold;
+		padding: 0;
 		pointer-events: none;
 	}
 

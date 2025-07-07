@@ -1,21 +1,3 @@
-declare interface ChessPiece {
-	type: PieceType
-	color: string
-	symbol: string
-	x: number
-	y: number
-}
-
-declare interface User {
-	username: string
-	status: string
-}
-
-declare interface Position {
-	x: number
-	y: number
-}
-
 declare interface Move {
 	type : MoveType
 	sourcePos: Position

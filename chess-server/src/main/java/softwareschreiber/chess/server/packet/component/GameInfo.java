@@ -19,4 +19,5 @@ public class GameInfo {
 	private UserInfo whitePlayer;
 	private UserInfo blackPlayer;
 	private int maxSecondsPerMove;
+	private boolean spectatingEnabled;
 }
