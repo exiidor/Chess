@@ -45,9 +45,7 @@ public class ServerGame extends Game {
 		this.gameInfo = gameInfo;
 
 		getBoard().addSubmittedMoveDoneListener((piece, move) -> {
-			if (getActivePlayer() instanceof ComputerPlayer) {
-				server.broadcastBoard(this);
-			}
+			server.broadcastBoard(this);
 		});
 	}
 

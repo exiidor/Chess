@@ -388,7 +388,6 @@ public class ChessServer extends WebSocketServer {
 		}
 
 		game.getBoard().move(piece, move, game.getPlayer(game.getActiveColor()));
-		broadcastBoard(game);
 	}
 
 	private String ipPlusPort(InetSocketAddress address) {
