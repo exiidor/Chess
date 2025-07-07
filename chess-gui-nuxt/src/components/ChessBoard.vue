@@ -46,7 +46,7 @@
 		clearSelectedSquare()
 
 		if (targetSquares.value.includes(clickedSquare) && getSelectedSquare() != clickedSquare) {
-			if (props.isOurTurn) {
+			if (props.isOurTurn && selectedPiece.value?.color === props.playerColor) {
 				const moves = movesToTargetedSquares.value.get(clickedSquare)!
 				let move: Move
 

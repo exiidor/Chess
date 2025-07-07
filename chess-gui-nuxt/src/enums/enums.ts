@@ -47,8 +47,8 @@ export enum MoveType {
 }
 
 export enum PieceColor {
-	White = "white",
-	Black = "black"
+	White = "WHITE",
+	Black = "BLACK"
 }
 
 export enum SquareState {

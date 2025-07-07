@@ -153,7 +153,7 @@
 				moves.value = packet.data
 				break;
 			case PacketType.MoveS2C:
-				ourTurn.value = packet.data.color.toLowerCase() !== color.value
+				ourTurn.value = packet.data.color !== color.value
 				break;
 			case PacketType.GameEndedS2C:
 				toast.add({

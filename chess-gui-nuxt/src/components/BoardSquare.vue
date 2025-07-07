@@ -32,7 +32,7 @@
 
 
 <template>
-	<div :class="['square', color, SquareState[selectionState]?.toLowerCase()]"
+	<div :class="['square', color.toLowerCase(), SquareState[selectionState]?.toLowerCase()]"
 		 :style="playerColor === PieceColor.Black ? 'transform: rotate(0deg)' : 'transform: rotate(180deg)'"
 		 @click="onClick()">
 		{{ piece?.symbol }}
