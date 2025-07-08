@@ -17,10 +17,6 @@
 	const moves = ref<Move[]>([])
 	const toast = useToast()
 	const colorMode = useColorMode()
-	const colorModes = ref([
-		{ label: 'Light', value: 'light' },
-		{ label: 'Dark', value: 'dark' },
-	])
 	const wsClient = useWebSocket(useRuntimeConfig().public.chessServerAddress, {
 		immediate: false,
 		onConnected: () => {

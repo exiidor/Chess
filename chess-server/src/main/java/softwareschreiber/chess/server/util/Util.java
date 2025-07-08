@@ -18,7 +18,7 @@ public class Util {
 	}
 
 	public static void failedToSerialize(Packet<?> packet, Exception exception) {
-		Logger.error("Failed to serialize {} packet \"{}\": {}", packet.type().name(), packet, exception);
+		Logger.error(exception, "Failed to serialize {} packet \"{}\"", packet.type().name(), packet);
 	}
 
 	public static SSLContext getSslContext() {
