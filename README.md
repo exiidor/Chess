@@ -5,7 +5,7 @@ This project consists of a basic [chess engine](./chess-engine/) (consumable as 
 - [Java 21](https://dev.java/) for the chess engine and server with user management, login system and multiplayer game management
 - [Nuxt 3](https://nuxt.com/) for the user-facing frontend
 - Custom [websocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)- and [JSON](https://en.wikipedia.org/wiki/JSON)-based [protocol](./chess-server/docs/protocol.md) for data interchange between frontend and backend
-- [Microsoft Azure](https://azure.microsoft.com/) for hosting. Other providers work too, it's just what our deployment guide targets.
+- [Microsoft Azure](https://azure.microsoft.com/) for hosting. Other providers work too, it's just what our [deployment guide](./deployment/deployment-guide.md) targets.
 
 
 ## Features
