@@ -139,9 +139,11 @@
 				pieces.value = packet.data.board.pieces
 				break
 			case PacketType.UserLeftS2C:
+				const leftUserName = packet.data.user.username
+				const leftUser = users.value.find(u => u.username === leftUserName)
 				toast.add({
 					title: "User Left",
-					description: packet.data.user.username + " has left the game.",
+					description: (leftUser?.status === UserStatus.Playing ? "Player " : "Spectator ") + leftUserName + " has left the game.",
 					color: "info"
 				})
 				break

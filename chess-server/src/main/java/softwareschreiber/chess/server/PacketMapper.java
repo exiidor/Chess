@@ -20,7 +20,7 @@ public class PacketMapper {
 		try {
 			return mapper.writeValueAsString(packet);
 		} catch (Exception e) {
-			throw new RuntimeException("Failed to serialize %s packet: %s".formatted(packet.getClass().getSimpleName(), e));
+			throw new RuntimeException("Failed to serialize %s packet: %s".formatted(packet.getClass().getSimpleName()), e);
 		}
 	}
 

@@ -88,6 +88,7 @@
 		gap: calc(var(--spacing) * 2);
 		align-items: center;
 		border: 1px solid transparent;
+		overflow-wrap: anywhere;
 
 		&:hover {
 			cursor: pointer;

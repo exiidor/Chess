@@ -90,7 +90,6 @@ public class ChessServer extends WebSocketServer {
 	@Override
 	public void onError(WebSocket conn, Exception ex) {
 		Logger.error(ex, "Error on connection {}", ipPlusPort(conn.getRemoteSocketAddress()));
-		conn.close();
 	}
 
 	@Override
