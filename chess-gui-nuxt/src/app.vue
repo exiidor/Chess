@@ -176,8 +176,11 @@
 			</UButton>
 		</div>
 
-		<div v-if="connected && !loggedIn" class="flex flex-row min-h-screen justify-center items-center">
+		<div v-if="connected && !loggedIn" class="flex flex-col min-h-screen justify-center items-center">
 			<Login :ws-send-func="wsClient.send" @attempted-login="onLoginAttempt" />
+			<p style="max-width: 300px" class="text-center text-gray-500 mt-5 text-sm">
+				If this is your first time logging in, an account with the submitted credentials will be automatically created for you.
+			</p>
 		</div>
 
 		<main v-if="loggedIn">
